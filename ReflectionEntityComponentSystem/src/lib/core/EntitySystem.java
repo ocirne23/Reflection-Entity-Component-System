@@ -2,6 +2,11 @@ package lib.core;
 
 import lib.utils.IntArray;
 
+/**
+ * Extend this class and add it to the EntityWorld to create a
+ *
+ * @author Enrico van Oosten
+ */
 public abstract class EntitySystem {
 	private final IntArray entitiyIds;
 	private final Class<?>[] components;

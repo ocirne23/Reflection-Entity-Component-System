@@ -97,6 +97,6 @@ public class TestAllTehThings {
 
 	@After
 	public void breakDown() {
-		EntityWorld.reset(true);
+		EntityWorld.reset();
 	}
 }

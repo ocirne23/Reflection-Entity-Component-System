@@ -4,6 +4,13 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Used by the EntityWorld to remember reflection data of an unique class of an
+ * entity. Has a map holding the component fields in that class, and a list of
+ * usable systems.
+ *
+ * @author Enrico van Oosten
+ */
 public final class EntityDef {
 	protected HashMap<Class<?>, Field> componentFields;
 	protected LinkedList<EntitySystem> usableSystems;
