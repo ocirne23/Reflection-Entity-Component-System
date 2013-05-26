@@ -1,7 +1,8 @@
 Reflection-Entity-Component-System
 ==================================
 
-A tiny entity component system which is high performance and quick/easy to use.
+A tiny entity component system which is high performance and quick/easy to use. Useful for smaller projects
+where you don't need more than 1 Entity World or dynamic component adding.
 
 Libary .jar:
 
@@ -61,9 +62,12 @@ An entity is a class which extends Entity and has components as fields:
 A system is a class which extends EntitySystem:
 
 	public class MovementSystem extends EntitySystem {
+		//Declare component managers so you can retrieve components easily.
+		private ComponentManager<Position> positionManager;
+		private ComponentManager<Velocity> velocityManager;
+		
 		public MovementSystem() {
-			//Define what components an entity requires to let it be processed
-			//by this system.
+			//Define what components an entity requires to let it be processed by this system.
 			super(Position.class, Velocity.class);
 		}
 	
@@ -76,9 +80,9 @@ A system is a class which extends EntitySystem:
 		}
 	
 		private void processEntity(int entityId, float deltaInSec) {
-			//Retrieve components from entities with getComponent
-			Position position = EntityWorld.getComponent(entityId, Position.class);
-			Velocity velocity = EntityWorld.getComponent(entityId, Velocity.class);
+			//Retrieve components from entities using the component managers.
+			Position position = positionManager.get(entityId);
+			Velocity velocity = velocityManager.get(entityId);
 			//Do something with the components.
 			position.x += velocity.x * deltaInSec;
 			position.y += velocity.y * deltaInSec;
