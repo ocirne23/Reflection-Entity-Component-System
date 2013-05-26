@@ -12,22 +12,22 @@ import lib.utils.IntMap;
  */
 public final class ComponentManager<T> {
 	protected final int id;
-	protected final IntMap<T> components;
+	protected final lib.utils.IntMap<T> components;
 
 	protected ComponentManager(int id) {
 		this.id = id;
 		components = new IntMap<T>();
 	}
 
-	protected void addComponent(int entityId, T object) {
+	protected void add(int entityId, T object) {
 		components.put(entityId, object);
 	}
 
-	protected void removeComponent(int entityId) {
+	protected void remove(int entityId) {
 		components.remove(entityId);
 	}
 
-	public T getComponent(int entityId) {
+	public T get(int entityId) {
 		return components.get(entityId);
 	}
 }

@@ -67,7 +67,7 @@ public final class EntityWorld {
 				} catch (IllegalAccessException e) {
 					e.printStackTrace();
 				}
-			def.addComponent(id, contents);
+			def.add(id, contents);
 		}
 		addEntityToSystems(entityDef, entity);
 		entities.put(id, entity);
@@ -87,7 +87,7 @@ public final class EntityWorld {
 			system.removeEntity(id);
 		}
 		for (Class<?> component : entityDef.componentFields.keySet()) {
-			componentManagers.get(component).removeComponent(id);
+			componentManagers.get(component).remove(id);
 		}
 		entityIds.clear(id);
 	}
@@ -158,7 +158,7 @@ public final class EntityWorld {
 	 * @return The component
 	 */
 	public static <T> T getComponent(int entityId, Class<T> class1) {
-		return class1.cast(componentManagers.get(class1).getComponent(entityId));
+		return class1.cast(componentManagers.get(class1).get(entityId));
 	}
 
 	@SuppressWarnings("unchecked")
