@@ -24,6 +24,7 @@ public class TestAllTehThings {
 
 	@Before
 	public void setup() {
+		EntityWorld.reset();
 		EntityWorld.registerComponents(COMPONENTS);
 		EntityWorld.addSystem(new HealthSystem());
 		EntityWorld.addSystem(new MovementSystem());

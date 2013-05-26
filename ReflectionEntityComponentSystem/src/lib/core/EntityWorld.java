@@ -142,11 +142,10 @@ public final class EntityWorld {
 		if(numFreedIds > entityIds.numBits() * 0.2f)
 			lastUsedId = 0;
 		while (entityIds.get(lastUsedId))
-			lastUsedId++;
 		entityIds.set(lastUsedId);
 		if(numFreedIds > 0) numFreedIds--;
 
-		return lastUsedId;
+		return lastUsedId++;
 	}
 
 	protected static int getComponentId() {
@@ -196,5 +195,7 @@ public final class EntityWorld {
 		entities.clear();
 		entityIds.clear();
 		componentIdCount = 0;
+		lastUsedId = 0;
+		numFreedIds = 0;
 	}
 }
