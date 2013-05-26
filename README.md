@@ -1,7 +1,8 @@
 Reflection-Entity-Component-System
 ==================================
 
-A tiny entity component system which is high performance and quick/easy to use.
+A tiny entity component system which is high performance and quick/easy to use. Useful for smaller projects
+where you don't need more than 1 Entity World or dynamic component adding.
 
 Libary .jar:
 
