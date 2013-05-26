@@ -8,17 +8,18 @@ import lib.utils.IntMap;
  * value being the component of that entity.
  *
  * @author Enrico van Oosten
+ * @param <T>
  */
-public final class ComponentDef {
+public final class ComponentManager<T> {
 	protected final int id;
-	protected final IntMap<Object> components;
+	protected final IntMap<T> components;
 
-	protected ComponentDef(int id) {
+	protected ComponentManager(int id) {
 		this.id = id;
-		components = new IntMap<Object>();
+		components = new IntMap<T>();
 	}
 
-	protected void addComponent(int entityId, Object object) {
+	protected void addComponent(int entityId, T object) {
 		components.put(entityId, object);
 	}
 
@@ -26,7 +27,7 @@ public final class ComponentDef {
 		components.remove(entityId);
 	}
 
-	protected Object getComponent(int entityId) {
+	public T getComponent(int entityId) {
 		return components.get(entityId);
 	}
 }

@@ -11,11 +11,11 @@ import java.util.LinkedList;
  *
  * @author Enrico van Oosten
  */
-public final class EntityDef {
+public final class EntityManager {
 	protected HashMap<Class<?>, Field> componentFields;
 	protected LinkedList<EntitySystem> usableSystems;
 
-	protected EntityDef(HashMap<Class<?>, Field> componentFields) {
+	protected EntityManager(HashMap<Class<?>, Field> componentFields) {
 		this.componentFields = componentFields;
 		usableSystems = new LinkedList<EntitySystem>();
 	}

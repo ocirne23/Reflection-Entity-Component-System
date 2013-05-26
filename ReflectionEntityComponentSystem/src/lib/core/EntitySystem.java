@@ -16,7 +16,7 @@ public abstract class EntitySystem {
 		entitiyIds = new IntArray(false, 16);
 	}
 
-	protected final void process(float deltaInSec) {
+	protected final void processSystem(float deltaInSec) {
 		processEntities(entitiyIds, deltaInSec);
 	}
 
