@@ -243,7 +243,6 @@ public final class EntityWorld {
 	 */
 	private static void addEntityToSystems(EntityManager entityManager, Entity entity) {
 		for (EntitySystem system : entityManager.usableSystems) {
-			System.out.println("adding entity to: " + system.getClass());
 			system.addEntity(entity.id);
 		}
 	}
