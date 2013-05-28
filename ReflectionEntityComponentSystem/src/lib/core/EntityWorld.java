@@ -53,8 +53,8 @@ public final class EntityWorld {
 			addUsableSystems(entityDefs.get(entityClass));
 		}
 
-		int id = entity.id;
 		EntityManager entityDef = entityDefs.get(entityClass);
+		int id = entity.id;
 		for (Class<?> componentClass : entityDef.componentFields.keySet()) {
 			Field field = entityDef.componentFields.get(componentClass);
 			ComponentManager def = componentManagers.get(componentClass);
@@ -114,9 +114,11 @@ public final class EntityWorld {
 			throw new RuntimeException("System already added");
 		if (entities.size != 0)
 			throw new RuntimeException("Systems must be added before entities");
-
-		System.out.println("adding system");
-
+		for(Class<?> component: system.getComponents()) {
+			if(!componentManagers.keySet().contains(component)) {
+				throw new RuntimeException("EntitySystem tried to use unregistered component: " + component.getName());
+			}
+		}
 		for(Field field: system.getClass().getDeclaredFields()) {
 			if(field.getType() == ComponentManager.class) {
 				field.setAccessible(true);
@@ -128,7 +130,6 @@ public final class EntityWorld {
 				} catch (IllegalAccessException e) {
 					e.printStackTrace();
 				}
-				System.out.println("type: " + type.toString());
 			}
 		}
 		systems.add(system);
@@ -180,16 +181,21 @@ public final class EntityWorld {
 		return componentIdCount++;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void addNewEntityDef(Class<? extends Entity> class1) {
+		Class<? extends Entity> mainClass = class1;
 		HashMap<Class<?>, Field> fieldMap = new HashMap<Class<?>, Field>();
-		for (Field f : class1.getDeclaredFields()) {
-			Class<?> fieldClass = f.getType();
-			if (componentManagers.containsKey(fieldClass)) {
-				f.setAccessible(true);
-				fieldMap.put(fieldClass, f);
+		while(class1 != Entity.class) {
+			for (Field f : class1.getDeclaredFields()) {
+				Class<?> fieldClass = f.getType();
+				if (componentManagers.containsKey(fieldClass)) {
+					f.setAccessible(true);
+					fieldMap.put(fieldClass, f);
+				}
 			}
+			class1 = (Class<? extends Entity>) class1.getSuperclass();
 		}
-		entityDefs.put(class1, new EntityManager(fieldMap));
+		entityDefs.put(mainClass, new EntityManager(fieldMap));
 	}
 
 	private static void addEntityToSystems(EntityManager entityDef, Entity entity) {
@@ -225,5 +231,6 @@ public final class EntityWorld {
 		componentIdCount = 0;
 		lastUsedId = 0;
 		numFreedIds = 0;
+		System.gc();
 	}
 }

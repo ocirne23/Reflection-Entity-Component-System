@@ -13,7 +13,7 @@ public class MovementSystem extends EntitySystem {
 
 	@Override
 	protected void processEntities(IntArray entities, float deltaInSec) {
-		System.out.println("processing MovementSystem, nr entities; " + entities.size);
+		//System.out.println("processing MovementSystem, nr entities; " + entities.size);
 		for(int i = 0; i < entities.size; i++) {
 			processEntity(entities.items[i], deltaInSec);
 		}
