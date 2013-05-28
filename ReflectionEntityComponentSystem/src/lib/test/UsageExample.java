@@ -1,5 +1,6 @@
 package lib.test;
 
+import lib.core.EntityMathUtils;
 import lib.core.EntityWorld;
 import lib.test.components.Attack;
 import lib.test.components.Health;
@@ -10,7 +11,6 @@ import lib.test.entities.PlayerWithAttack;
 import lib.test.entities.Zombie;
 import lib.test.systems.HealthSystem;
 import lib.test.systems.MovementSystem;
-import lib.utils.MathUtils;
 
 public class UsageExample {
 	//Register all component classes here.
@@ -36,7 +36,7 @@ public class UsageExample {
 			long deltaNano = start - currentTime;
 			currentTime = start;
 
-			float deltaSec = deltaNano * MathUtils.nanoToSec;
+			float deltaSec = deltaNano * EntityMathUtils.nanoToSec;
 			accumulator += deltaSec;
 			while(accumulator > timeStep) {
 				accumulator -= timeStep;

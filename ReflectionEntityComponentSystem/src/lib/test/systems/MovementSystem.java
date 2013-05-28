@@ -1,10 +1,10 @@
 package lib.test.systems;
 
+import lib.core.EntityIntArray;
 import lib.core.EntitySystem;
 import lib.core.EntityWorld;
 import lib.test.components.Position;
 import lib.test.components.Velocity;
-import lib.utils.IntArray;
 
 public class MovementSystem extends EntitySystem {
 	public MovementSystem() {
@@ -12,7 +12,7 @@ public class MovementSystem extends EntitySystem {
 	}
 
 	@Override
-	protected void processEntities(IntArray entities, float deltaInSec) {
+	protected void processEntities(EntityIntArray entities, float deltaInSec) {
 		//System.out.println("processing MovementSystem, nr entities; " + entities.size);
 		for(int i = 0; i < entities.size; i++) {
 			processEntity(entities.items[i], deltaInSec);

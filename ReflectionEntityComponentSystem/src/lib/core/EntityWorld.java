@@ -6,8 +6,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import lib.utils.Bits;
-import lib.utils.IntMap;
 
 /**
  * The main world class containing all the logic. Add Entities with components
@@ -27,7 +25,7 @@ public final class EntityWorld {
 	/**
 	 * Map of entities, entities are retrievable using their id.
 	 */
-	private static IntMap<Entity> entities = new IntMap<Entity>();
+	private static EntityIntMap<Entity> entities = new EntityIntMap<Entity>();
 	/**
 	 * Linked list of EntitySystems for easy iteration.
 	 */
@@ -35,7 +33,7 @@ public final class EntityWorld {
 	/**
 	 * Bitset used to know which id's are used.
 	 */
-	private static Bits entityIds = new Bits();
+	private static EntityBits entityIds = new EntityBits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
 

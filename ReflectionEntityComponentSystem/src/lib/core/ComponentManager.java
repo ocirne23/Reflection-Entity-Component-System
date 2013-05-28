@@ -1,6 +1,5 @@
 package lib.core;
 
-import lib.utils.IntMap;
 
 /**
  * Used by the Entity world to remember component reflection data for an unique
@@ -11,10 +10,10 @@ import lib.utils.IntMap;
  * @param <T>
  */
 public final class ComponentManager<T> {
-	protected final lib.utils.IntMap<T> components;
+	protected final lib.core.EntityIntMap<T> components;
 
 	protected ComponentManager() {
-		components = new IntMap<T>();
+		components = new EntityIntMap<T>();
 	}
 
 	protected void add(int entityId, T object) {
