@@ -72,7 +72,7 @@ A system is a class which extends EntitySystem:
 		}
 	
 		@Override
-		protected void processEntities(IntArray entities, float deltaInSec) {
+		protected void processEntities(EntityIntArray entities, float deltaInSec) {
 			//process each of the entityId's in the IntArray
 			for(int i = 0; i < entities.size; i++) {
 				processEntity(entities.items[i], deltaInSec);
