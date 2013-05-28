@@ -84,6 +84,7 @@ public class TestAllTehThings {
 		float expectedY = startY + ySpeed * deltaInSec1;
 
 		EntityWorld.process(deltaInSec1);
+		System.out.println(position.x +":"+ expectedX + ":"+ position.y +":"+ expectedY);
 		assertTrue(position.x == expectedX && position.y == expectedY);
 
 		startX = expectedX;

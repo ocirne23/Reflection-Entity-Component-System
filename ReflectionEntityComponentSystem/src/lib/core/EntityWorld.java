@@ -16,14 +16,28 @@ import lib.utils.IntMap;
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
+	/**
+	 * Collection of ComponentManagers, managers are retrievable by using the class they represent.
+	 */
 	private static HashMap<Class<?>, ComponentManager<?>> componentManagers = new HashMap<Class<?>, ComponentManager<?>>();
-	private static HashMap<Class<? extends Entity>, EntityManager> entityDefs = new HashMap<Class<? extends Entity>, EntityManager>();
-	private static LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
+	/**
+	 * Collection of EntityManagers, managers are retrievable by using the class they represent.
+	 */
+	private static HashMap<Class<? extends Entity>, EntityManager> entityManagers = new HashMap<Class<? extends Entity>, EntityManager>();
+	/**
+	 * Map of entities, entities are retrievable using their id.
+	 */
 	private static IntMap<Entity> entities = new IntMap<Entity>();
+	/**
+	 * Linked list of EntitySystems for easy iteration.
+	 */
+	private static LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
+	/**
+	 * Bitset used to know which id's are used.
+	 */
 	private static Bits entityIds = new Bits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
-	private static int componentIdCount = 0;
 
 	/**
 	 * Process all the systems.
@@ -44,32 +58,37 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void createEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
+		int id = entity.id;
 
-		if (!entityDefs.containsKey(entityClass)) {
-			addNewEntityDef(entityClass);
-			addUsableSystems(entityDefs.get(entityClass));
+		//If this is the first time this class has been added.
+		if (!entityManagers.containsKey(entityClass)) {
+			//Create the entity definition.
+			addNewEntityManager(entityClass);
 		}
 
-		EntityManager entityDef = entityDefs.get(entityClass);
-		int id = entity.id;
-		for (Class<?> componentClass : entityDef.componentFields.keySet()) {
-			Field field = entityDef.componentFields.get(componentClass);
-			ComponentManager def = componentManagers.get(componentClass);
+		//Get the manager for this entity's class.
+		EntityManager entityManager = entityManagers.get(entityClass);
+		//For every component field in this entity. (read from the entityManager).
+		for (Class<?> componentClass : entityManager.componentFields.keySet()) {
+			Field field = entityManager.componentFields.get(componentClass);
+			ComponentManager componentManager = componentManagers.get(componentClass);
 
 			Object contents = null;
-				try {
-					contents = field.get(entity);
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			def.add(id, contents);
+			try {
+				//Set contents with the value of the field of the entity.
+				contents = field.get(entity);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			//Add the contents of the field to the right manager.
+			componentManager.add(id, contents);
 		}
-		addEntityToSystems(entityDef, entity);
+		addEntityToSystems(entityManager, entity);
 		entities.put(id, entity);
 	}
 
@@ -82,10 +101,12 @@ public final class EntityWorld {
 	public static void removeEntity(Entity entity) {
 		numFreedIds++;
 		int id = entity.id;
-		EntityManager entityDef = entityDefs.get(entity.getClass());
+		EntityManager entityDef = entityManagers.get(entity.getClass());
+		//Remove entity from the systems.
 		for (EntitySystem system : entityDef.usableSystems) {
 			system.removeEntity(id);
 		}
+		//Remove the entity's components from the managers.
 		for (Class<?> component : entityDef.componentFields.keySet()) {
 			componentManagers.get(component).remove(id);
 		}
@@ -114,16 +135,20 @@ public final class EntityWorld {
 			throw new RuntimeException("System already added");
 		if (entities.size != 0)
 			throw new RuntimeException("Systems must be added before entities");
-		for(Class<?> component: system.getComponents()) {
-			if(!componentManagers.keySet().contains(component)) {
+
+		//Make sure every component used is registered, else throw exception.
+		for (Class<?> component : system.getComponents()) {
+			if (!componentManagers.keySet().contains(component)) {
 				throw new RuntimeException("EntitySystem tried to use unregistered component: " + component.getName());
 			}
 		}
-		for(Field field: system.getClass().getDeclaredFields()) {
-			if(field.getType() == ComponentManager.class) {
+		//Check for ComponentManager declarations.
+		for (Field field : system.getClass().getDeclaredFields()) {
+			if (field.getType() == ComponentManager.class) {
 				field.setAccessible(true);
 				Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 				try {
+					//Set the component manager declaration with the right component manager.
 					field.set(system, componentManagers.get(type));
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
@@ -136,8 +161,9 @@ public final class EntityWorld {
 	}
 
 	/**
-	 * Register all the component classes that are being used here.
-	 * { Health.class, Position.class } etc.
+	 * Register all the component classes that are being used here. {
+	 * Health.class, Position.class } etc.
+	 *
 	 * @param <T>
 	 *
 	 * @param componentClasses
@@ -145,7 +171,7 @@ public final class EntityWorld {
 	 */
 	public static <T> void registerComponents(Class<?>... componentClasses) {
 		for (Class<?> component : componentClasses) {
-			componentManagers.put(component, new ComponentManager<T>(getComponentId()));
+			componentManagers.put(component, new ComponentManager<T>());
 		}
 	}
 
@@ -162,59 +188,81 @@ public final class EntityWorld {
 		return class1.cast(componentManagers.get(class1).get(entityId));
 	}
 
+	/**
+	 * Get a manager for a type of component so you can more easily
+	 * retrieve this type of components from entities.
+	 * @param class1 The component's class.
+	 * @return The component manager, or null if none exists (component not registered).
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> ComponentManager<T> getComponentManager(Class<T> class1) {
 		return (ComponentManager<T>) componentManagers.get(class1);
 	}
 
+	/**
+	 * Get an unique id for an entity, may reuse id's of removed entities.
+	 * @return
+	 */
 	protected static int getEntityId() {
-		if(numFreedIds > entityIds.numBits() * 0.2f)
+		if (numFreedIds > entityIds.numBits() * 0.2f)
 			lastUsedId = 0;
 		while (entityIds.get(lastUsedId))
-		entityIds.set(lastUsedId);
-		if(numFreedIds > 0) numFreedIds--;
+			entityIds.set(lastUsedId);
+		if (numFreedIds > 0)
+			numFreedIds--;
 
 		return lastUsedId++;
 	}
 
-	protected static int getComponentId() {
-		return componentIdCount++;
-	}
-
+	/**
+	 * Create a new EntityManager representing an entity.
+	 * @param class1 The entity's class.
+	 */
 	@SuppressWarnings("unchecked")
-	private static void addNewEntityDef(Class<? extends Entity> class1) {
+	private static void addNewEntityManager(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
 		HashMap<Class<?>, Field> fieldMap = new HashMap<Class<?>, Field>();
-		while(class1 != Entity.class) {
+		while (class1 != Entity.class) {
 			for (Field f : class1.getDeclaredFields()) {
 				Class<?> fieldClass = f.getType();
 				if (componentManagers.containsKey(fieldClass)) {
 					f.setAccessible(true);
 					fieldMap.put(fieldClass, f);
+					System.out.println("put field: " + f.getName());
 				}
 			}
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
 		}
-		entityDefs.put(mainClass, new EntityManager(fieldMap));
+		EntityManager entityManager = new EntityManager(fieldMap);
+		entityManagers.put(mainClass, entityManager);
+		addUsableSystems(entityManager);
 	}
 
-	private static void addEntityToSystems(EntityManager entityDef, Entity entity) {
-		for (EntitySystem system : entityDef.usableSystems) {
+	/**
+	 * Adds an entity to the systems it can be processed.
+	 * @param entityManager The EntityManager of the same type as the entity.
+	 * @param entity The entity.
+	 */
+	private static void addEntityToSystems(EntityManager entityManager, Entity entity) {
+		for (EntitySystem system : entityManager.usableSystems) {
+			System.out.println("adding entity to: " + system.getClass());
 			system.addEntity(entity.id);
 		}
 	}
 
-	private static void addUsableSystems(EntityManager entityDef) {
+	/**
+	 * Add all the system the entity class can use to the manager.
+	 * @param entityManager The entity manager representing an entity class.
+	 */
+	private static void addUsableSystems(EntityManager entityManager) {
 		for (EntitySystem system : systems) {
-			boolean canProcess = true;
 			for (Class<?> component : system.getComponents()) {
-				if (!entityDef.hasComponent(component)) {
-					canProcess = false;
+				//If an entity does not have all the components of a system, don't add the system.
+				if (!entityManager.hasComponent(component))
 					break;
-				}
-			}
-			if (canProcess) {
-				entityDef.addUsableSystem(system);
+				entityManager.addUsableSystem(system);
+				//only add once.
+				break;
 			}
 		}
 	}
@@ -224,11 +272,10 @@ public final class EntityWorld {
 	 */
 	public static void reset() {
 		componentManagers.clear();
-		entityDefs.clear();
+		entityManagers.clear();
 		systems.clear();
 		entities.clear();
 		entityIds.clear();
-		componentIdCount = 0;
 		lastUsedId = 0;
 		numFreedIds = 0;
 		System.gc();

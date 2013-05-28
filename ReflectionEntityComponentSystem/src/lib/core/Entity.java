@@ -7,7 +7,7 @@ package lib.core;
  * @author Enrico van Oosten
  */
 public abstract class Entity {
-	public int id;
+	public final int id;
 	public Entity() {
 		id = EntityWorld.getEntityId();
 	}

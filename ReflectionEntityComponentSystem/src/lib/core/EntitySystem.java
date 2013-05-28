@@ -8,7 +8,13 @@ import lib.utils.IntArray;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
+	/**
+	 * Array of entities this system will use.
+	 */
 	private final IntArray entitiyIds;
+	/**
+	 * Collection of the classes of the components this system will use.
+	 */
 	private final Class<?>[] components;
 
 	public EntitySystem(Class<?>... components) {

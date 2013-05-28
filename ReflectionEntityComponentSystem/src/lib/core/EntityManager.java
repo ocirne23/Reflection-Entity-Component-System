@@ -5,14 +5,19 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * Used by the EntityWorld to remember reflection data of an unique class of an
- * entity. Has a map holding the component fields in that class, and a list of
- * usable systems.
+ * Representation of a single Entity class, used by the EntityWorld to remember reflection data.
+ * Has a map holding the component fields in that class, and a list of usable systems.
  *
  * @author Enrico van Oosten
  */
 public final class EntityManager {
+	/**
+	 * Map of components, retrievable by using the class of the component.
+	 */
 	protected HashMap<Class<?>, Field> componentFields;
+	/**
+	 * List of systems this entity class can use.
+	 */
 	protected LinkedList<EntitySystem> usableSystems;
 
 	protected EntityManager(HashMap<Class<?>, Field> componentFields) {

@@ -11,11 +11,9 @@ import lib.utils.IntMap;
  * @param <T>
  */
 public final class ComponentManager<T> {
-	protected final int id;
 	protected final lib.utils.IntMap<T> components;
 
-	protected ComponentManager(int id) {
-		this.id = id;
+	protected ComponentManager() {
 		components = new IntMap<T>();
 	}
 
