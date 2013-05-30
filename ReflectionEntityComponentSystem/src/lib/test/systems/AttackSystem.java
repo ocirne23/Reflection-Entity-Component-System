@@ -1,6 +1,5 @@
 package lib.test.systems;
 
-import lib.core.EntityIntArray;
 import lib.core.EntitySystem;
 import lib.test.components.Attack;
 
@@ -10,8 +9,7 @@ public class AttackSystem extends EntitySystem {
 	}
 
 	@Override
-	protected void processEntities(EntityIntArray entities, float deltaInSec) {
+	protected void process(int entityId, float deltaInSec) {
 
 	}
-
 }

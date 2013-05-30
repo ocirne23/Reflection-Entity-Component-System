@@ -12,6 +12,7 @@ import lib.test.entities.Zombie;
 import lib.test.systems.AttackSystem;
 import lib.test.systems.HealthSystem;
 import lib.test.systems.MovementSystem;
+import lib.test.systems.ThreadedMovementSystem;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,13 +26,23 @@ public class TestAllTehThings {
 	private Player player2;
 	private PlayerWithAttack playerWithAttack;
 	private Zombie zombie;
+	private MovementSystem ms;
+	private ThreadedMovementSystem tms;
 
 	@Before
 	public void setup() {
 		EntityWorld.reset();
 		EntityWorld.registerComponents(COMPONENTS);
+
 		EntityWorld.addSystem(new HealthSystem());
-		EntityWorld.addSystem(new MovementSystem());
+
+		ms = new MovementSystem();
+		EntityWorld.addSystem(ms);
+
+		tms = new ThreadedMovementSystem();
+		tms.setEnabled(false);
+		EntityWorld.addSystem(tms);
+
 		EntityWorld.addSystem(new AttackSystem());
 
 		player = new Player(4, 6);
@@ -104,6 +115,44 @@ public class TestAllTehThings {
 
 		Position position = EntityWorld.getComponent(playerWithAttackId, Position.class);
 		assertTrue(position != null);
+	}
+
+	@Test
+	public void testThreadedSystem() {
+		ms.setEnabled(false);
+		tms.setEnabled(true);
+		Position position = EntityWorld.getComponent(player.id, Position.class);
+		Velocity velocity = EntityWorld.getComponent(player.id, Velocity.class);
+		float startX = position.x;
+		float startY = position.y;
+		//First iteration does not
+		try {
+			EntityWorld.process(0);
+			Thread.sleep(1000);
+			EntityWorld.process(0);
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		assertTrue(velocity.x != 0 || velocity.y != 0);
+		assertTrue(startX != position.x || startY != position.y);
+	}
+
+	@Test
+	public void testThreadPool() {
+		ms.setEnabled(false);
+		tms.setEnabled(true);
+
+		try {
+		for(int i = 0; i < 10000; i++) {
+			EntityWorld.process(0f);
+		}
+		} catch(Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		assertTrue(true);
 	}
 
 	@Test
