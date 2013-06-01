@@ -32,7 +32,6 @@ https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
 		}
 	}
 
-<br>
 A component is a class with only data, no logic:
 
 	public class Position {
