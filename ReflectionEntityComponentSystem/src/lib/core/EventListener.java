@@ -19,12 +19,22 @@ public class EventListener<T> {
 		polledEventsList = new LinkedList<T>();
 	}
 
+	/**
+	 * Returns all the events received and clears the list.
+	 *
+	 * @return A list of events.
+	 */
 	public LinkedList<T> pollEvents() {
 		polledEventsList.clear();
 		receivedEvents.drainTo(polledEventsList);
 		return polledEventsList;
 	}
 
+	/**
+	 * Used by EntityWorld to add events to this listener.
+	 *
+	 * @param message
+	 */
 	@SuppressWarnings("unchecked")
 	protected void sendMessage(Object message) {
 		receivedEvents.add((T) message);
