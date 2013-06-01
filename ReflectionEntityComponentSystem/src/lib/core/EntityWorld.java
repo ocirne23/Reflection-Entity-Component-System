@@ -349,7 +349,7 @@ public final class EntityWorld {
 	 * @param messageTags
 	 *            The tags listened to.
 	 */
-	public static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
+	private static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
 		eventManager.registerListener(listener, eventType);
 	}
 
