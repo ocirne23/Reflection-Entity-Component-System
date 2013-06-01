@@ -1,7 +1,7 @@
 Reflection-Entity-Component-System
 ==================================
 
-An entity component system which is high performance with focus on ease of use and minimal code. Useful for smaller projects
+An entity component system which is high performance with focus on ease of use minimal programmer overhead. Useful for smaller projects
 where you don't need more than 1 Entity World or dynamic component adding. Event handling implemented, allows for inheritance in entities.
 
 Libary .jar:
