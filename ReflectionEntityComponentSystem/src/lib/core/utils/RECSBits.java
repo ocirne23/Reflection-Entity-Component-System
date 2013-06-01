@@ -1,4 +1,4 @@
-package lib.core;
+package lib.core.utils;
 
 /**
  * A bitset, without size limitation, allows comparison via bitwise operators to
@@ -6,12 +6,8 @@ package lib.core;
  *
  * @author mzechner
  */
-public class EntityBits {
+public class RECSBits {
 	long[] bits = { 0 };
-
-	protected EntityBits() {
-
-	}
 
 	/**
 	 * @param index

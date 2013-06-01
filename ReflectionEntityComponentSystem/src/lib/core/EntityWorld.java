@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import lib.core.utils.BlockingThreadPoolExecutor;
+import lib.core.utils.RECSBits;
 import lib.core.utils.RECSIntMap;
 import lib.core.utils.RECSObjectMap;
 
@@ -38,7 +39,7 @@ public final class EntityWorld {
 	/**
 	 * Bitset used to know which id's are used.
 	 */
-	private static EntityBits entityIds = new EntityBits();
+	private static RECSBits entityIds = new RECSBits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
 
