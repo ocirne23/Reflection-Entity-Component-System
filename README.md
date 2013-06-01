@@ -72,14 +72,7 @@ A system is a class which extends EntitySystem:
 		}
 	
 		@Override
-		protected void processEntities(EntityIntArray entities, float deltaInSec) {
-			//process each of the entityId's in the IntArray
-			for(int i = 0; i < entities.size; i++) {
-				processEntity(entities.items[i], deltaInSec);
-			}
-		}
-	
-		private void processEntity(int entityId, float deltaInSec) {
+		private void process(int entityId, float deltaInSec) {
 			//Retrieve components from entities using the component managers.
 			Position position = positionManager.get(entityId);
 			Velocity velocity = velocityManager.get(entityId);
