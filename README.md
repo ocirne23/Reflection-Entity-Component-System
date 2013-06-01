@@ -81,7 +81,7 @@ A system is a class which extends EntitySystem:
 		}
 	}
 	
-Allows for full inheritance programming (not reccomended, but completely possible).
+Allows for full inheritance programming (not reccomended, but completely possible, all the components are accessable through the fields).
 
 	public class PlayerWithAttack extends Player {
 		Attack attack;
