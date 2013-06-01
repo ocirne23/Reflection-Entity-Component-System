@@ -88,3 +88,58 @@ A system is a class which extends EntitySystem:
 			position.y += velocity.y * deltaInSec;
 		}
 	}
+	
+Allows for full inheritance programming (not reccomended, but completely possible).
+
+	public class PlayerWithAttack extends Player {
+		Attack attack;
+		public PlayerWithAttack(float x, float y) {
+			super(x, y);
+			attack = new Attack(2);
+		}
+	}
+	
+Event handling with EventListeners
+
+	public class HealthSystem extends EntitySystem {
+		public ComponentManager<Health> healthManager;
+	
+		public EventListener<DamageEvent> damageListener;
+	
+		public HealthSystem() {
+			super(Health.class);
+		}
+	
+		@Override
+		protected void processSystem(float deltaInSec) {
+			for(DamageEvent damageEvent: damageListener.pollEvents()) {
+				Health health = healthManager.get(damageEvent.entityId);
+				health.health -= damageEvent.damage;
+			}
+			super.processSystem(deltaInSec);
+		}
+	
+		@Override
+		protected void process(int entityId, float deltaInSec) {
+			Health health = healthManager.get(entityId);
+			if (health.health <= 0) {
+				EntityWorld.removeEntity(entityId);
+			}
+		}
+	}
+	
+An event  can be any object.
+
+	public class DamageEvent {
+		public int entityId;
+		public int damage;
+	
+		public DamageEvent(int entityId, int damage) {
+			this.entityId = entityId;
+			this.damage = damage;
+		}
+	}
+
+Events can be created easily and are passed to every system with a listener.
+
+	EntityWorld.sendEvent(new DamageEvent(entityId, 1));
