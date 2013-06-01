@@ -1,4 +1,4 @@
-package lib.core;
+package lib.core.utils;
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
  *
@@ -22,7 +22,7 @@ import java.util.Random;
  * <p>
  * Thanks to Riven on JavaGaming.org for the basis of sin/cos/atan2/floor/ceil.
  * @author Nathan Sweet */
-public class EntityMathUtils {
+public class RECSMathUtils {
 	static public final float nanoToSec = 1 / 1000000000f;
 
 	static public Random random = new Random();

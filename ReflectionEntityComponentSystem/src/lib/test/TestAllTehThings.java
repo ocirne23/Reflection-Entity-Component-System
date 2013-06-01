@@ -9,7 +9,7 @@ import lib.test.components.Velocity;
 import lib.test.entities.Player;
 import lib.test.entities.PlayerWithAttack;
 import lib.test.entities.Zombie;
-import lib.test.systems.AttackSystem;
+import lib.test.events.DamageEvent;
 import lib.test.systems.HealthSystem;
 import lib.test.systems.MovementSystem;
 import lib.test.systems.ThreadedMovementSystem;
@@ -26,15 +26,15 @@ public class TestAllTehThings {
 	private Player player2;
 	private PlayerWithAttack playerWithAttack;
 	private Zombie zombie;
+
 	private MovementSystem ms;
 	private ThreadedMovementSystem tms;
+	private HealthSystem hs;
 
 	@Before
 	public void setup() {
 		EntityWorld.reset();
 		EntityWorld.registerComponents(COMPONENTS);
-
-		EntityWorld.addSystem(new HealthSystem());
 
 		ms = new MovementSystem();
 		EntityWorld.addSystem(ms);
@@ -43,7 +43,8 @@ public class TestAllTehThings {
 		tms.setEnabled(false);
 		EntityWorld.addSystem(tms);
 
-		EntityWorld.addSystem(new AttackSystem());
+		hs = new HealthSystem();
+		EntityWorld.addSystem(hs);
 
 		player = new Player(4, 6);
 		player2 = new Player(12, 9);
@@ -95,7 +96,6 @@ public class TestAllTehThings {
 		float expectedY = startY + ySpeed * deltaInSec1;
 
 		EntityWorld.process(deltaInSec1);
-		System.out.println(position.x +":"+ expectedX + ":"+ position.y +":"+ expectedY);
 		assertTrue(position.x == expectedX && position.y == expectedY);
 
 		startX = expectedX;
@@ -125,7 +125,7 @@ public class TestAllTehThings {
 		Velocity velocity = EntityWorld.getComponent(player.id, Velocity.class);
 		float startX = position.x;
 		float startY = position.y;
-		//First iteration does not
+		//First iteration does not process threaded systems.
 		try {
 			EntityWorld.process(0);
 			Thread.sleep(1000);
@@ -156,6 +156,18 @@ public class TestAllTehThings {
 	}
 
 	@Test
+	public void testEvents() {
+		Health health = EntityWorld.getComponent(player.id, Health.class);
+		int currentHealth = health.health;
+
+		EntityWorld.sendEvent(new DamageEvent(player.id, 2));
+		EntityWorld.process(1f);
+
+		assertTrue(health.health == currentHealth - 2);
+	}
+
+
+	@Test
 	public void testRemove() {
 		int playerId = player.id;
 		Position position = EntityWorld.getComponent(playerId, Position.class);
@@ -169,6 +181,6 @@ public class TestAllTehThings {
 
 	@After
 	public void breakDown() {
-		EntityWorld.reset();
+
 	}
 }

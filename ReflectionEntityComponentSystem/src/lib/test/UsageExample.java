@@ -1,7 +1,7 @@
 package lib.test;
 
-import lib.core.EntityMathUtils;
 import lib.core.EntityWorld;
+import lib.core.utils.RECSMathUtils;
 import lib.test.components.Attack;
 import lib.test.components.Health;
 import lib.test.components.Position;
@@ -36,7 +36,7 @@ public class UsageExample {
 			long deltaNano = start - currentTime;
 			currentTime = start;
 
-			float deltaSec = deltaNano * EntityMathUtils.nanoToSec;
+			float deltaSec = deltaNano * RECSMathUtils.nanoToSec;
 			accumulator += deltaSec;
 			while(accumulator > timeStep) {
 				accumulator -= timeStep;

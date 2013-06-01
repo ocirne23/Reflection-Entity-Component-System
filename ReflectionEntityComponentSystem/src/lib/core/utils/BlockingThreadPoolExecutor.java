@@ -1,4 +1,4 @@
-package lib.core;
+package lib.core.utils;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -13,7 +13,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
 
 	@Override
 	public void execute(Runnable command) {
-		if (getQueue().size() < 100) {
+		if (getQueue().size() < 80) {
 			super.execute(command);
 		} else {
 			try {
@@ -26,9 +26,11 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
 
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
-		Runnable next = queue.poll();
-		if (next != null) {
-			super.execute(next);
+		if (getQueue().size() < 100) {
+			Runnable next = queue.poll();
+			if (next != null) {
+				super.execute(next);
+			}
 		}
 	}
 }

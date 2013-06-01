@@ -1,29 +1,29 @@
-package lib.core;
+package lib.core.utils;
 
 import java.util.Arrays;
 
 /** A resizable, ordered or unordered int array. Avoids the boxing that occurs with ArrayList<Integer>. If unordered, this class
  * avoids a memory copy when removing elements (the last element is moved to the removed element's position).
  * @author Nathan Sweet */
-public class EntityIntArray {
+public class RECSIntArray {
 	public int[] items;
 	public int size;
 	public boolean ordered;
 
 	/** Creates an ordered array with a capacity of 16. */
-	protected EntityIntArray () {
+	public RECSIntArray () {
 		this(true, 16);
 	}
 
 	/** Creates an ordered array with the specified capacity. */
-	protected EntityIntArray (int capacity) {
+	public RECSIntArray (int capacity) {
 		this(true, capacity);
 	}
 
 	/** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
 	 *           memory copy.
 	 * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-	protected EntityIntArray (boolean ordered, int capacity) {
+	public RECSIntArray (boolean ordered, int capacity) {
 		this.ordered = ordered;
 		items = new int[capacity];
 	}
@@ -31,7 +31,7 @@ public class EntityIntArray {
 	/** Creates a new array containing the elements in the specific array. The new array will be ordered if the specific array is
 	 * ordered. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be
 	 * grown. */
-	protected EntityIntArray (EntityIntArray array) {
+	public RECSIntArray (RECSIntArray array) {
 		this.ordered = array.ordered;
 		size = array.size;
 		items = new int[size];
@@ -40,7 +40,7 @@ public class EntityIntArray {
 
 	/** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
 	 * so any subsequent elements added will cause the backing array to be grown. */
-	protected EntityIntArray (int[] array) {
+	public RECSIntArray (int[] array) {
 		this(true, array, 0, array.length);
 	}
 
@@ -48,7 +48,7 @@ public class EntityIntArray {
 	 * subsequent elements added will cause the backing array to be grown.
 	 * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
 	 *           memory copy. */
-	protected EntityIntArray (boolean ordered, int[] array, int startIndex, int count) {
+	public RECSIntArray (boolean ordered, int[] array, int startIndex, int count) {
 		this(ordered, array.length);
 		size = count;
 		System.arraycopy(array, startIndex, items, 0, count);
@@ -60,11 +60,11 @@ public class EntityIntArray {
 		items[size++] = value;
 	}
 
-	public void addAll (EntityIntArray array) {
+	public void addAll (RECSIntArray array) {
 		addAll(array, 0, array.size);
 	}
 
-	public void addAll (EntityIntArray array, int offset, int length) {
+	public void addAll (RECSIntArray array, int offset, int length) {
 		if (offset + length > array.size)
 			throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
 		addAll(array.items, offset, length);
@@ -161,7 +161,7 @@ public class EntityIntArray {
 
 	/** Removes from this array all of elements contained in the specified array.
 	 * @return true if this array was modified. */
-	public boolean removeAll (EntityIntArray array) {
+	public boolean removeAll (RECSIntArray array) {
 		int size = this.size;
 		int startSize = size;
 		int[] items = this.items;
@@ -236,7 +236,7 @@ public class EntityIntArray {
 
 	public void shuffle () {
 		for (int i = size - 1; i >= 0; i--) {
-			int ii = EntityMathUtils.random(i);
+			int ii = RECSMathUtils.random(i);
 			int temp = items[i];
 			items[i] = items[ii];
 			items[ii] = temp;
@@ -252,7 +252,7 @@ public class EntityIntArray {
 	/** Returns a random item from the array, or zero if the array is empty. */
 	public int random () {
 		if (size == 0) return 0;
-		return items[EntityMathUtils.random(0, size - 1)];
+		return items[RECSMathUtils.random(0, size - 1)];
 	}
 
 	public int[] toArray () {
@@ -264,8 +264,8 @@ public class EntityIntArray {
 	@Override
 	public boolean equals (Object object) {
 		if (object == this) return true;
-		if (!(object instanceof EntityIntArray)) return false;
-		EntityIntArray array = (EntityIntArray)object;
+		if (!(object instanceof RECSIntArray)) return false;
+		RECSIntArray array = (RECSIntArray)object;
 		int n = size;
 		if (n != array.size) return false;
 		for (int i = 0; i < n; i++)

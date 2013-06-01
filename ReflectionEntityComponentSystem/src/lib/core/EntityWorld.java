@@ -6,6 +6,10 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import lib.core.utils.BlockingThreadPoolExecutor;
+import lib.core.utils.RECSIntMap;
+import lib.core.utils.RECSObjectMap;
+
 /**
  * The main world class containing all the logic. Add Entities with components
  * and systems to this class and call the process method.
@@ -17,16 +21,16 @@ public final class EntityWorld {
 	 * Collection of ComponentManagers, managers are retrievable by using the
 	 * class they represent.
 	 */
-	private static HashMap<Class<?>, ComponentManager<?>> componentManagers = new HashMap<Class<?>, ComponentManager<?>>();
+	private static RECSObjectMap<Class<?>, ComponentManager<?>> componentManagers = new RECSObjectMap<Class<?>, ComponentManager<?>>();
 	/**
 	 * Collection of EntityManagers, managers are retrievable by using the class
 	 * they represent.
 	 */
-	private static HashMap<Class<? extends Entity>, EntityManager> entityManagers = new HashMap<Class<? extends Entity>, EntityManager>();
+	private static RECSObjectMap<Class<? extends Entity>, EntityManager> entityManagers = new RECSObjectMap<Class<? extends Entity>, EntityManager>();
 	/**
 	 * Map of entities, entities are retrievable using their id.
 	 */
-	private static EntityIntMap<Entity> entities = new EntityIntMap<Entity>();
+	private static RECSIntMap<Entity> entities = new RECSIntMap<Entity>();
 	/**
 	 * Linked list of EntitySystems for easy iteration.
 	 */
@@ -37,6 +41,8 @@ public final class EntityWorld {
 	private static EntityBits entityIds = new EntityBits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
+
+	private static EventManager eventManager = new EventManager();
 	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
 
 	/**
@@ -48,7 +54,7 @@ public final class EntityWorld {
 	 */
 	public static void process(float deltaInSec) {
 		for (EntitySystem system : systems) {
-			if (system.enabled) {
+			if (system.isEnabled()) {
 				system.processSystem(deltaInSec);
 			}
 		}
@@ -70,13 +76,11 @@ public final class EntityWorld {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
 
-		// If this is the first time this class has been added.
+		// If this is the first time this class has been added, create the
+		// entity definition.
 		if (!entityManagers.containsKey(entityClass)) {
-			// Create the entity definition.
 			addNewEntityManager(entityClass);
 		}
-
-		// Get the manager for this entity's class.
 		EntityManager entityManager = entityManagers.get(entityClass);
 		// For every component field in this entity. (read from the
 		// entityManager).
@@ -134,10 +138,12 @@ public final class EntityWorld {
 
 	/**
 	 * Add a list of systems to the world
+	 *
 	 * @param systems
 	 */
 	public static void addSystem(EntitySystem... systems) {
-		for(EntitySystem s: systems) addSystem(s);
+		for (EntitySystem s : systems)
+			addSystem(s);
 	}
 
 	/**
@@ -155,21 +161,41 @@ public final class EntityWorld {
 
 		// Make sure every component used is registered, else throw exception.
 		for (Class<?> component : system.getComponents()) {
-			if (!componentManagers.keySet().contains(component)) {
+			if (!componentManagers.containsKey(component)) {
 				throw new RuntimeException("EntitySystem tried to use unregistered component: " + component.getName());
 			}
 		}
-		// Check for ComponentManager declarations.
+
 		Class<? extends EntitySystem> class1 = system.getClass();
 		do {
 			for (Field field : class1.getDeclaredFields()) {
+				// Check for ComponentManager declarations.
 				if (field.getType() == ComponentManager.class) {
 					field.setAccessible(true);
+					// Read the type in the <> of componentmanager
 					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 					try {
 						// Set the component manager declaration with the right
 						// component manager.
-						field.set(system, componentManagers.get(type));
+						field.set(system, componentManagers.get((Class<?>) type));
+					} catch (IllegalArgumentException e) {
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						e.printStackTrace();
+					}
+				}
+				// check for EventListener declarations.
+				if (field.getType() == EventListener.class) {
+					field.setAccessible(true);
+					// Read the type in the <> of eventListener.
+					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+					EventListener<?> eventListener = new EventListener<>();
+					registerEventListener(eventListener, (Class<?>) type);
+
+					try {
+						// Set the event listener declaration with the right
+						// field listener.
+						field.set(system, eventListener);
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
@@ -251,13 +277,14 @@ public final class EntityWorld {
 	private static void addNewEntityManager(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
 		HashMap<Class<?>, Field> fieldMap = new HashMap<Class<?>, Field>();
+		// Iterate all the subclasses.
 		while (class1 != Entity.class) {
+			// Put every field object in a map with the fields class as key.
 			for (Field f : class1.getDeclaredFields()) {
 				Class<?> fieldClass = f.getType();
 				if (componentManagers.containsKey(fieldClass)) {
 					f.setAccessible(true);
 					fieldMap.put(fieldClass, f);
-					System.out.println("put field: " + f.getName());
 				}
 			}
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
@@ -302,6 +329,30 @@ public final class EntityWorld {
 	}
 
 	/**
+	 * Send a message to all EntitySystems that are registered to the tag of
+	 * this event.
+	 *
+	 * @param event
+	 *            The event.
+	 */
+	public static void sendEvent(Object event) {
+		eventManager.sendEvent(event);
+	}
+
+	/**
+	 * Register a system so it can receive events with the specified
+	 * messageTags.
+	 *
+	 * @param system
+	 *            The entitySystem.
+	 * @param messageTags
+	 *            The tags listened to.
+	 */
+	public static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
+		eventManager.registerListener(listener, eventType);
+	}
+
+	/**
 	 * Use this to clear everything in the EntityWorld. Use with care.
 	 */
 	public static void reset() {
@@ -310,6 +361,7 @@ public final class EntityWorld {
 		systems.clear();
 		entities.clear();
 		entityIds.clear();
+		eventManager.clear();
 		lastUsedId = 0;
 		numFreedIds = 0;
 		System.gc();

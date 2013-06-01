@@ -1,4 +1,4 @@
-package lib.core;
+package lib.core.utils;
 
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
  * next higher POT size.
  * @author Nathan Sweet */
 @SuppressWarnings({"rawtypes", "unused", "unchecked"})
-public class EntityIntMap<V> {
+public class RECSIntMap<V> {
 	private static final int PRIME1 = 0xbe1f14b1;
 	private static final int PRIME2 = 0xb4b82e39;
 	private static final int PRIME3 = 0xced1c241;
@@ -54,22 +54,22 @@ public class EntityIntMap<V> {
 
 	/** Creates a new map with an initial capacity of 32 and a load factor of 0.8. This map will hold 25 items before growing the
 	 * backing table. */
-	protected EntityIntMap () {
+	public RECSIntMap () {
 		this(32, 0.8f);
 	}
 
 	/** Creates a new map with a load factor of 0.8. This map will hold initialCapacity * 0.8 items before growing the backing
 	 * table. */
-	protected EntityIntMap (int initialCapacity) {
+	public RECSIntMap (int initialCapacity) {
 		this(initialCapacity, 0.8f);
 	}
 
 	/** Creates a new map with the specified initial capacity and load factor. This map will hold initialCapacity * loadFactor items
 	 * before growing the backing table. */
-	protected EntityIntMap (int initialCapacity, float loadFactor) {
+	public RECSIntMap (int initialCapacity, float loadFactor) {
 		if (initialCapacity < 0) throw new IllegalArgumentException("initialCapacity must be >= 0: " + initialCapacity);
 		if (capacity > 1 << 30) throw new IllegalArgumentException("initialCapacity is too large: " + initialCapacity);
-		capacity = EntityMathUtils.nextPowerOfTwo(initialCapacity);
+		capacity = RECSMathUtils.nextPowerOfTwo(initialCapacity);
 
 		if (loadFactor <= 0) throw new IllegalArgumentException("loadFactor must be > 0: " + loadFactor);
 		this.loadFactor = loadFactor;
@@ -157,7 +157,7 @@ public class EntityIntMap<V> {
 		return null;
 	}
 
-	public void putAll (EntityIntMap<V> map) {
+	public void putAll (RECSIntMap<V> map) {
 		for (Entry<V> entry : map.entries())
 			put(entry.key, entry.value);
 	}
@@ -213,7 +213,7 @@ public class EntityIntMap<V> {
 		int i = 0, pushIterations = this.pushIterations;
 		do {
 			// Replace the key and value for one of the hashes.
-			switch (EntityMathUtils.random(2)) {
+			switch (RECSMathUtils.random(2)) {
 			case 0:
 				evictedKey = key1;
 				evictedValue = valueTable[index1];
@@ -467,7 +467,7 @@ public class EntityIntMap<V> {
 	 * items to avoid multiple backing array resizes. */
 	public void ensureCapacity (int additionalCapacity) {
 		int sizeNeeded = size + additionalCapacity;
-		if (sizeNeeded >= threshold) resize(EntityMathUtils.nextPowerOfTwo((int)(sizeNeeded / loadFactor)));
+		if (sizeNeeded >= threshold) resize(RECSMathUtils.nextPowerOfTwo((int)(sizeNeeded / loadFactor)));
 	}
 
 	private void resize (int newSize) {
@@ -610,11 +610,11 @@ public class EntityIntMap<V> {
 
 		public boolean hasNext;
 
-		final EntityIntMap<V> map;
+		final RECSIntMap<V> map;
 		int nextIndex, currentIndex;
 		boolean valid = true;
 
-		public MapIterator (EntityIntMap<V> map) {
+		public MapIterator (RECSIntMap<V> map) {
 			this.map = map;
 			reset();
 		}
@@ -659,7 +659,7 @@ public class EntityIntMap<V> {
 	static public class Entries<V> extends MapIterator<V> implements Iterable<Entry<V>>, Iterator<Entry<V>> {
 		private final Entry<V> entry = new Entry();
 
-		public Entries (EntityIntMap map) {
+		public Entries (RECSIntMap map) {
 			super(map);
 		}
 
@@ -693,7 +693,7 @@ public class EntityIntMap<V> {
 	}
 
 	static public class Values<V> extends MapIterator<V> implements Iterable<V>, Iterator<V> {
-		public Values (EntityIntMap<V> map) {
+		public Values (RECSIntMap<V> map) {
 			super(map);
 		}
 
@@ -723,7 +723,7 @@ public class EntityIntMap<V> {
 	}
 
 	static public class Keys extends MapIterator {
-		public Keys (EntityIntMap map) {
+		public Keys (RECSIntMap map) {
 			super(map);
 		}
 

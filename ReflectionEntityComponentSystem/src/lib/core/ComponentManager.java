@@ -1,19 +1,19 @@
 package lib.core;
 
+import lib.core.utils.RECSIntMap;
 
 /**
- * Used by the Entity world to remember component reflection data for an unique
- * class. Holds a map of components with the key being the entity id, and the
- * value being the component of that entity.
+ * Used to easily retrieve components from entities.
  *
  * @author Enrico van Oosten
  * @param <T>
+ *            The component type this manager manages.
  */
 public final class ComponentManager<T> {
-	protected final lib.core.EntityIntMap<T> components;
+	protected final RECSIntMap<T> components;
 
 	protected ComponentManager() {
-		components = new EntityIntMap<T>();
+		components = new RECSIntMap<T>();
 	}
 
 	protected void add(int entityId, T object) {
