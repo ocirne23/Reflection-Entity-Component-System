@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import recs.core.ComponentDestructionListener;
+import recs.core.Entity;
 import recs.core.EntityWorld;
 import recs.test.components.Attack;
 import recs.test.components.Gravity;
@@ -25,6 +26,9 @@ import recs.test.systems.ThreadedMovementSystem;
 
 
 public class TestAllTehThings {
+	static {
+		EntityWorld.reset();
+	}
 	private static final Class<?>[] COMPONENTS = { Health.class, Position.class, Velocity.class, Attack.class, Gravity.class };
 
 	private Player player;
@@ -39,7 +43,6 @@ public class TestAllTehThings {
 
 	@Before
 	public void setup() {
-		EntityWorld.reset();
 		EntityWorld.registerComponents(COMPONENTS);
 
 		ms = new MovementSystem();
@@ -283,10 +286,28 @@ public class TestAllTehThings {
 		assertTrue(position2 == null);
 	}
 
+	@Test
+	public void testDynamicEntity() {
+		Entity e = new Entity();
+		e.addComponent(new Position(1,2), new Velocity(4, 0), new Health(10, 15));
+		EntityWorld.createEntity(e);
 
+		Position position = EntityWorld.getComponent(e.id, Position.class);
+		assertTrue(position != null);
+
+		assertTrue(ms.hasEntity(e.id));
+		assertTrue(hs.hasEntity(e.id));
+
+		Health health = EntityWorld.getComponent(e.id, Health.class);
+		e.removeComponent(health);
+
+		Health health2 = EntityWorld.getComponent(e.id, Health.class);
+		assertTrue(health2 == null);
+		assertFalse(hs.hasEntity(e.id));
+	}
 
 	@After
 	public void breakDown() {
-
+		EntityWorld.reset();
 	}
 }
