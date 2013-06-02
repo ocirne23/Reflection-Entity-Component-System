@@ -200,7 +200,7 @@ public class TestAllTehThings {
 		assertTrue(position != null);
 		assertTrue(ms.hasEntity(player2Id));
 
-		player2.removeComponent(Position.class);
+		player2.removeComponent(position);
 		Position position2 = EntityWorld.getComponent(player2Id, Position.class);
 		assertTrue(position2 == null);
 		assertFalse(ms.hasEntity(player2Id));
@@ -219,7 +219,7 @@ public class TestAllTehThings {
 		assertTrue(attack2 != null);
 		assertTrue(as.hasEntity(player2Id));
 
-		player2.removeComponent(Attack.class);
+		player2.removeComponent(attack2);
 		Attack attack3 = EntityWorld.getComponent(player2Id, Attack.class);
 		assertTrue(attack3 == null);
 		assertFalse(as.hasEntity(player2Id));
@@ -253,26 +253,37 @@ public class TestAllTehThings {
 		assertFalse(as.hasEntity(playerId));
 	}
 
+	private class MyDestructionListener extends ComponentDestructionListener {
+		public boolean destroyed = false;
+		public MyDestructionListener() {
+			super(Position.class);
+		}
+
+		@Override
+		public void destroyed(Object object) {
+			System.out.println("destroyed");
+			destroyed = true;
+		}
+
+	}
+
 	@Test
 	public void testDestructionListener() {
 		int playerId = player.id;
 		Position position = EntityWorld.getComponent(playerId, Position.class);
 		assertTrue(position != null);
 
+		MyDestructionListener dl = new MyDestructionListener();
+
 		EntityWorld.removeEntity(playerId);
+
+		assertTrue(dl.destroyed == true);
 
 		Position position2 = EntityWorld.getComponent(playerId, Position.class);
 		assertTrue(position2 == null);
-
-		ComponentDestructionListener dl = new ComponentDestructionListener(Position.class) {
-			public boolean da = false;
-			@Override
-			public void destroyed(Object object) {
-				da = true;
-			}
-		};
-
 	}
+
+
 
 	@After
 	public void breakDown() {

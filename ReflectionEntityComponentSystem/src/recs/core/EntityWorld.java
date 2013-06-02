@@ -89,7 +89,7 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public static void createEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
@@ -134,8 +134,13 @@ public final class EntityWorld {
 		for (EntitySystem system : systems) {
 			system.removeEntity(id);
 		}
-		for(ComponentManager manager: componentManagers.values()) {
-			manager.remove(id);
+		for (ComponentManager<?> manager : componentManagers.values()) {
+			Object removedComponent = manager.remove(id);
+			if (removedComponent != null) {
+				ComponentDestructionListener listener = destructionListeners.get(removedComponent.getClass());
+				if (listener != null)
+					listener.destroyed(removedComponent);
+			}
 		}
 		entityIds.clear(id);
 	}
@@ -189,13 +194,13 @@ public final class EntityWorld {
 		}
 	}
 
-	public static void removeComponent(Entity e, Class<?>... removedComponents) {
-		for (Class<?> componentClass : removedComponents) {
-			componentManagers.get(componentClass).remove(e.id);
+	public static void removeComponent(Entity e, Object... removedComponents) {
+		for (Object componentClass : removedComponents) {
+			componentManagers.get(componentClass.getClass()).remove(e.id);
 		}
 		for (EntitySystem s : systems) {
-			for (Class<?> componentClass : removedComponents) {
-				if (s.hasComponent(componentClass)) {
+			for (Object componentClass : removedComponents) {
+				if (s.hasComponent(componentClass.getClass())) {
 					s.removeEntity(e.id);
 					break;
 				}

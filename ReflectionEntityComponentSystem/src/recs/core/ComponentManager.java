@@ -16,8 +16,8 @@ public final class ComponentManager<T> {
 		components = new RECSIntMap<T>();
 	}
 
-	protected void remove(int entityId) {
-		components.remove(entityId);
+	protected T remove(int entityId) {
+		return components.remove(entityId);
 	}
 
 	public T get(int entityId) {

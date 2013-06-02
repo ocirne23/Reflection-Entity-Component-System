@@ -6,7 +6,7 @@ package recs.core;
  *
  * @author Enrico van Oosten
  */
-public abstract class Entity {
+public class Entity {
 	public final int id;
 
 	public Entity() {
@@ -23,7 +23,7 @@ public abstract class Entity {
 		EntityWorld.addComponent(this, components);
 	}
 
-	public void removeComponent(Class<?>... components) {
+	public void removeComponent(Object... components) {
 		EntityWorld.removeComponent(this, components);
 	}
 }
