@@ -264,7 +264,6 @@ public class TestAllTehThings {
 
 		@Override
 		public void destroyed(Object object) {
-			System.out.println("destroyed");
 			destroyed = true;
 		}
 
