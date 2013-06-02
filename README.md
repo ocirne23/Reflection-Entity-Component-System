@@ -1,4 +1,4 @@
-Reflection-Entity-Component-System
+Reflection-Entity-Composition-System
 ==================================
 
 An entity component system which is high performance with focus on ease of use and minimal programmer overhead. Useful for smaller projects
