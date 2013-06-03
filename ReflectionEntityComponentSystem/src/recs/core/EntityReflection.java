@@ -10,7 +10,7 @@ import java.util.LinkedList;
  *
  * @author Enrico van Oosten
  */
-public final class EntityManager {
+public final class EntityReflection {
 	/**
 	 * Map of components, retrievable by using the class of the component.
 	 */
@@ -20,7 +20,7 @@ public final class EntityManager {
 	 */
 	protected LinkedList<EntitySystem> usableSystems;
 
-	protected EntityManager(HashMap<Class<?>, Field> componentFields) {
+	protected EntityReflection(HashMap<Class<?>, Field> componentFields) {
 		this.componentFields = componentFields;
 		usableSystems = new LinkedList<EntitySystem>();
 	}

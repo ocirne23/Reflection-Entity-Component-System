@@ -63,10 +63,10 @@ public class TestAllTehThings {
 		playerWithAttack = new PlayerWithAttack(6, 11);
 		zombie = new Zombie(1, 2);
 
-		EntityWorld.createEntity(player);
-		EntityWorld.createEntity(player2);
-		EntityWorld.createEntity(playerWithAttack);
-		EntityWorld.createEntity(zombie);
+		EntityWorld.addEntity(player);
+		EntityWorld.addEntity(player2);
+		EntityWorld.addEntity(playerWithAttack);
+		EntityWorld.addEntity(zombie);
 	}
 
 	@Test
@@ -289,7 +289,7 @@ public class TestAllTehThings {
 	public void testDynamicEntity() {
 		Entity e = new Entity();
 		e.addComponent(new Position(1,2), new Velocity(4, 0), new Health(10, 15));
-		EntityWorld.createEntity(e);
+		EntityWorld.addEntity(e);
 
 		Position position = EntityWorld.getComponent(e.id, Position.class);
 		assertTrue(position != null);

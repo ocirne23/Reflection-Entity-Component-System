@@ -22,9 +22,9 @@ public class UsageExample {
 		EntityWorld.addSystem(new HealthSystem());
 		EntityWorld.addSystem(new MovementSystem());
 
-		EntityWorld.createEntity(new Player(4, 6));
-		EntityWorld.createEntity(new PlayerWithAttack(12, 9));
-		EntityWorld.createEntity(new Zombie(1, 2));
+		EntityWorld.addEntity(new Player(4, 6));
+		EntityWorld.addEntity(new PlayerWithAttack(12, 9));
+		EntityWorld.addEntity(new Zombie(1, 2));
 
 		//game loop
 		float totalTime = 0f;
