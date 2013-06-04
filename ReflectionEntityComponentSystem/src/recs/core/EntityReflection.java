@@ -1,8 +1,9 @@
 package recs.core;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.LinkedList;
+
+import recs.core.utils.RECSIntMap;
 
 /**
  * Representation of a single Entity class, used by the EntityWorld to remember reflection data.
@@ -11,16 +12,17 @@ import java.util.LinkedList;
  * @author Enrico van Oosten
  */
 public final class EntityReflection {
+	protected EntityDef definition;
 	/**
 	 * Map of components, retrievable by using the class of the component.
 	 */
-	protected HashMap<Class<?>, Field> componentFields;
+	protected RECSIntMap<Field> componentFields;
 	/**
 	 * List of systems this entity class can use.
 	 */
 	protected LinkedList<EntitySystem> usableSystems;
 
-	protected EntityReflection(HashMap<Class<?>, Field> componentFields) {
+	protected EntityReflection(RECSIntMap<Field> componentFields) {
 		this.componentFields = componentFields;
 		usableSystems = new LinkedList<EntitySystem>();
 	}
@@ -29,13 +31,14 @@ public final class EntityReflection {
 		usableSystems.add(system);
 	}
 
-	protected boolean hasComponent(Class<?> component) {
+	protected boolean hasComponent(int component) {
 		return componentFields.containsKey(component);
 	}
 
-	protected boolean hasOnlyTheseComponents(Class<?>... components) {
+	/*
+	protected boolean hasOnlyTheseComponents(int... components) {
 		int count = 0;
-		for1: for(Class<?> component: componentFields.keySet()) {
+		for1: for(int component: componentFields.keys()) {
 			for(Class<?> thisComponent: components) {
 				if(component.getName().equals(thisComponent.getName())) {
 					count++;
@@ -47,4 +50,5 @@ public final class EntityReflection {
 		if(count == components.length) return true;
 		return false;
 	}
+	*/
 }

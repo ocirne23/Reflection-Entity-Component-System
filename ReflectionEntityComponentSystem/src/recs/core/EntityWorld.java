@@ -3,12 +3,12 @@ package recs.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import recs.core.utils.BlockingThreadPoolExecutor;
 import recs.core.utils.RECSArray;
 import recs.core.utils.RECSBits;
+import recs.core.utils.RECSIntArray;
 import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSObjectIntMap;
 import recs.core.utils.RECSObjectMap;
@@ -21,40 +21,93 @@ import recs.core.utils.RECSObjectMap.Entry;
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
-
+	private static EntityDefTrie defTrie = new EntityDefTrie();
 	private static RECSIntMap<EntityDef> unaddedDefs = new RECSIntMap<EntityDef>();
 
 	public int createEntity(Entity e) {
 		Class<? extends Entity> entityClass = e.getClass();
-		EntityReflection manager = entityReflections.get(entityClass);
-		if(manager == null) {
-			addNewEntityReflection(entityClass);
+		EntityReflection reflection = entityReflections.get(entityClass);
+		if (reflection == null) {
+			reflection = addNewEntityReflection(entityClass);
 		}
+
 		return getEntityId();
 	}
 
 	public static void addComponent2(Entity e, Object... components) {
 		RECSArray<Class<?>> c = new RECSArray<Class<?>>();
+
+		// TODO:
+		// if entity has unadded def, edit existing def.
+
+		EntityDef unaddedDef = unaddedDefs.get(e.id);
+		if (unaddedDef != null) {
+			for (Object component : components) {
+				unaddedDef.components.add(getComponentId(component.getClass()));
+				return;
+			}
+		}
+
 		EntityReflection reflection = entityReflections.get(e.getClass());
+		RECSIntArray componentArr = new RECSIntArray();
+		for (Class<?> component : reflection.componentFields.keySet()) {
+			unaddedDef.addComponent(component);
+		}
+		for (Object component : components) {
+			componentArr.add(getComponentId(component.getClass()));
+		}
 
-		//TODO:
-		//if entity has unadded def, edit existing def.
-
-		//else create new def from existing def if exists.
-
-		//else create def from reflection.
-
-
-
-
+		// else create def from reflection.
 
 		EntityDef def = unaddedDefs.get(e.id);
-		if(def == null) {
-			//def = new EntityDef(, reflection.usableSystems);
+		if (def == null) {
+			// def = new EntityDef(, reflection.usableSystems);
 			unaddedDefs.put(e.id, def);
 		}
 	}
 
+	private EntityDef createEntityDef(EntityReflection reflection) {
+		RECSIntArray componentArr = new RECSIntArray();
+		for (Object component : reflection.componentFields.keySet()) {
+			componentArr.add(getComponentId(component.getClass()));
+		}
+
+
+		return null;
+	}
+
+	private EntityDef createEntityDef(Object... components) {
+		EntityDef def = new EntityDef();
+
+		return null;
+	}
+
+	private EntityDef createEntityDef(EntityReflection reflection, Object... components) {
+		return null;
+	}
+
+	private EntityDef createEntityDef(EntityDef entityDef, Object... components) {
+		return null;
+	}
+
+	private LinkedList<EntitySystem> getSystems(Object... components) {
+		LinkedList<EntitySystem> usableSystems = new LinkedList<EntitySystem>();
+
+		for1: for(EntitySystem s: systems) {
+			for(Class<?> component: s.components) {
+				boolean has = false;
+				for(Object o: components) {
+					if(o.getClass() == component) {
+						has = true;
+						break;
+					}
+				}
+				if(!has) continue for1;
+			}
+			usableSystems.add(s);
+		}
+		return usableSystems;
+	}
 
 
 
@@ -73,7 +126,8 @@ public final class EntityWorld {
 			}
 		}
 	}
-///////////////////////////////////////////////ENTITIES/////////////////////////////////////////////
+
+	// /////////////////////////////////////////////ENTITIES/////////////////////////////////////////////
 	/**
 	 * Collection of EntityManagers, managers are retrievable by using the class
 	 * they represent.
@@ -198,7 +252,7 @@ public final class EntityWorld {
 	@SuppressWarnings("unchecked")
 	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
-		HashMap<Class<?>, Field> fieldMap = new HashMap<Class<?>, Field>();
+		RECSIntMap<Field> fieldMap = new RECSIntMap<Field>();
 		// Iterate all the subclasses.
 		while (class1 != Entity.class) {
 			// Put every field object in a map with the fields class as key.
@@ -206,7 +260,7 @@ public final class EntityWorld {
 				Class<?> fieldClass = f.getType();
 				if (componentManagers.containsKey(fieldClass)) {
 					f.setAccessible(true);
-					fieldMap.put(fieldClass, f);
+					fieldMap.put(getComponentId(fieldClass), f);
 				}
 			}
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
@@ -230,11 +284,13 @@ public final class EntityWorld {
 			system.addEntity(entity.id);
 		}
 	}
-///////////////////////////////////////////SYSTEMS/////////////////////////////////////////////
+
+	// /////////////////////////////////////////SYSTEMS/////////////////////////////////////////////
 	/**
 	 * Linked list of EntitySystems for easy iteration.
 	 */
 	private static LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
+
 	/**
 	 * Add a list of systems to the world
 	 *
@@ -326,7 +382,8 @@ public final class EntityWorld {
 			}
 		}
 	}
-///////////////////////////////////////COMPONENTS/////////////////////////////////////////////
+
+	// /////////////////////////////////////COMPONENTS/////////////////////////////////////////////
 	/**
 	 * Collection of ComponentManagers, managers are retrievable by using the
 	 * class they represent.
@@ -337,6 +394,11 @@ public final class EntityWorld {
 	 */
 	private static RECSObjectIntMap<Class<?>> componentIds = new RECSObjectIntMap<Class<?>>();
 	private static int componentIdCounter = 0;
+
+	private static int getComponentId(Class<?> component) {
+		return componentIds.get(component, -1);
+	}
+
 	/**
 	 * Register all the component classes that are being used here. {
 	 * Health.class, Position.class } etc.
@@ -431,18 +493,20 @@ public final class EntityWorld {
 		}
 	}
 
-///////////////////////////////////////DESTRUCTION////////////////////////////////////////////
+	// /////////////////////////////////////DESTRUCTION////////////////////////////////////////////
 	/**
 	 * Map of destructionListeners which get notified if a component of their
 	 * type is destroyed.
 	 */
 	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
+
 	public static void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
 		destructionListeners.put(componentClass, listener);
 	}
 
-///////////////////////////////////////EVENTS////////////////////////////////////////////////
+	// /////////////////////////////////////EVENTS////////////////////////////////////////////////
 	private static EventManager eventManager = new EventManager();
+
 	/**
 	 * Send a message to all EntitySystems that are registered to the tag of
 	 * this event.
@@ -453,6 +517,7 @@ public final class EntityWorld {
 	public static void sendEvent(Object event) {
 		eventManager.sendEvent(event);
 	}
+
 	/**
 	 * Register a system so it can receive events with the specified
 	 * messageTags.
@@ -466,12 +531,14 @@ public final class EntityWorld {
 		eventManager.registerListener(listener, eventType);
 	}
 
-////////////////////////////////////////TASKS////////////////////////////////////////////////
+	// //////////////////////////////////////TASKS////////////////////////////////////////////////
 	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
+
 	protected static void postRunnable(Runnable r) {
 		threads.execute(r);
 	}
-////////////////////////////////////////////////////////////////////////////////////////////
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Use this to clear everything in the EntityWorld. Use with care.
 	 */

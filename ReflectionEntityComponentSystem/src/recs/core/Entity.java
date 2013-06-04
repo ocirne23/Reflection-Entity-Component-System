@@ -8,6 +8,7 @@ package recs.core;
  */
 public class Entity {
 	public final int id;
+	public EntityDef def = null;
 
 	public Entity() {
 		id = EntityWorld.getEntityId();
