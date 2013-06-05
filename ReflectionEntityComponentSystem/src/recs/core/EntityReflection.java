@@ -3,6 +3,7 @@ package recs.core;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 
+import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntMap;
 
 /**
@@ -17,6 +18,7 @@ public final class EntityReflection {
 	 * Map of components, retrievable by using the class of the component.
 	 */
 	protected RECSIntMap<Field> componentFields;
+	protected RECSBits componentBits;
 	/**
 	 * List of systems this entity class can use.
 	 */
@@ -24,6 +26,7 @@ public final class EntityReflection {
 
 	protected EntityReflection(RECSIntMap<Field> componentFields) {
 		this.componentFields = componentFields;
+		componentBits = new RECSBits();
 		usableSystems = new LinkedList<EntitySystem>();
 	}
 
