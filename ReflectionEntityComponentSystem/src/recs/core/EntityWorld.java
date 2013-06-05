@@ -17,12 +17,12 @@ import recs.core.utils.RECSObjectMap.Entry;
 
 /**
  * The main world class containing all the logic. Add Entities with components and systems to this class and call the process method.
- * 
+ *
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
     private static EntityDefTrie defTrie = new EntityDefTrie();
-    private static RECSIntMap<EntityDef> unaddedDefs = new RECSIntMap<EntityDef>();
+    private static int totalComponents;
 
     public int createEntity(Entity e) {
         Class<? extends Entity> entityClass = e.getClass();
@@ -37,24 +37,37 @@ public final class EntityWorld {
     public static void addComponent2(Entity e, Object... components) {
         RECSArray<Class<?>> c = new RECSArray<Class<?>>();
 
-        // TODO:
-        // if entity has unadded def, edit existing def.
-        EntityDef unaddedDef = unaddedDefs.get(e.id);
-        if (unaddedDef != null) {
-            for (Object component : components) {
-                unaddedDef.components.add(getComponentId(component.getClass()));
-                return;
-            }
-        }
-        // else if deftrie has def.
+        // if has existing def, get components from it.
         EntityDef def = e.def;
         if (def != null) {
-            RECSIntArray comps = new RECSIntArray(def.components);
+            RECSBits componentBits = new RECSBits(1);
             for (Object component : components) {
-                comps.add(getComponentId(component.getClass()));
+            	int componentId = getComponentId(component.getClass());
+            	if(componentBits.numBits() < componentId) {
+            		componentBits.grow(componentId);
+            	}
+            	componentBits.set(getComponentId(component.getClass()));
             }
-            LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
-            systems.addAll(def.systems);
+            LinkedList<EntitySystem> systems = getSystems(comps);
+            def = new EntityDef(comps, systems);
+            defTrie.insert(def);
+            e.def = def;
+        //else get components from reflection.
+        } else {
+            RECSIntArray comps = new RECSIntArray();
+            EntityReflection reflection = entityReflections.get(e.getClass());
+
+            Keys keys = reflection.componentFields.keys();
+            while (keys.hasNext) {
+            	comps.add(keys.next());
+            }
+            for (Object component : components) {
+            	comps.add(getComponentId(component.getClass()));
+            }
+            LinkedList<EntitySystem> systems = getSystems(comps);
+            def = new EntityDef(comps, systems);
+            defTrie.insert(def);
+            e.def = def;
         }
         // create new def from trie def.
         // add components and systems to new def.
@@ -71,7 +84,6 @@ public final class EntityWorld {
         for (Object component : components) {
             componentArr.add(getComponentId(component.getClass()));
         }
-        unaddedDef.components.addAll(componentArr);
 
         // add the systems from the reflection.
         unaddedDef.systems.addAll(reflection.usableSystems);
@@ -85,37 +97,28 @@ public final class EntityWorld {
         }
     }
 
-    private EntityDef createEntityDef(EntityReflection reflection) {
-        RECSIntArray componentArr = new RECSIntArray();
-        for (Object component : reflection.componentFields.keySet()) {
-            componentArr.add(getComponentId(component.getClass()));
-        }
-
-        return null;
-    }
-
-    private EntityDef createEntityDef(Object... components) {
+    private static EntityDef createEntityDef(Object... components) {
         EntityDef def = new EntityDef();
 
         return null;
     }
 
-    private EntityDef createEntityDef(EntityReflection reflection, Object... components) {
+    private static EntityDef createEntityDef(EntityReflection reflection, Object... components) {
         return null;
     }
 
-    private EntityDef createEntityDef(EntityDef entityDef, Object... components) {
+    private static EntityDef createEntityDef(EntityDef entityDef, Object... components) {
         return null;
     }
-    
-    private LinkedList<EntitySystem> getSystems(RECSIntArray components) {
+
+    private static LinkedList<EntitySystem> getSystems(RECSIntArray components) {
         LinkedList<EntitySystem> usableSystems = new LinkedList<EntitySystem>();
 
-        
+
         return usableSystems;
     }
 
-    private LinkedList<EntitySystem> getSystems(Object... components) {
+    private static LinkedList<EntitySystem> getSystems(Object... components) {
         LinkedList<EntitySystem> usableSystems = new LinkedList<EntitySystem>();
 
         for1: for (EntitySystem s : systems) {
@@ -137,7 +140,7 @@ public final class EntityWorld {
 
     /**
      * Process all the systems.
-     * 
+     *
      * @param deltaInSec
      *            The time passed in seconds since the last update. EntityTaskSystems are updated independantly of this delta.
      */
@@ -171,7 +174,7 @@ public final class EntityWorld {
 
     /**
      * Add an entity to the world. The fields in the Entity child class should be its components.
-     * 
+     *
      * @param entity
      *            The entity.
      */
@@ -210,7 +213,7 @@ public final class EntityWorld {
 
     /**
      * Remove an entity from the world.
-     * 
+     *
      * @param entity
      *            The entity.
      */
@@ -233,7 +236,7 @@ public final class EntityWorld {
 
     /**
      * Remove an entity from the world.
-     * 
+     *
      * @param id
      *            The id of an entity.
      */
@@ -244,7 +247,7 @@ public final class EntityWorld {
 
     /**
      * Get an unique id for an entity, may reuse id's of removed entities.
-     * 
+     *
      * @return
      */
     protected static int getEntityId() {
@@ -264,7 +267,7 @@ public final class EntityWorld {
 
     /**
      * Create a new EntityManager representing an entity.
-     * 
+     *
      * @param class1
      *            The entity's class.
      * @return
@@ -293,7 +296,7 @@ public final class EntityWorld {
 
     /**
      * Adds an entity to the systems it can be processed.
-     * 
+     *
      * @param entityManager
      *            The EntityManager of the same type as the entity.
      * @param entity
@@ -313,7 +316,7 @@ public final class EntityWorld {
 
     /**
      * Add a list of systems to the world
-     * 
+     *
      * @param systems
      */
     public static void addSystem(EntitySystem... systems) {
@@ -323,7 +326,7 @@ public final class EntityWorld {
 
     /**
      * Add a system to the world.
-     * 
+     *
      * @param system
      *            The system.
      */
@@ -385,7 +388,7 @@ public final class EntityWorld {
 
     /**
      * Add all the system the entity class can use to the manager.
-     * 
+     *
      * @param entityManager
      *            The entity manager representing an entity class.
      */
@@ -420,9 +423,9 @@ public final class EntityWorld {
 
     /**
      * Register all the component classes that are being used here. { Health.class, Position.class } etc.
-     * 
+     *
      * @param <T>
-     * 
+     *
      * @param componentClasses
      *            A list of component classes.
      */
@@ -435,7 +438,7 @@ public final class EntityWorld {
 
     /**
      * Get a component of an entity. Always use a ComponentMapper<T> instead of this to retrieve components.
-     * 
+     *
      * @param entityId
      *            The id of the entity.
      * @param class1
@@ -448,7 +451,7 @@ public final class EntityWorld {
 
     /**
      * Get a manager for a type of component so you can more easily retrieve this type of components from entities.
-     * 
+     *
      * @param class1
      *            The component's class.
      * @return The component manager, or null if none exists (component not registered).
@@ -523,7 +526,7 @@ public final class EntityWorld {
 
     /**
      * Send a message to all EntitySystems that are registered to the tag of this event.
-     * 
+     *
      * @param event
      *            The event.
      */
@@ -533,7 +536,7 @@ public final class EntityWorld {
 
     /**
      * Register a system so it can receive events with the specified messageTags.
-     * 
+     *
      * @param system
      *            The entitySystem.
      * @param messageTags

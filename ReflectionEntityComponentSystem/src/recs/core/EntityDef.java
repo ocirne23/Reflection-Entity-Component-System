@@ -1,20 +1,13 @@
 package recs.core;
 
-import java.util.LinkedList;
-
-import recs.core.utils.RECSIntArray;
+import recs.core.utils.RECSBits;
 
 public class EntityDef {
-	protected RECSIntArray components;
-	protected LinkedList<EntitySystem> systems;
+	protected RECSBits componentBits;
+	protected RECSBits systemBits;
 
-	public EntityDef(RECSIntArray components, LinkedList<EntitySystem> usableSystems) {
-		this.components = components;
-		this.systems = usableSystems;
-	}
-
-	public EntityDef() {
-		components = new RECSIntArray();
-		systems = new LinkedList<EntitySystem>();
+	public EntityDef(int nrExistingComponents, int nrExistingSystems) {
+		componentBits = new RECSBits(nrExistingComponents);
+		systemBits = new RECSBits(nrExistingSystems);
 	}
 }
