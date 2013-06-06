@@ -51,9 +51,8 @@ public class RECSBits {
 	}
 
 	public void grow(int nrBits) {
-		int newSize = Math.round(nrBits / 32 + 0.5f);
-		if (newSize > bits.length) {
-			int[] newBits = new int[newSize];
+		if (nrBits > bits.length * 32) {
+			int[] newBits = new int[bits.length + 1];
 			System.arraycopy(bits, 0, newBits, 0, bits.length);
 			bits = newBits;
 		}

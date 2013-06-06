@@ -23,6 +23,7 @@ import recs.core.utils.RECSObjectMap.Entry;
 public final class EntityWorld {
     private static EntityDefTrie defTrie = new EntityDefTrie();
     private static int totalComponents;
+    private static int systemIdCounter = 0;
 
     public int createEntity(Entity e) {
         Class<? extends Entity> entityClass = e.getClass();
@@ -40,16 +41,15 @@ public final class EntityWorld {
         // if has existing def, get components from it.
         EntityDef def = e.def;
         if (def != null) {
-            RECSBits componentBits = new RECSBits(1);
+            RECSBits componentBits = new RECSBits(0);
+            componentBits.copy(def.componentBits);
             for (Object component : components) {
             	int componentId = getComponentId(component.getClass());
-            	if(componentBits.numBits() < componentId) {
-            		componentBits.grow(componentId);
-            	}
-            	componentBits.set(getComponentId(component.getClass()));
+            	componentBits.grow(componentId);
+            	componentBits.set(componentId);
             }
-            LinkedList<EntitySystem> systems = getSystems(comps);
-            def = new EntityDef(comps, systems);
+            RECSBits systemBits = getSystemBits(componentBits);
+            def = new EntityDef(componentBits, systemBits);
             defTrie.insert(def);
             e.def = def;
         //else get components from reflection.
@@ -117,6 +117,17 @@ public final class EntityWorld {
 
         return usableSystems;
     }
+    
+    private static RECSBits getSystemBits(RECSBits componentBits) {
+        RECSBits systemBits = new RECSBits(0);
+        for(EntitySystem s: systems) {
+            if(s.getComponentBits().contains(componentBits)) {
+                systemBits.grow(s.id);
+                systemBits.set(s.id);
+            }
+        }
+        return systemBits;
+    }
 
     private static LinkedList<EntitySystem> getSystems(Object... components) {
         LinkedList<EntitySystem> usableSystems = new LinkedList<EntitySystem>();
@@ -136,6 +147,10 @@ public final class EntityWorld {
             usableSystems.add(s);
         }
         return usableSystems;
+    }
+    
+    public static int getSystemId() {
+        return systemIdCounter++;
     }
 
     /**
