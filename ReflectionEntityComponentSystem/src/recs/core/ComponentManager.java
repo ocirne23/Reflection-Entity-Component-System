@@ -26,7 +26,9 @@ public final class ComponentManager<T> {
 
 	@SuppressWarnings("unchecked")
 	public void add(int entityId, Object o) {
-		if(!components.containsKey(entityId)) {
+		if (!components.containsKey(entityId)) {
+			System.out.println("adding component from entity: " + entityId + ":" + o.getClass().getName());
+
 			components.put(entityId, (T) o);
 		}
 	}

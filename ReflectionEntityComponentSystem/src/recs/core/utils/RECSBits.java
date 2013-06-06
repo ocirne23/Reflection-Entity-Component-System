@@ -12,10 +12,6 @@ import java.util.Arrays;
 public class RECSBits {
 	int[] bits = { 0 };
 
-	public RECSBits(int nrBits) {
-		bits = new int[Math.round(nrBits / 32 + 0.5f)];
-	}
-
 	/**
 	 * @param index
 	 *            the index of the bit
@@ -38,6 +34,7 @@ public class RECSBits {
 	 */
 	public void set(int index) {
 		final int word = index >>> 5;
+		growWord(word);
 		bits[word] |= 1 << (index & 31);
 	}
 
@@ -50,15 +47,15 @@ public class RECSBits {
 		bits[word] ^= 1 << (index & 31);
 	}
 
-	public void grow(int nrBits) {
-		if (nrBits > bits.length * 32) {
-			int[] newBits = new int[bits.length + 1];
+	private void grow(int nrBits) {
+		if (nrBits > bits.length * 32 - 1) {
+			int[] newBits = new int[(int) Math.ceil(nrBits / 32)];
 			System.arraycopy(bits, 0, newBits, 0, bits.length);
 			bits = newBits;
 		}
 	}
 
-	public void growWord(int wordCount) {
+	private void growWord(int wordCount) {
 		if (wordCount > bits.length) {
 			int[] newBits = new int[wordCount];
 			System.arraycopy(bits, 0, newBits, 0, bits.length);
@@ -93,23 +90,48 @@ public class RECSBits {
 		bits = Arrays.copyOf(other.bits, other.bits.length);
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if(other == null) return false;
+		RECSBits otherBits = (RECSBits) other;
+		if (bits.length != otherBits.bits.length)
+			return false;
+		for (int i = 0; i < bits.length; i++) {
+			if (bits[i] != otherBits.bits[i])
+				return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int total = Integer.MIN_VALUE;
+		for(int i = 0; i < bits.length; i++)
+			total += bits[i];
+		return total;
+	}
+
+
 	public void add(RECSBits other) {
 		int otherLength = other.bits.length;
-		if(bits.length < otherLength)
+		if (bits.length < otherLength)
 			growWord(otherLength);
-		for(int i = 0; i < otherLength; i++) {
+		for (int i = 0; i < otherLength; i++) {
 			bits[i] = bits[i] | other.bits[i];
 		}
 	}
 
 	/**
 	 * Check if the other also has the bits of this Bits set.
-	 * @param other The other Bits.
+	 *
+	 * @param other
+	 *            The other Bits.
 	 * @return if it contains all the true bits of this Bits.
 	 */
 	public boolean contains(RECSBits other) {
-		for (int i = other.bits.length; i >= 0; i--)
-			if((bits[i] & other.bits[i]) != bits[i]) return false;
+		for (int i = 0; i < bits.length - 1; i++)
+			if ((bits[i] & other.bits[i]) != bits[i])
+				return false;
 		return true;
 	}
 

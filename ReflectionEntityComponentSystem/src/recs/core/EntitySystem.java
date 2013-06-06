@@ -12,7 +12,7 @@ import recs.core.utils.RECSIntArray;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
-    public final int id;
+	public final int id;
 	/**
 	 * Array of entities this system will use.
 	 */
@@ -35,7 +35,10 @@ public abstract class EntitySystem {
 	 * @param components
 	 */
 	public EntitySystem(Class<?>... components) {
-		this.components = components;
+		componentBits = new RECSBits();
+		for (Class<?> class1 : components) {
+			componentBits.set(EntityWorld.getComponentId(class1));
+		}
 		id = EntityWorld.getSystemId();
 		receivedEvents = new LinkedBlockingQueue<Object>();
 		polledEventsList = new LinkedList<Object>();
@@ -86,6 +89,7 @@ public abstract class EntitySystem {
 	}
 
 	protected void addEntity(int id) {
+		System.out.println("added entity: " + id + " to: " + getClass().getName());
 		entitiyIds.add(id);
 	}
 
@@ -118,13 +122,5 @@ public abstract class EntitySystem {
 
 	public void sendMessage(Object message) {
 		receivedEvents.add(message);
-	}
-
-	public boolean hasComponent(Class<?> component) {
-		for (Class<?> c : components) {
-			if (c == component)
-				return true;
-		}
-		return false;
 	}
 }

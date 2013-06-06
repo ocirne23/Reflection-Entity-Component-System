@@ -6,8 +6,8 @@ public class EntityDef {
 	protected RECSBits componentBits;
 	protected RECSBits systemBits;
 
-	public EntityDef(int nrExistingComponents, int nrExistingSystems) {
-		componentBits = new RECSBits(nrExistingComponents);
-		systemBits = new RECSBits(nrExistingSystems);
+	public EntityDef(RECSBits componentBits, RECSBits systemBits) {
+		this.componentBits = componentBits;
+		this.systemBits = systemBits;
 	}
 }

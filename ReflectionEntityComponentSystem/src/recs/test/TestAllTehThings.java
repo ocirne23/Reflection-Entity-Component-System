@@ -43,6 +43,7 @@ public class TestAllTehThings {
 
 	@Before
 	public void setup() {
+		System.out.println("starting test");
 		EntityWorld.registerComponents(COMPONENTS);
 
 		ms = new MovementSystem();
@@ -308,5 +309,6 @@ public class TestAllTehThings {
 	@After
 	public void breakDown() {
 		EntityWorld.reset();
+		System.out.println("finished test");
 	}
 }
