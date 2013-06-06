@@ -21,6 +21,7 @@ import recs.core.utils.RECSObjectMap.Entry;
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
+    
     private static EntityDefTrie defTrie = new EntityDefTrie();
     private static int totalComponents;
     private static int systemIdCounter = 0;

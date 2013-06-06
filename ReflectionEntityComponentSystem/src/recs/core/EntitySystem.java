@@ -3,6 +3,7 @@ package recs.core;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntArray;
 
 /**
@@ -11,6 +12,7 @@ import recs.core.utils.RECSIntArray;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
+    public final int id;
 	/**
 	 * Array of entities this system will use.
 	 */
@@ -18,7 +20,7 @@ public abstract class EntitySystem {
 	/**
 	 * Collection of the classes of the components this system will use.
 	 */
-	protected final Class<?>[] components;
+	protected final RECSBits componentBits;
 	/**
 	 * Used by EntityWorld to determine if processSystem should be called.
 	 */
@@ -34,6 +36,7 @@ public abstract class EntitySystem {
 	 */
 	public EntitySystem(Class<?>... components) {
 		this.components = components;
+		id = EntityWorld.getSystemId();
 		receivedEvents = new LinkedBlockingQueue<Object>();
 		polledEventsList = new LinkedList<Object>();
 		entitiyIds = new RECSIntArray(false, 16);
@@ -78,8 +81,8 @@ public abstract class EntitySystem {
 
 	protected abstract void process(int entityId, float deltaInSec);
 
-	protected Class<?>[] getComponents() {
-		return components;
+	protected RECSBits getComponentBits() {
+		return componentBits;
 	}
 
 	protected void addEntity(int id) {
