@@ -129,7 +129,8 @@ public class RECSBits {
 	 * @return if it contains all the true bits of this Bits.
 	 */
 	public boolean contains(RECSBits other) {
-		for (int i = 0; i < bits.length - 1; i++)
+	    System.out.println("Checking if: " + other.toString() + ":" + toString());
+		for (int i = 0; i < bits.length; i++)
 			if ((bits[i] & other.bits[i]) != bits[i])
 				return false;
 		return true;
@@ -141,5 +142,18 @@ public class RECSBits {
 	 */
 	public int numBits() {
 		return bits.length << 5;
+	}
+	
+	@Override
+	public String toString() {
+	    StringBuilder b = new StringBuilder();
+	    for(int i = 0; i < bits.length; i++) {
+	        for(int j = 0; j < 32; j++) {
+	            if(get(j + i * 32)) {
+	                b.append((j + i * 32) +", ");
+	            }
+	        }
+	    }
+	    return b.toString();
 	}
 }
