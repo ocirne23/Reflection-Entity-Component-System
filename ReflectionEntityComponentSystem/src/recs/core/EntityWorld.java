@@ -17,9 +17,11 @@ import recs.core.utils.RECSObjectMap;
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
-	private static EntityDefManager defManager = new EntityDefManager();
+	private static EntitySystemManager systemManager = new EntitySystemManager();
 	private static ComponentManager componentManager = new ComponentManager();
+	private static EntityDefManager defManager = new EntityDefManager();
 	private static EventManager eventManager = new EventManager();
+
 	/**
 	 * Collection of EntityManagers, managers are retrievable by using the class
 	 * they represent.
@@ -33,7 +35,6 @@ public final class EntityWorld {
 	private static int numFreedIds = 0;
 
 	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
-
 
 	public static int createEntity(Entity e) {
 		Class<? extends Entity> entityClass = e.getClass();
@@ -142,8 +143,6 @@ public final class EntityWorld {
 		systemManager.process(deltaInSec);
 	}
 
-	// /////////////////////////////////////////////ENTITIES/////////////////////////////////////////////
-
 	protected static EntityReflection getEntityReflection(Class<? extends Entity> class1) {
 		return defManager.getReflection(class1);
 	}
@@ -155,7 +154,6 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	@SuppressWarnings({ "rawtypes" })
 	public static void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
@@ -166,17 +164,14 @@ public final class EntityWorld {
 		while (k.hasNext) {
 			int next = k.next();
 			Field field = reflection.componentFields.get(next);
-			ComponentMapper componentManager = getComponentMapper(next);
-
-			Object contents = null;
+			ComponentMapper<?> componentManager = getComponentMapper(next);
 			try {
-				contents = field.get(entity);
+				componentManager.add(id, field.get(entity));
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			componentManager.add(id, contents);
 		}
 		LinkedList<Object> scheduleAddList = scheduledAddComponents.get(id);
 		if (scheduleAddList != null) {
@@ -234,9 +229,6 @@ public final class EntityWorld {
 	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
 		return defManager.addNewEntityReflection(class1);
 	}
-
-	// /////////////////////////////////////////SYSTEMS/////////////////////////////////////////////
-	private static EntitySystemManager systemManager = new EntitySystemManager();
 
 	public static void addSystem(EntitySystem system) {
 		systemManager.addSystem(system);
@@ -343,14 +335,12 @@ public final class EntityWorld {
 		eventManager.registerListener(listener, eventType);
 	}
 
-	// //////////////////////////////////////TASKS////////////////////////////////////////////////
 	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
 
 	protected static void postRunnable(Runnable r) {
 		threads.execute(r);
 	}
 
-	// //////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Use this to clear everything in the EntityWorld. Use with care.
 	 */
