@@ -191,7 +191,7 @@ public class RECSBits {
 	 * @return
 	 */
 	public int nextSetBit(int fromIndex) {
-		int wordIndex = fromIndex * 32;
+		int wordIndex = fromIndex / 32;
 		if (wordIndex >= bits.length)
 			return -1;
 
@@ -199,7 +199,7 @@ public class RECSBits {
 
 		while (true) {
 			if (word != 0)
-				return (wordIndex * 32) + Integer.numberOfTrailingZeros(word);
+				return Integer.numberOfTrailingZeros(word);
 			if (++wordIndex == bits.length)
 				return -1;
 			word = bits[wordIndex];

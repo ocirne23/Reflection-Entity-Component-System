@@ -19,6 +19,7 @@ import recs.core.utils.RECSObjectMap;
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
+	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
 	private static EntityDefManager defManager = new EntityDefManager();
 	private static int systemIdCounter = 0;
 
@@ -29,11 +30,14 @@ public final class EntityWorld {
 			reflection = addNewEntityReflection(entityClass);
 		}
 		e.def = reflection.def;
-
 		return getEntityId();
 	}
 
 	public static void addComponent(Entity e, Object... components) {
+		if (!entities.containsKey(e.id)) {
+			scheduleAddComponent(e, components);
+			return;
+		}
 		EntityDef def = e.def;
 		RECSBits componentBits = new RECSBits();
 		RECSBits systemBits = new RECSBits();
@@ -49,19 +53,28 @@ public final class EntityWorld {
 			newDef = new EntityDef(componentBits, systemBits);
 			defManager.putDef(componentBits, def);
 		}
-
-		addToSystems(e, def.systemBits, newDef.systemBits);
 		e.def = def;
+		addToSystems(e, def.systemBits, newDef.systemBits);
+	}
+
+	private static void scheduleAddComponent(Entity e, Object... components) {
+		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
+		if (scheduleList == null) {
+			scheduleList = new LinkedList<Object>();
+			scheduledAddComponents.put(e.id, scheduleList);
+		}
+		for (Object o : components)
+			scheduleList.add(o);
 	}
 
 	private static void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
 		RECSBits addedSystemBits = existingSystemBits.getAddedBits(newSystemBits);
-
-		for (int i = addedSystemBits.nextSetBit(0); i >= 0; i = addedSystemBits.nextSetBit(i+1)) {
+		System.out.println("adding to system: " + entity.getClass().getName() +":"+ entity.id +":"+ addedSystemBits.toString());
+		for (int i = addedSystemBits.nextSetBit(0); i >= 0; i = addedSystemBits.nextSetBit(i + 1)) {
+			System.out.println("adding to: " + i);
 			systemMap.get(i).addEntity(entity.id);
 		}
 	}
-
 
 	public static void removeComponent(Entity e, Object... components) {
 		// TODO:
@@ -147,11 +160,14 @@ public final class EntityWorld {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			System.out.println("adding component to manager, entity: " + id + ":" + contents.getClass().getName());
 			componentManager.add(id, contents);
 		}
-		addEntityToSystems(entity);
 		entities.put(id, entity);
+		LinkedList<Object> scheduleAddList = scheduledAddComponents.get(id);
+		if(scheduleAddList != null) {
+			addComponent(entity, scheduleAddList.toArray());
+		}
+		addEntityToSystems(entity);
 	}
 
 	/**
@@ -217,7 +233,6 @@ public final class EntityWorld {
 	 */
 	@SuppressWarnings("unchecked")
 	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
-		System.out.println("creating new reflection: " + class1.getName());
 		Class<? extends Entity> mainClass = class1;
 		RECSIntMap<Field> fieldMap = new RECSIntMap<Field>();
 		RECSBits componentBits = new RECSBits();
@@ -226,11 +241,9 @@ public final class EntityWorld {
 			// Put every field object in a map with the fields class as key.
 			for (Field f : class1.getDeclaredFields()) {
 				Class<?> fieldClass = f.getType();
-				System.out.println("checking field: " + fieldClass.getName());
 				if (componentManagers.containsKey(getComponentId(fieldClass))) {
 					f.setAccessible(true);
 					int componentId = getComponentId(fieldClass);
-					System.out.println("added field: " + fieldClass.getName() + ":" + componentId);
 
 					componentBits.set(componentId);
 					fieldMap.put(componentId, f);
@@ -294,7 +307,6 @@ public final class EntityWorld {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void addSystem(EntitySystem system) {
-		System.out.println("adding system: " + system.getClass().getName());
 		if (systems.contains(system))
 			throw new RuntimeException("System already added");
 		if (entities.size != 0)
