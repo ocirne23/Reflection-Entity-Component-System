@@ -1,13 +1,13 @@
 package recs.test.systems;
 
-import recs.core.ComponentManager;
+import recs.core.ComponentMapper;
 import recs.core.EntityTaskSystem;
 import recs.test.components.Position;
 import recs.test.components.Velocity;
 
 public class ThreadedMovementSystem extends EntityTaskSystem {
-	private ComponentManager<Position> positionManager;
-	private ComponentManager<Velocity> velocityManager;
+	private ComponentMapper<Position> positionManager;
+	private ComponentMapper<Velocity> velocityManager;
 
 	public ThreadedMovementSystem() {
 		super(Position.class, Velocity.class);

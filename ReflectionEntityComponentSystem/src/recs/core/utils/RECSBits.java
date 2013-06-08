@@ -44,6 +44,7 @@ public class RECSBits {
 		bits[word] ^= 1 << (index & 31);
 	}
 
+	/*
 	private void grow(int nrBits) {
 		if (nrBits > bits.length * 32 - 1) {
 			int[] newBits = new int[(int) Math.ceil(nrBits / 32)];
@@ -51,6 +52,7 @@ public class RECSBits {
 			bits = newBits;
 		}
 	}
+	*/
 
 	public void setWord(int wordNr, int word) {
 		growWord(wordNr);
@@ -58,8 +60,8 @@ public class RECSBits {
 	}
 
 	private void growWord(int wordCount) {
-		if (wordCount > bits.length) {
-			int[] newBits = new int[wordCount];
+		if (wordCount >= bits.length) {
+			int[] newBits = new int[wordCount + 1];
 			System.arraycopy(bits, 0, newBits, 0, bits.length);
 			bits = newBits;
 		}
@@ -94,7 +96,7 @@ public class RECSBits {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other == null)
+		if (other == null || !(other instanceof RECSBits))
 			return false;
 		RECSBits otherBits = (RECSBits) other;
 		if (bits.length != otherBits.bits.length)
@@ -152,8 +154,12 @@ public class RECSBits {
 	 * @return
 	 */
 	public RECSBits getAddedBits(RECSBits otherBits) {
-		assert otherBits.contains(this) : "bits were not contained";
+		System.out.println("getadded");
+		System.out.println("this: " + binaryString());
+		System.out.println("other: " + otherBits.binaryString());
 
+		if (!this.contains(otherBits))
+			throw new RuntimeException("bits were not contained");
 		RECSBits addedBits = new RECSBits();
 		for (int i = 0, max = otherBits.bits.length; i < max; i++) {
 			if (i > bits.length)
@@ -163,6 +169,24 @@ public class RECSBits {
 		}
 		return addedBits;
 	}
+
+	public RECSBits getRemovedBits(RECSBits otherBits)  {
+		System.out.println("getRemoved");
+		System.out.println("this: " + binaryString());
+		System.out.println("other: " + otherBits.binaryString());
+
+		RECSBits addedBits = new RECSBits();
+		for (int i = 0, max = Math.max(otherBits.bits.length, bits.length); i < max; i++) {
+			if (i > bits.length)
+				addedBits.setWord(i, otherBits.bits[i]);
+			else if (i > otherBits.bits.length)
+				addedBits.setWord(i, bits[i]);
+			else
+				addedBits.setWord(i, bits[i] ^ otherBits.bits[i]);
+		}
+		return addedBits;
+	}
+
 
 	/**
 	 * Get the number of bits set to true.
@@ -204,6 +228,14 @@ public class RECSBits {
 				return -1;
 			word = bits[wordIndex];
 		}
+	}
+
+	public String binaryString() {
+		StringBuilder b = new StringBuilder();
+		for (int i = 0; i < bits.length; i++) {
+			b.append("["+Integer.toBinaryString(bits[i])+"],");
+		}
+		return b.toString();
 	}
 
 	@Override

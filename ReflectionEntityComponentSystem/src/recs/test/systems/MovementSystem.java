@@ -1,13 +1,13 @@
 package recs.test.systems;
 
-import recs.core.ComponentManager;
+import recs.core.ComponentMapper;
 import recs.core.EntitySystem;
 import recs.test.components.Position;
 import recs.test.components.Velocity;
 
 public class MovementSystem extends EntitySystem {
-	private ComponentManager<Position> positionManager;
-	private ComponentManager<Velocity> velocityManager;
+	private ComponentMapper<Position> positionManager;
+	private ComponentMapper<Velocity> velocityManager;
 
 	public MovementSystem() {
 		super(Position.class, Velocity.class);

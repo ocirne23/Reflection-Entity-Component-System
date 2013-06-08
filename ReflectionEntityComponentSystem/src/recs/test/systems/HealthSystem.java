@@ -1,6 +1,6 @@
 package recs.test.systems;
 
-import recs.core.ComponentManager;
+import recs.core.ComponentMapper;
 import recs.core.EntitySystem;
 import recs.core.EntityWorld;
 import recs.core.EventListener;
@@ -8,7 +8,7 @@ import recs.test.components.Health;
 import recs.test.events.DamageEvent;
 
 public class HealthSystem extends EntitySystem {
-	public ComponentManager<Health> healthManager;
+	public ComponentMapper<Health> healthManager;
 
 	public EventListener<DamageEvent> damageListener;
 

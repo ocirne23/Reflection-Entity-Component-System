@@ -10,8 +10,9 @@ import java.util.NoSuchElementException;
  * depending on hash collisions. Load factors greater than 0.91 greatly increase the chances the map will have to rehash to the
  * next higher POT size.
  * @author Nathan Sweet */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class RECSObjectIntMap<K> {
-	private static final int PRIME1 = 0xbe1f14b1;
+	//private static final int PRIME1 = 0xbe1f14b1;
 	private static final int PRIME2 = 0xb4b82e39;
 	private static final int PRIME3 = 0xced1c241;
 
@@ -25,6 +26,7 @@ public class RECSObjectIntMap<K> {
 	private int hashShift, mask, threshold;
 	private int stashCapacity;
 	private int pushIterations;
+
 
 	private Entries entries;
 	private Values values;
@@ -587,14 +589,6 @@ public class RECSObjectIntMap<K> {
 			currentIndex = nextIndex;
 			findNextIndex();
 			return value;
-		}
-
-		/** Returns a new array containing the remaining values. */
-		public RECSIntArray toArray () {
-			RECSIntArray array = new RECSIntArray(true, map.size);
-			while (hasNext)
-				array.add(next());
-			return array;
 		}
 	}
 
