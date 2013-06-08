@@ -12,7 +12,6 @@ public class Entity {
 
 	public Entity() {
 		id = EntityWorld.createEntity(this);
-		System.out.println("created entity: " + id +":"+ getClass().getName());
 	}
 
 	/**

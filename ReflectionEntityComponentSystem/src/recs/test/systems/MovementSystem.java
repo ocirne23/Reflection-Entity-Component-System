@@ -6,8 +6,8 @@ import recs.test.components.Position;
 import recs.test.components.Velocity;
 
 public class MovementSystem extends EntitySystem {
-	private ComponentMapper<Position> positionManager;
-	private ComponentMapper<Velocity> velocityManager;
+	private ComponentMapper<Position> positionMapper;
+	private ComponentMapper<Velocity> velocityMapper;
 
 	public MovementSystem() {
 		super(Position.class, Velocity.class);
@@ -15,8 +15,8 @@ public class MovementSystem extends EntitySystem {
 
 	@Override
 	public void process(int entityId, float deltaInSec) {
-		Position position = positionManager.get(entityId);
-		Velocity velocity = velocityManager.get(entityId);
+		Position position = positionMapper.get(entityId);
+		Velocity velocity = velocityMapper.get(entityId);
 		position.x += velocity.x * deltaInSec;
 		position.y += velocity.y * deltaInSec;
 	}
