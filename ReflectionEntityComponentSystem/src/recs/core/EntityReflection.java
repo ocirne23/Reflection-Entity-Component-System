@@ -11,14 +11,8 @@ import recs.core.utils.RECSIntMap;
  * @author Enrico van Oosten
  */
 public final class EntityReflection {
-	protected EntityDef def;
-	/**
-	 * Map of components, retrievable by using the class of the component.
-	 */
-	protected RECSIntMap<Field> componentFields;
-	/**
-	 * List of systems this entity class can use.
-	 */
+	final EntityDef def;
+	final RECSIntMap<Field> componentFields;
 
 	protected EntityReflection(RECSIntMap<Field> componentFields, EntityDef def) {
 		this.componentFields = componentFields;

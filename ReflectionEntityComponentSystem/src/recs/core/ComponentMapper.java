@@ -10,7 +10,7 @@ import recs.core.utils.RECSIntMap;
  *            The component type this manager manages.
  */
 public final class ComponentMapper<T> {
-	protected final RECSIntMap<T> components;
+	final RECSIntMap<T> components;
 
 	protected ComponentMapper() {
 		components = new RECSIntMap<T>();

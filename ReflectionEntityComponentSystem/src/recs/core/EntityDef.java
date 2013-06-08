@@ -3,8 +3,8 @@ package recs.core;
 import recs.core.utils.RECSBits;
 
 public class EntityDef {
-	protected RECSBits componentBits;
-	protected RECSBits systemBits;
+	final RECSBits componentBits;
+	final RECSBits systemBits;
 
 	public EntityDef(RECSBits componentBits, RECSBits systemBits) {
 		this.componentBits = componentBits;

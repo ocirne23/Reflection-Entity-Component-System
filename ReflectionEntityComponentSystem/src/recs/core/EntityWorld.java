@@ -22,19 +22,16 @@ public final class EntityWorld {
 	private static EntityDefManager defManager = new EntityDefManager();
 	private static EventManager eventManager = new EventManager();
 
-	/**
-	 * Collection of EntityManagers, managers are retrievable by using the class
-	 * they represent.
-	 */
-	private static RECSIntSet addedEntities = new RECSIntSet();
-	/**
-	 * Bitset used to know which id's are used.
-	 */
+	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
+	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
+
+	private static RECSIntSet unaddedEntities = new RECSIntSet();
+	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
+
 	private static RECSBits entityIds = new RECSBits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
 
-	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
 
 	public static int createEntity(Entity e) {
 		Class<? extends Entity> entityClass = e.getClass();
@@ -47,7 +44,7 @@ public final class EntityWorld {
 	}
 
 	public static void addComponent(Entity e, Object... components) {
-		if (!addedEntities.contains(e.id)) {
+		if (!unaddedEntities.contains(e.id)) {
 			scheduleAddComponent(e, components);
 			return;
 		}
@@ -74,7 +71,7 @@ public final class EntityWorld {
 	}
 
 	public static void removeComponent(Entity e, Object... components) {
-		if (!addedEntities.contains(e.id)) {
+		if (!unaddedEntities.contains(e.id)) {
 			scheduleRemoveComponent(e, components);
 			return;
 		}
@@ -87,7 +84,6 @@ public final class EntityWorld {
 			getComponentMapper(componentId).remove(e.id);
 			componentBits.clear(componentId);
 		}
-		System.out.println("after: " + componentBits.binaryString());
 		EntityDef newDef = defManager.getDef(componentBits);
 		if (newDef == null) {
 			systemBits = getSystemBits(componentBits);
@@ -128,7 +124,7 @@ public final class EntityWorld {
 		return systemManager.getSystemBits(componentBits);
 	}
 
-	public static int getSystemId() {
+	static int getSystemId() {
 		return systemManager.getSystemId();
 	}
 
@@ -143,7 +139,7 @@ public final class EntityWorld {
 		systemManager.process(deltaInSec);
 	}
 
-	protected static EntityReflection getEntityReflection(Class<? extends Entity> class1) {
+	static EntityReflection getEntityReflection(Class<? extends Entity> class1) {
 		return defManager.getReflection(class1);
 	}
 
@@ -157,7 +153,7 @@ public final class EntityWorld {
 	public static void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
-		addedEntities.add(id);
+		unaddedEntities.add(id);
 
 		EntityReflection reflection = defManager.getReflection(entityClass);
 		Keys k = reflection.componentFields.keys();
@@ -188,14 +184,14 @@ public final class EntityWorld {
 	 */
 	public static void removeEntity(int id) {
 		numFreedIds++;
-		addedEntities.remove(id);
+		unaddedEntities.remove(id);
 		removeEntityFromSystem(id);
 		removeEntityFromMappers(id);
 
 		entityIds.clear(id);
 	}
 
-	public static void removeEntityFromMappers(int id) {
+	private static void removeEntityFromMappers(int id) {
 		componentManager.removeEntityFromMappers(id);
 	}
 
@@ -214,7 +210,7 @@ public final class EntityWorld {
 		return lastUsedId;
 	}
 
-	protected static void returnEntityId(int id) {
+	static void returnEntityId(int id) {
 		numFreedIds++;
 		entityIds.clear(id);
 	}
@@ -250,8 +246,8 @@ public final class EntityWorld {
 		systemManager.removeEntityFromSystems(id);
 	}
 
-	protected static int getComponentId(Class<?> component) {
-		return componentManager.getComponentId(component);
+	static int getComponentId(Class<?> component) {
+		 return componentManager.getComponentId(component);
 	}
 
 	/**
@@ -298,11 +294,6 @@ public final class EntityWorld {
 		return componentManager.getComponentMapper(componentId);
 	}
 
-	/**
-	 * Map of destructionListeners which get notified if a component of their
-	 * type is destroyed.
-	 */
-	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
 	public static void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
 		destructionListeners.put(componentClass, listener);
 	}
@@ -331,13 +322,11 @@ public final class EntityWorld {
 	 * @param messageTags
 	 *            The tags listened to.
 	 */
-	protected static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
+	static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
 		eventManager.registerListener(listener, eventType);
 	}
 
-	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
-
-	protected static void postRunnable(Runnable r) {
+	static void postRunnable(Runnable r) {
 		threads.execute(r);
 	}
 

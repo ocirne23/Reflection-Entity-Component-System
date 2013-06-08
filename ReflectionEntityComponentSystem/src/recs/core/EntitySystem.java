@@ -17,11 +17,11 @@ public abstract class EntitySystem {
 	/**
 	 * Array of entities this system will use.
 	 */
-	protected final RECSIntSet entitiyIds;
+	final RECSIntSet entitiyIds;
 	/**
 	 * Collection of the classes of the components this system will use.
 	 */
-	protected final RECSBits componentBits;
+	final RECSBits componentBits;
 	/**
 	 * Used by EntityWorld to determine if processSystem should be called.
 	 */
@@ -29,7 +29,7 @@ public abstract class EntitySystem {
 	private final LinkedBlockingQueue<Object> receivedEvents;
 	private final LinkedList<Object> polledEventsList;
 
-	private float intervalInSeconds = 0f;
+	protected float intervalInSeconds = 0f;
 	private float timeAccumulator = 0f;
 
 	/**
