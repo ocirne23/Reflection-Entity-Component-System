@@ -37,10 +37,8 @@ public class EntitySystemManager {
 	 */
 	protected void addEntityToSystems(Entity entity) {
 		RECSBits systemBits = entity.def.systemBits;
-		for (int i = 0; i < systemBits.numBits(); i++) {
-			if (systemBits.get(i)) {
-				systemMap.get(i).addEntity(entity.id);
-			}
+		for (int i = systemBits.nextSetBit(0); i >= 0; i = systemBits.nextSetBit(i + 1)) {
+			systemMap.get(i).addEntity(entity.id);
 		}
 	}
 

@@ -64,7 +64,7 @@ public final class EntityWorld {
 		if (newDef == null) {
 			systemBits = getSystemBits(componentBits);
 			newDef = new EntityDef(componentBits, systemBits);
-			defManager.putDef(componentBits, def);
+			defManager.putDef(componentBits, newDef);
 		}
 		e.def = newDef;
 		addToSystems(e, def.systemBits, newDef.systemBits);
@@ -171,7 +171,9 @@ public final class EntityWorld {
 		}
 		LinkedList<Object> scheduleAddList = scheduledAddComponents.get(id);
 		if (scheduleAddList != null) {
-			addComponent(entity, scheduleAddList.toArray());
+			while(!scheduleAddList.isEmpty()) {
+				addComponent(entity, scheduleAddList.poll());
+			}
 		}
 		addEntityToSystems(entity);
 	}

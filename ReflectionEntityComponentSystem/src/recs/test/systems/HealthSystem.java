@@ -27,7 +27,6 @@ public class HealthSystem extends EntitySystem {
 
 	@Override
 	protected void process(int entityId, float deltaInSec) {
-		System.out.println("processing: " + entityId);
 		Health health = healthManager.get(entityId);
 		if (health.health <= 0) {
 			EntityWorld.removeEntity(entityId);

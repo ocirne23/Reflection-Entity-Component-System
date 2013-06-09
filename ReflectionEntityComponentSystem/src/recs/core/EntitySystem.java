@@ -91,8 +91,9 @@ public abstract class EntitySystem {
 	}
 
 	protected void addEntity(int id) {
-		if (!entitiyIds.contains(id))
+		if (!entitiyIds.contains(id)) {
 			entitiyIds.add(id);
+		}
 	}
 
 	protected void removeEntity(int id) {

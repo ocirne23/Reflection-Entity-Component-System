@@ -346,7 +346,7 @@ public class TestAllTehThings {
 
 	@Test
 	public void testDynamicEntity() {
-		addEntities();
+		//addEntities();
 		Entity e = new Entity();
 		e.addComponent(new Position(1, 2), new Velocity(4, 0), new Health(10, 15));
 		EntityWorld.addEntity(e);
@@ -363,6 +363,19 @@ public class TestAllTehThings {
 		Health health2 = EntityWorld.getComponent(e.id, Health.class);
 		assertTrue(health2 == null);
 		assertFalse(hs.hasEntity(e.id));
+	}
+
+	@Test
+	public void testDynamicEntity2() {
+		//addEntities();
+		Entity e = new Entity();
+		e.addComponent(new Position(1, 2));
+		e.addComponent(new Velocity(1, 2));
+		EntityWorld.addEntity(e);
+
+		Position position = EntityWorld.getComponent(e.id, Position.class);
+		assertTrue(position != null);
+		assertTrue(ms.hasEntity(e.id));
 	}
 
 	@Test
@@ -441,6 +454,7 @@ public class TestAllTehThings {
 			);
 		}
 		addEntities();
+		assertTrue(true);
 	}
 
 	@After

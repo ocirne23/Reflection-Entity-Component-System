@@ -154,10 +154,6 @@ public class RECSBits {
 	 * @return
 	 */
 	public RECSBits getAddedBits(RECSBits otherBits) {
-		System.out.println("getadded");
-		System.out.println("this: " + binaryString());
-		System.out.println("other: " + otherBits.binaryString());
-
 		if (!this.contains(otherBits))
 			throw new RuntimeException("bits were not contained");
 		RECSBits addedBits = new RECSBits();
@@ -171,10 +167,6 @@ public class RECSBits {
 	}
 
 	public RECSBits getRemovedBits(RECSBits otherBits)  {
-		System.out.println("getRemoved");
-		System.out.println("this: " + binaryString());
-		System.out.println("other: " + otherBits.binaryString());
-
 		RECSBits addedBits = new RECSBits();
 		for (int i = 0, max = Math.max(otherBits.bits.length, bits.length); i < max; i++) {
 			if (i > bits.length)
@@ -223,7 +215,7 @@ public class RECSBits {
 
 		while (true) {
 			if (word != 0)
-				return Integer.numberOfTrailingZeros(word);
+				return Integer.numberOfTrailingZeros(word) + wordIndex * 32;
 			if (++wordIndex == bits.length)
 				return -1;
 			word = bits[wordIndex];
