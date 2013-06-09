@@ -7,7 +7,6 @@ import recs.core.utils.BlockingThreadPoolExecutor;
 import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSIntMap.Keys;
-import recs.core.utils.RECSIntSet;
 import recs.core.utils.RECSObjectMap;
 
 /**
@@ -25,7 +24,7 @@ public final class EntityWorld {
 	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
 	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
 
-	private static RECSIntSet unaddedEntities = new RECSIntSet();
+	private static RECSIntMap<Entity> addedEntities = new RECSIntMap<Entity>();
 	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
 
 	private static RECSBits entityIds = new RECSBits();
@@ -41,12 +40,11 @@ public final class EntityWorld {
 		}
 		e.def = reflection.def;
 		int id = getEntityId();
-		unaddedEntities.add(id);
 		return id;
 	}
 
 	public static void addComponent(Entity e, Object... components) {
-		if (unaddedEntities.contains(e.id)) {
+		if (!addedEntities.containsKey(e.id)) {
 			scheduleAddComponent(e, components);
 			return;
 		}
@@ -73,7 +71,7 @@ public final class EntityWorld {
 	}
 
 	public static void removeComponent(Entity e, Object... components) {
-		if (!unaddedEntities.contains(e.id)) {
+		if (!addedEntities.containsKey(e.id)) {
 			scheduleRemoveComponent(e, components);
 			return;
 		}
@@ -155,7 +153,7 @@ public final class EntityWorld {
 	public static void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
-		unaddedEntities.remove(id);
+		addedEntities.put(id, entity);
 
 		EntityReflection reflection = defManager.getReflection(entityClass);
 		Keys k = reflection.componentFields.keys();
@@ -184,13 +182,17 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	public static void removeEntity(int id) {
+	public static Entity removeEntity(int id) {
 		numFreedIds++;
-		unaddedEntities.remove(id);
 		removeEntityFromSystem(id);
 		removeEntityFromMappers(id);
 
 		entityIds.clear(id);
+		return addedEntities.remove(id);
+	}
+
+	public static Entity getEntity(int id) {
+		return addedEntities.get(id);
 	}
 
 	private static void removeEntityFromMappers(int id) {
@@ -336,6 +338,7 @@ public final class EntityWorld {
 	 * Use this to clear everything in the EntityWorld. Use with care.
 	 */
 	public static void reset() {
+		addedEntities.clear();
 		componentManager.clear();
 		systemManager.clear();
 		defManager.clear();
