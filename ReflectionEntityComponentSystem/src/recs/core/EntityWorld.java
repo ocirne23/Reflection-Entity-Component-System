@@ -169,11 +169,9 @@ public final class EntityWorld {
 				e.printStackTrace();
 			}
 		}
-		LinkedList<Object> scheduleAddList = scheduledAddComponents.get(id);
+		LinkedList<Object> scheduleAddList = scheduledAddComponents.remove(id);
 		if (scheduleAddList != null) {
-			while(!scheduleAddList.isEmpty()) {
-				addComponent(entity, scheduleAddList.poll());
-			}
+			addComponent(entity, scheduleAddList.toArray());
 		}
 		addEntityToSystems(entity);
 	}

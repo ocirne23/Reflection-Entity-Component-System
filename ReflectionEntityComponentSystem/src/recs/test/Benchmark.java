@@ -9,7 +9,7 @@ import recs.test.entities.Zombie;
 import recs.test.systems.MovementSystem;
 
 public class Benchmark {
-	private static final int NR_ZOMBIES = 1000000;
+	private static final int NR_ZOMBIES = 50000;
 	private static final boolean DYNAMIC = false;
 	private static final Class<?>[] COMPONENTS = { Position.class, Velocity.class };
 
