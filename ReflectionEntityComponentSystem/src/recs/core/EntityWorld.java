@@ -40,11 +40,13 @@ public final class EntityWorld {
 			reflection = addNewEntityReflection(entityClass);
 		}
 		e.def = reflection.def;
-		return getEntityId();
+		int id = getEntityId();
+		unaddedEntities.add(id);
+		return id;
 	}
 
 	public static void addComponent(Entity e, Object... components) {
-		if (!unaddedEntities.contains(e.id)) {
+		if (unaddedEntities.contains(e.id)) {
 			scheduleAddComponent(e, components);
 			return;
 		}
@@ -153,7 +155,7 @@ public final class EntityWorld {
 	public static void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = entity.id;
-		unaddedEntities.add(id);
+		unaddedEntities.remove(id);
 
 		EntityReflection reflection = defManager.getReflection(entityClass);
 		Keys k = reflection.componentFields.keys();

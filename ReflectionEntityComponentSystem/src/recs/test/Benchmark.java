@@ -10,7 +10,7 @@ import recs.test.systems.MovementSystem;
 
 public class Benchmark {
 	private static final int NR_ZOMBIES = 50000;
-	private static final boolean DYNAMIC = false;
+	private static final boolean DYNAMIC = true;
 	private static final Class<?>[] COMPONENTS = { Position.class, Velocity.class };
 
 	public static void main(String[] args) {
@@ -40,7 +40,7 @@ public class Benchmark {
 		long startAdd = System.nanoTime();
 		for (int i = 0; i < NR_ZOMBIES; i++)
 			EntityWorld.addEntity(new Zombie(10, 10));
-		System.out.println("addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
+		System.out.println("RECS: addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
 		// game loop
 		int loopCount = 0;
@@ -59,10 +59,16 @@ public class Benchmark {
 			if (totalTime > 1f)
 				break;
 		}
-		System.out.println("looped: " + loopCount + " times.");
 
+		System.out.println("RECS: looped: " + loopCount + " times.");
+		System.gc();
 		Runtime runtime = Runtime.getRuntime();
-		System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
+		System.out.println("RECS: used Memory: " + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) + " mb");
+
+		//So EntityWorld does not get GC'd.
+		if(EntityWorld.getComponent(0, Position.class) != null) {
+			System.out.println("");
+		}
 	}
 
 	private void testDynamicAdd() {
@@ -74,7 +80,7 @@ public class Benchmark {
 		long startAdd = System.nanoTime();
 		for (int i = 0; i < NR_ZOMBIES; i++)
 			EntityWorld.addEntity(createZombie(10, 10));
-		System.out.println("addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
+		System.out.println("RECS: addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
 		// game loop
 		int loopCount = 0;
@@ -95,10 +101,15 @@ public class Benchmark {
 			if (totalTime > 1f)
 				break;
 		}
-		System.out.println("looped: " + loopCount + " times.");
-
+		System.out.println("RECS: looped: " + loopCount + " times.");
+		System.gc();
 		Runtime runtime = Runtime.getRuntime();
-		System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
+		System.out.println("RECS: used Memory: " + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) + " mb");
+
+		//So EntityWorld does not get GC'd.
+		if(EntityWorld.getComponent(0, Position.class) != null) {
+			System.out.println("");
+		}
 	}
 
 	private Entity createZombie(int x, int y) {

@@ -114,7 +114,6 @@ public abstract class EntitySystem {
 	}
 
 	public boolean hasEntity(int entityId) {
-		System.out.println("has: " + entityId);
 		return entitiyIds.contains(entityId);
 	}
 
