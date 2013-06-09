@@ -9,22 +9,26 @@ import recs.test.entities.Zombie;
 import recs.test.systems.MovementSystem;
 
 public class Benchmark {
+	private static final int NR_ZOMBIES = 1000000;
+	private static final boolean DYNAMIC = false;
 	private static final Class<?>[] COMPONENTS = { Position.class, Velocity.class };
 
 	public static void main(String[] args) {
 		Benchmark b = new Benchmark();
 
-	//	b.testReflectionAdd();
-	//	b.testReflectionAdd();
-	//	b.testReflectionAdd();
-	//	b.testReflectionAdd();
-	//	b.testReflectionAdd();
-
-		b.testDynamicAdd();
-		b.testDynamicAdd();
-		b.testDynamicAdd();
-		b.testDynamicAdd();
-		b.testDynamicAdd();
+		if (DYNAMIC) {
+			b.testDynamicAdd();
+			b.testDynamicAdd();
+			b.testDynamicAdd();
+			b.testDynamicAdd();
+			b.testDynamicAdd();
+		} else {
+			b.testReflectionAdd();
+			b.testReflectionAdd();
+			b.testReflectionAdd();
+			b.testReflectionAdd();
+			b.testReflectionAdd();
+		}
 	}
 
 	private void testReflectionAdd() {
@@ -34,7 +38,7 @@ public class Benchmark {
 		EntityWorld.addSystem(new MovementSystem());
 
 		long startAdd = System.nanoTime();
-		for (int i = 0; i < 1000000; i++)
+		for (int i = 0; i < NR_ZOMBIES; i++)
 			EntityWorld.addEntity(new Zombie(10, 10));
 		System.out.println("addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
@@ -56,6 +60,9 @@ public class Benchmark {
 				break;
 		}
 		System.out.println("looped: " + loopCount + " times.");
+
+		Runtime runtime = Runtime.getRuntime();
+		System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
 	}
 
 	private void testDynamicAdd() {
@@ -65,7 +72,7 @@ public class Benchmark {
 		EntityWorld.addSystem(new MovementSystem());
 
 		long startAdd = System.nanoTime();
-		for (int i = 0; i < 1000000; i++)
+		for (int i = 0; i < NR_ZOMBIES; i++)
 			EntityWorld.addEntity(createZombie(10, 10));
 		System.out.println("addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
@@ -89,6 +96,9 @@ public class Benchmark {
 				break;
 		}
 		System.out.println("looped: " + loopCount + " times.");
+
+		Runtime runtime = Runtime.getRuntime();
+		System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
 	}
 
 	private Entity createZombie(int x, int y) {
