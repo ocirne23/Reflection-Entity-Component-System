@@ -114,6 +114,15 @@ public class TestAllTehThings {
 	}
 
 	@Test
+	public void testId() {
+		addEntities();
+		assertTrue(player.id == 1);
+		assertTrue(player2.id == 2);
+		assertTrue(playerWithAttack.id == 3);
+		assertTrue(zombie.id == 4);
+	}
+
+	@Test
 	public void testGetComponent() {
 		addEntities();
 		int playerId = player.id;

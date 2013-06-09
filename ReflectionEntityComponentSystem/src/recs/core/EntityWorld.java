@@ -13,6 +13,17 @@ import recs.core.utils.RECSObjectMap;
  * The main world class containing all the logic. Add Entities with components
  * and systems to this class and call the process method.
  *
+ *  //////////////////////////Public Methods////////////////////////////////
+ *  /// registerComponents(Class<?>[] components) -> register the classes that serve as components.
+ *  /// addSystem(EntitySystem system) -> add a system to the world.
+ *  /// addEntity(Entity entity) -> add an entity to the systems
+ *  /// process(float deltaInSec) -> process all the systems
+ *  /// removeEntity(Entity entity) -> remove an entity from the systems
+ *  /// getEntity(int id) -> retrieve an entity using it's id
+ *  /// getComponent(int entityId, Class<?> componentClass) ->
+ *  		get the component of a type from an entity with the given id.
+ *  		The preferred method of retrieving components is by using ComponentMapper<>
+ *
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
@@ -20,113 +31,14 @@ public final class EntityWorld {
 	private static ComponentManager componentManager = new ComponentManager();
 	private static EntityDefManager defManager = new EntityDefManager();
 	private static EventManager eventManager = new EventManager();
-
 	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
 	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
-
 	private static RECSIntMap<Entity> addedEntities = new RECSIntMap<Entity>();
 	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
-
 	private static RECSBits entityIds = new RECSBits();
 	private static int lastUsedId = 0;
 	private static int numFreedIds = 0;
 
-
-	public static int createEntity(Entity e) {
-		Class<? extends Entity> entityClass = e.getClass();
-		EntityReflection reflection = defManager.getReflection(entityClass);
-		if (reflection == null) {
-			reflection = addNewEntityReflection(entityClass);
-		}
-		e.def = reflection.def;
-		int id = getEntityId();
-		return id;
-	}
-
-	public static void addComponent(Entity e, Object... components) {
-		if (!addedEntities.containsKey(e.id)) {
-			scheduleAddComponent(e, components);
-			return;
-		}
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		componentBits.copy(def.componentBits);
-		for (Object component : components) {
-			int componentId = getComponentId(component.getClass());
-			ComponentMapper<?> mapper = getComponentMapper(componentId);
-			if (mapper == null)
-				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
-			mapper.add(e.id, component);
-			componentBits.set(componentId);
-		}
-		EntityDef newDef = defManager.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(componentBits, systemBits);
-			defManager.putDef(componentBits, newDef);
-		}
-		e.def = newDef;
-		addToSystems(e, def.systemBits, newDef.systemBits);
-	}
-
-	public static void removeComponent(Entity e, Object... components) {
-		if (!addedEntities.containsKey(e.id)) {
-			scheduleRemoveComponent(e, components);
-			return;
-		}
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		componentBits.copy(def.componentBits);
-		for (Object component : components) {
-			int componentId = getComponentId(component.getClass());
-			getComponentMapper(componentId).remove(e.id);
-			componentBits.clear(componentId);
-		}
-		EntityDef newDef = defManager.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(componentBits, systemBits);
-			defManager.putDef(componentBits, def);
-		}
-		e.def = def;
-		removeFromSystems(e, def.systemBits, newDef.systemBits);
-	}
-
-	private static void scheduleAddComponent(Entity e, Object... components) {
-		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
-		if (scheduleList == null) {
-			scheduleList = new LinkedList<Object>();
-			scheduledAddComponents.put(e.id, scheduleList);
-		}
-		for (Object o : components)
-			scheduleList.add(o);
-	}
-
-	private static void scheduleRemoveComponent(Entity e, Object... components) {
-		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
-		if (scheduleList == null)
-			return;
-		for (Object o : components)
-			scheduleList.remove(o);
-	}
-
-	private static void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		systemManager.addToSystems(entity, existingSystemBits, newSystemBits);
-	}
-
-	private static void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		systemManager.removeFromSystems(entity, existingSystemBits, newSystemBits);
-	}
-
-	static RECSBits getSystemBits(RECSBits componentBits) {
-		return systemManager.getSystemBits(componentBits);
-	}
-
-	static int getSystemId() {
-		return systemManager.getSystemId();
-	}
 
 	/**
 	 * Process all the systems.
@@ -137,10 +49,6 @@ public final class EntityWorld {
 	 */
 	public static void process(float deltaInSec) {
 		systemManager.process(deltaInSec);
-	}
-
-	static EntityReflection getEntityReflection(Class<? extends Entity> class1) {
-		return defManager.getReflection(class1);
 	}
 
 	/**
@@ -195,63 +103,8 @@ public final class EntityWorld {
 		return addedEntities.get(id);
 	}
 
-	private static void removeEntityFromMappers(int id) {
-		componentManager.removeEntityFromMappers(id);
-	}
-
-	/**
-	 * Get an unique id for an entity, may reuse id's of removed entities.
-	 *
-	 * @return
-	 */
-	protected static int getEntityId() {
-		if (numFreedIds > entityIds.numBits() * 0.2f) {
-			lastUsedId = 0;
-			numFreedIds = 0;
-		}
-		while (entityIds.get(++lastUsedId))
-			entityIds.set(lastUsedId);
-		return lastUsedId;
-	}
-
-	static void returnEntityId(int id) {
-		numFreedIds++;
-		entityIds.clear(id);
-	}
-
-	/**
-	 * Create a new EntityManager representing an entity.
-	 *
-	 * @param class1
-	 *            The entity's class.
-	 * @return
-	 */
-	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
-		return defManager.addNewEntityReflection(class1);
-	}
-
 	public static void addSystem(EntitySystem system) {
 		systemManager.addSystem(system);
-	}
-
-	/**
-	 * Adds an entity to the systems it can be processed.
-	 *
-	 * @param entityManager
-	 *            The EntityManager of the same type as the entity.
-	 * @param entity
-	 *            The entity.
-	 */
-	private static void addEntityToSystems(Entity entity) {
-		systemManager.addEntityToSystems(entity);
-	}
-
-	private static void removeEntityFromSystem(int id) {
-		systemManager.removeEntityFromSystems(id);
-	}
-
-	static int getComponentId(Class<?> component) {
-		 return componentManager.getComponentId(component);
 	}
 
 	/**
@@ -318,6 +171,112 @@ public final class EntityWorld {
 	}
 
 	/**
+	 * Use this to clear everything in the EntityWorld. Use with care.
+	 */
+	public static void reset() {
+		addedEntities.clear();
+		componentManager.clear();
+		systemManager.clear();
+		defManager.clear();
+		scheduledAddComponents.clear();
+		destructionListeners.clear();
+		entityIds.clear();
+		eventManager.clear();
+		lastUsedId = 0;
+		numFreedIds = 0;
+		System.gc();
+	}
+
+	static int createEntity(Entity e) {
+		Class<? extends Entity> entityClass = e.getClass();
+		EntityReflection reflection = defManager.getReflection(entityClass);
+		if (reflection == null) {
+			reflection = addNewEntityReflection(entityClass);
+		}
+		e.def = reflection.def;
+		int id = getEntityId();
+		return id;
+	}
+
+	static void addComponent(Entity e, Object... components) {
+		if (!addedEntities.containsKey(e.id)) {
+			scheduleAddComponent(e, components);
+			return;
+		}
+		EntityDef def = e.def;
+		RECSBits componentBits = new RECSBits();
+		RECSBits systemBits = new RECSBits();
+		componentBits.copy(def.componentBits);
+		for (Object component : components) {
+			int componentId = getComponentId(component.getClass());
+			ComponentMapper<?> mapper = getComponentMapper(componentId);
+			if (mapper == null)
+				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
+			mapper.add(e.id, component);
+			componentBits.set(componentId);
+		}
+		EntityDef newDef = defManager.getDef(componentBits);
+		if (newDef == null) {
+			systemBits = getSystemBits(componentBits);
+			newDef = new EntityDef(componentBits, systemBits);
+			defManager.putDef(componentBits, newDef);
+		}
+		e.def = newDef;
+		addToSystems(e, def.systemBits, newDef.systemBits);
+	}
+
+	static void removeComponent(Entity e, Object... components) {
+		if (!addedEntities.containsKey(e.id)) {
+			scheduleRemoveComponent(e, components);
+			return;
+		}
+		EntityDef def = e.def;
+		RECSBits componentBits = new RECSBits();
+		RECSBits systemBits = new RECSBits();
+		componentBits.copy(def.componentBits);
+		for (Object component : components) {
+			int componentId = getComponentId(component.getClass());
+			getComponentMapper(componentId).remove(e.id);
+			componentBits.clear(componentId);
+		}
+		EntityDef newDef = defManager.getDef(componentBits);
+		if (newDef == null) {
+			systemBits = getSystemBits(componentBits);
+			newDef = new EntityDef(componentBits, systemBits);
+			defManager.putDef(componentBits, def);
+		}
+		e.def = def;
+		removeFromSystems(e, def.systemBits, newDef.systemBits);
+	}
+
+	static RECSBits getSystemBits(RECSBits componentBits) {
+		return systemManager.getSystemBits(componentBits);
+	}
+
+	static int getSystemId() {
+		return systemManager.getSystemId();
+	}
+
+	/**
+	 * Get an unique id for an entity, may reuse id's of removed entities.
+	 *
+	 * @return
+	 */
+	static int getEntityId() {
+		if (numFreedIds > entityIds.numBits() * 0.2f) {
+			lastUsedId = 0;
+			numFreedIds = 0;
+		}
+		while (entityIds.get(++lastUsedId))
+			entityIds.set(lastUsedId);
+		return lastUsedId;
+	}
+
+	static int getComponentId(Class<?> component) {
+		 return componentManager.getComponentId(component);
+	}
+
+	/**
 	 * Register a system so it can receive events with the specified
 	 * messageTags.
 	 *
@@ -334,20 +293,61 @@ public final class EntityWorld {
 		threads.execute(r);
 	}
 
+
+	private static void removeEntityFromMappers(int id) {
+		componentManager.removeEntityFromMappers(id);
+	}
+
+	private static void scheduleAddComponent(Entity e, Object... components) {
+		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
+		if (scheduleList == null) {
+			scheduleList = new LinkedList<Object>();
+			scheduledAddComponents.put(e.id, scheduleList);
+		}
+		for (Object o : components)
+			scheduleList.add(o);
+	}
+
+	private static void scheduleRemoveComponent(Entity e, Object... components) {
+		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
+		if (scheduleList == null)
+			return;
+		for (Object o : components)
+			scheduleList.remove(o);
+	}
+
+	private static void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+		systemManager.addToSystems(entity, existingSystemBits, newSystemBits);
+	}
+
+	private static void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+		systemManager.removeFromSystems(entity, existingSystemBits, newSystemBits);
+	}
+
 	/**
-	 * Use this to clear everything in the EntityWorld. Use with care.
+	 * Create a new EntityManager representing an entity.
+	 *
+	 * @param class1
+	 *            The entity's class.
+	 * @return
 	 */
-	public static void reset() {
-		addedEntities.clear();
-		componentManager.clear();
-		systemManager.clear();
-		defManager.clear();
-		scheduledAddComponents.clear();
-		destructionListeners.clear();
-		entityIds.clear();
-		eventManager.clear();
-		lastUsedId = 0;
-		numFreedIds = 0;
-		System.gc();
+	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
+		return defManager.addNewEntityReflection(class1);
+	}
+
+	/**
+	 * Adds an entity to the systems it can be processed.
+	 *
+	 * @param entityManager
+	 *            The EntityManager of the same type as the entity.
+	 * @param entity
+	 *            The entity.
+	 */
+	private static void addEntityToSystems(Entity entity) {
+		systemManager.addEntityToSystems(entity);
+	}
+
+	private static void removeEntityFromSystem(int id) {
+		systemManager.removeEntityFromSystems(id);
 	}
 }
