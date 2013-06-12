@@ -13,11 +13,11 @@ import recs.core.utils.RECSObjectMap;
 public final class EventManager {
 	private final RECSObjectMap<Class<?>, LinkedList<EventListener<?>>> listeners;
 
-	protected EventManager() {
+	EventManager() {
 		listeners = new RECSObjectMap<Class<?>, LinkedList<EventListener<?>>>();
 	}
 
-	protected void sendEvent(Object message) {
+	void sendEvent(Object message) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(message.getClass());
 		if (listenerList != null) {
 			for (EventListener<?> listener : listenerList) {
@@ -26,7 +26,7 @@ public final class EventManager {
 		}
 	}
 
-	protected void registerListener(EventListener<?> listener, Class<?> eventClass) {
+	void registerListener(EventListener<?> listener, Class<?> eventClass) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			if (!listenerList.contains(listener)) {
@@ -39,14 +39,14 @@ public final class EventManager {
 		}
 	}
 
-	protected void unregisterListener(EventListener<?> listener, Class<?> eventClass) {
+	void unregisterListener(EventListener<?> listener, Class<?> eventClass) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			listenerList.remove(listener);
 		}
 	}
 
-	public void clear() {
+	void clear() {
 		listeners.clear();
 	}
 }

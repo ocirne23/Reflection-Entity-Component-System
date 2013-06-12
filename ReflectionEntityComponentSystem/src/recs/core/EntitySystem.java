@@ -27,21 +27,16 @@ public abstract class EntitySystem {
 	protected EntityWorld world;
 
 	/**
-	 *
-	 * @param components
+	 * Create an entitysystem that processes entities with the specified
+	 * components each process.
 	 */
 	public EntitySystem(Class<?>... components) {
 		this.components = components;
 	}
 
 	/**
-	 * Create an entitysystem that processes with the given interval. (1/60f) is
-	 * 60 times a second.
-	 *
-	 * @param intervalInSeconds
-	 *            The interval in seconds.
-	 * @param components
-	 *            The components this system uses.
+	 * Create an entitysystem that processes with the given interval in seconds.
+	 * (1/60f is 60 times a second.)
 	 */
 	public EntitySystem(float intervalInSeconds, Class<?>... components) {
 		this(components);
@@ -73,20 +68,6 @@ public abstract class EntitySystem {
 
 	protected abstract void process(int entityId, float deltaInSec);
 
-	protected RECSBits getComponentBits() {
-		return componentBits;
-	}
-
-	protected void addEntity(int id) {
-		if (!entitiyIds.contains(id)) {
-			entitiyIds.add(id);
-		}
-	}
-
-	protected void removeEntity(int id) {
-		entitiyIds.remove(id);
-	}
-
 	/**
 	 * Set if this system should be processed by the world.
 	 *
@@ -104,17 +85,31 @@ public abstract class EntitySystem {
 		return entitiyIds.contains(entityId);
 	}
 
-	protected LinkedList<Object> pollEvents() {
-		polledEventsList.clear();
-		receivedEvents.drainTo(polledEventsList);
-		return polledEventsList;
+	public int getId() {
+		return id;
 	}
 
 	public void sendMessage(Object message) {
 		receivedEvents.add(message);
 	}
 
-	public int getId() {
-		return id;
+	protected LinkedList<Object> pollEvents() {
+		polledEventsList.clear();
+		receivedEvents.drainTo(polledEventsList);
+		return polledEventsList;
+	}
+
+	RECSBits getComponentBits() {
+		return componentBits;
+	}
+
+	void addEntity(int id) {
+		if (!entitiyIds.contains(id)) {
+			entitiyIds.add(id);
+		}
+	}
+
+	void removeEntity(int id) {
+		entitiyIds.remove(id);
 	}
 }

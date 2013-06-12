@@ -14,7 +14,7 @@ public final class EntityReflection {
 	final EntityDef def;
 	final RECSIntMap<Field> componentFields;
 
-	protected EntityReflection(RECSIntMap<Field> componentFields, EntityDef def) {
+	EntityReflection(RECSIntMap<Field> componentFields, EntityDef def) {
 		this.componentFields = componentFields;
 		this.def = def;
 	}

@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntMap;
 
-public class EntitySystemManager {
+public final class EntitySystemManager {
 	/**
 	 * Linked list of EntitySystems for easy iteration.
 	 */
@@ -17,7 +17,7 @@ public class EntitySystemManager {
 	private EntityWorld world;
 	private int systemIdCounter = 0;
 
-	public EntitySystemManager(EntityWorld world) {
+	EntitySystemManager(EntityWorld world) {
 		this.world = world;
 	}
 
@@ -26,7 +26,7 @@ public class EntitySystemManager {
 	 *
 	 * @param systems
 	 */
-	public void addSystem(EntitySystem... systems) {
+	void addSystem(EntitySystem... systems) {
 		for (EntitySystem s : systems)
 			addSystem(s);
 	}
@@ -39,14 +39,14 @@ public class EntitySystemManager {
 	 * @param entity
 	 *            The entity.
 	 */
-	protected void addEntityToSystems(Entity entity) {
+	void addEntityToSystems(Entity entity) {
 		RECSBits systemBits = entity.def.systemBits;
 		for (int i = systemBits.nextSetBit(0); i >= 0; i = systemBits.nextSetBit(i + 1)) {
 			systemMap.get(i).addEntity(entity.id);
 		}
 	}
 
-	protected void removeEntityFromSystems(int id) {
+	void removeEntityFromSystems(int id) {
 		for (EntitySystem system : systems) {
 			system.removeEntity(id);
 		}
@@ -59,7 +59,7 @@ public class EntitySystemManager {
 	 *            The system.
 	 */
 	@SuppressWarnings("unchecked")
-	public void addSystem(EntitySystem system) {
+	void addSystem(EntitySystem system) {
 		if (systems.contains(system))
 			throw new RuntimeException("System already added");
 		system.id = getSystemId();
@@ -108,7 +108,7 @@ public class EntitySystemManager {
 		systemMap.put(system.id, system);
 	}
 
-	public void process(float deltaInSec) {
+	void process(float deltaInSec) {
 		for (EntitySystem system : systems) {
 			if (system.isEnabled()) {
 				system.processSystem(deltaInSec);
@@ -116,7 +116,7 @@ public class EntitySystemManager {
 		}
 	}
 
-	public RECSBits getSystemBits(RECSBits componentBits) {
+	RECSBits getSystemBits(RECSBits componentBits) {
 		RECSBits systemBits = new RECSBits();
 		for (EntitySystem s : systems) {
 			if (s.getComponentBits().contains(componentBits)) {
@@ -126,25 +126,25 @@ public class EntitySystemManager {
 		return systemBits;
 	}
 
-	public void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+	void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
 		RECSBits removedSystemBits = existingSystemBits.getRemovedBits(newSystemBits);
 		for (int i = removedSystemBits.nextSetBit(0); i >= 0; i = removedSystemBits.nextSetBit(i + 1)) {
 			systemMap.get(i).removeEntity(entity.id);
 		}
 	}
 
-	public void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+	void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
 		RECSBits addedSystemBits = existingSystemBits.getAddedBits(newSystemBits);
 		for (int i = addedSystemBits.nextSetBit(0); i >= 0; i = addedSystemBits.nextSetBit(i + 1)) {
 			systemMap.get(i).addEntity(entity.id);
 		}
 	}
 
-	public int getSystemId() {
+	int getSystemId() {
 		return ++systemIdCounter;
 	}
 
-	public void clear() {
+	void clear() {
 		systems.clear();
 		systemMap.clear();
 		systemIdCounter = 0;

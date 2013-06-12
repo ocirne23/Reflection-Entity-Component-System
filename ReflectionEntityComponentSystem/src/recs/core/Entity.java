@@ -17,11 +17,11 @@ public class Entity {
 	 *            The component.
 	 */
 	public void addComponent(Object... components) {
-		EntityWorld.addComp(this, components);
+		EntityWorld.addComponent(this, components);
 	}
 
 	public void removeComponent(Object... components) {
-		EntityWorld.removeComp(this, components);
+		EntityWorld.removeComponent(this, components);
 	}
 
 	public int getId() {

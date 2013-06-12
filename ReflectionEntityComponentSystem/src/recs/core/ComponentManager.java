@@ -3,9 +3,10 @@ package recs.core;
 import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSObjectIntMap;
 
-public class ComponentManager {
+public final class ComponentManager {
 	private EntityWorld world;
-	public ComponentManager(EntityWorld world) {
+
+	ComponentManager(EntityWorld world) {
 		this.world = world;
 	}
 	/**
@@ -14,23 +15,23 @@ public class ComponentManager {
 	 */
 	private RECSIntMap<ComponentMapper<?>> componentMappers = new RECSIntMap<ComponentMapper<?>>();
 	/**
-	 * Map with Id's for components.
+	 * Map which links id's to components.
 	 */
 	private RECSObjectIntMap<Class<?>> componentIds = new RECSObjectIntMap<Class<?>>();
 	private int componentIdCounter = 0;
 
-	public int getComponentId(Class<?> component) {
+	int getComponentId(Class<?> component) {
 		return componentIds.get(component, -1);
 	}
 
-	public <T> T getComponent(int entityId, Class<T> class1) {
+	<T> T getComponent(int entityId, Class<T> class1) {
 		int componentId = componentIds.get(class1, -1);
 		if (componentId == -1)
 			return null;
 		return class1.cast(componentMappers.get(componentId).get(entityId));
 	}
 
-	public <T> void registerComponents(Class<?>[] componentClasses) {
+	<T> void registerComponents(Class<?>[] componentClasses) {
 		for (Class<?> component : componentClasses) {
 			componentIds.put(component, ++componentIdCounter);
 			componentMappers.put(componentIdCounter, new ComponentMapper<T>());
@@ -38,17 +39,17 @@ public class ComponentManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> ComponentMapper<T> getComponentMapper(Class<?> class1) {
+	<T> ComponentMapper<T> getComponentMapper(Class<?> class1) {
 		return (ComponentMapper<T>) componentMappers.get(componentIds.get(class1, -1));
 	}
 
-	public void clear() {
+	void clear() {
 		componentIdCounter = 0;
 		componentIds.clear();
 		componentMappers.clear();
 	}
 
-	public void removeEntityFromMappers(int id) {
+	void removeEntityFromMappers(int id) {
 		for (ComponentMapper<?> manager : componentMappers.values()) {
 			Object removedComponent = manager.remove(id);
 			if (removedComponent != null) {
@@ -60,7 +61,7 @@ public class ComponentManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> ComponentMapper<T> getComponentMapper(int componentId) {
+	<T> ComponentMapper<T> getComponentMapper(int componentId) {
 		return (ComponentMapper<T>) componentMappers.get(componentId);
 	}
 }

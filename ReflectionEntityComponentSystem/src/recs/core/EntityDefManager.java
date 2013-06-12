@@ -6,38 +6,38 @@ import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSObjectMap;
 
-public class EntityDefManager {
+public final class EntityDefManager {
 	private EntityWorld world;
 	private RECSObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new RECSObjectMap<Class<? extends Entity>, EntityReflection>();
 	private RECSObjectMap<RECSBits, EntityDef> defMap = new RECSObjectMap<RECSBits, EntityDef>();
 
-	public EntityDefManager(EntityWorld world) {
+	EntityDefManager(EntityWorld world) {
 		this.world = world;
 	}
 
-	public EntityReflection getReflection(Class<? extends Entity> class1) {
+	EntityReflection getReflection(Class<? extends Entity> class1) {
 		return reflectionMap.get(class1);
 	}
 
-	public void putReflection(Class<? extends Entity> class1, EntityReflection reflection) {
+	void putReflection(Class<? extends Entity> class1, EntityReflection reflection) {
 		reflectionMap.put(class1, reflection);
 	}
 
-	public EntityDef getDef(RECSBits componentBits) {
+	EntityDef getDef(RECSBits componentBits) {
 		return defMap.get(componentBits);
 	}
 
-	public EntityDef putDef(RECSBits componentBits, EntityDef def) {
+	EntityDef putDef(RECSBits componentBits, EntityDef def) {
 		return defMap.put(componentBits, def);
 	}
 
-	public void clear() {
+	void clear() {
 		defMap.clear();
 		reflectionMap.clear();
 	}
 
 	@SuppressWarnings("unchecked")
-	public EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
+	EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
 		RECSIntMap<Field> fieldMap = new RECSIntMap<Field>();
 		RECSBits componentBits = new RECSBits();
