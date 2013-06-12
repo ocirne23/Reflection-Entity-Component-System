@@ -1,8 +1,8 @@
 Reflection-Entity-Component-System
 ==================================
 
-An entity component system which is high performance with focus on ease of use and minimal programmer overhead. Useful for smaller projects
-where you don't need more than 1 Entity World. Event handling implemented, allows for inheritance in entities, dynamic component adding.
+An entity component system which is high performance with focus on ease of use and minimal programmer overhead.
+
 
 Libary .jar:
 
@@ -10,25 +10,29 @@ https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
 <br>
 
 	public class UsageExample {
-		public static void main(String[] args) {
+	
+		private EntityWorld world;
+		
+		public UsageExample() {
 			//Register what component classes to use
-			EntityWorld.registerComponents({ Health.class, Position.class, Velocity.class });
+			world = new EntityWorld();
+			world.registerComponents({ Health.class, Position.class, Velocity.class });
 			
 			//Add your systems.
-			EntityWorld.addSystem(new HealthSystem());
-			EntityWorld.addSystem(new MovementSystem());
+			world.addSystem(new HealthSystem());
+			world.addSystem(new MovementSystem());
 			
 			//Create entities.
-			EntityWorld.createEntity(new Player(4, 6));
-			EntityWorld.createEntity(new Player(12, 9));
-			EntityWorld.createEntity(new Zombie(1, 2));
+			world.createEntity(new Player(4, 6));
+			world.createEntity(new Player(12, 9));
+			world.createEntity(new Zombie(1, 2));
 			
 			startGameLoop();
 		}
 		
 		private void loop(float deltaInSec) {
 			//Process the systems.
-			EntityWorld.process(deltaInSec);
+			world.process(deltaInSec);
 		}
 	}
 
@@ -62,8 +66,8 @@ A system is a class which extends EntitySystem:
 
 	public class MovementSystem extends EntitySystem {
 		//Declare component managers so you can retrieve components easily.
-		private ComponentManager<Position> positionManager;
-		private ComponentManager<Velocity> velocityManager;
+		private ComponentMapper<Position> positionMapper;
+		private ComponentMapper<Velocity> velocityMapper;
 		
 		public MovementSystem() {
 			//Define what components an entity requires to let it be processed by this system.
@@ -73,8 +77,8 @@ A system is a class which extends EntitySystem:
 		@Override
 		private void process(int entityId, float deltaInSec) {
 			//Retrieve components from entities using the component managers.
-			Position position = positionManager.get(entityId);
-			Velocity velocity = velocityManager.get(entityId);
+			Position position = positionMapper.get(entityId);
+			Velocity velocity = velocityMapper.get(entityId);
 			//Do something with the components.
 			position.x += velocity.x * deltaInSec;
 			position.y += velocity.y * deltaInSec;
@@ -91,10 +95,21 @@ Allows for full inheritance programming (not reccomended, but completely possibl
 		}
 	}
 	
+Can dynamically create entities.
+
+	public void createSomeEntity(EntityWorld world) {
+		Entity e = new Entity();
+		e.addComponent(new Health(10, 20);
+		e.addComponent(new Position(2, 0);
+		e.addComponent(new Velocity());
+		world.addEntity(e);
+	}
+	
+	
 Event handling with EventListeners
 
 	public class HealthSystem extends EntitySystem {
-		public ComponentManager<Health> healthManager;
+		public ComponentMapper<Health> healthMapper;
 	
 		public EventListener<DamageEvent> damageListener;
 	
@@ -105,7 +120,7 @@ Event handling with EventListeners
 		@Override
 		protected void processSystem(float deltaInSec) {
 			for(DamageEvent damageEvent: damageListener.pollEvents()) {
-				Health health = healthManager.get(damageEvent.entityId);
+				Health health = healthMapper.get(damageEvent.entityId);
 				health.health -= damageEvent.damage;
 			}
 			super.processSystem(deltaInSec);
@@ -113,7 +128,7 @@ Event handling with EventListeners
 	
 		@Override
 		protected void process(int entityId, float deltaInSec) {
-			Health health = healthManager.get(entityId);
+			Health health = healthMapper.get(entityId);
 			if (health.health <= 0) {
 				EntityWorld.removeEntity(entityId);
 			}
@@ -134,4 +149,4 @@ An event  can be any object.
 
 Events can be created easily and are passed to every system with a listener.
 
-	EntityWorld.sendEvent(new DamageEvent(entityId, 1));
+	world.sendEvent(new DamageEvent(entityId, 1));
