@@ -2,7 +2,6 @@ package recs.test.systems;
 
 import recs.core.ComponentMapper;
 import recs.core.EntitySystem;
-import recs.core.EntityWorld;
 import recs.core.EventListener;
 import recs.test.components.Health;
 import recs.test.events.DamageEvent;
@@ -29,7 +28,7 @@ public class HealthSystem extends EntitySystem {
 	protected void process(int entityId, float deltaInSec) {
 		Health health = healthManager.get(entityId);
 		if (health.health <= 0) {
-			EntityWorld.removeEntity(entityId);
+			world.removeEntity(entityId);
 		}
 	}
 }

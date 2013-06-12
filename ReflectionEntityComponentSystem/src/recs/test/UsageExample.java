@@ -17,14 +17,16 @@ public class UsageExample {
 	private static final Class<?>[] COMPONENTS = { Health.class, Position.class, Velocity.class, Attack.class };
 
 	public static void main(String[] args) {
-		EntityWorld.registerComponents(COMPONENTS);
+		EntityWorld world = new EntityWorld();
+		world.registerComponents(COMPONENTS);
 
-		EntityWorld.addSystem(new HealthSystem());
-		EntityWorld.addSystem(new MovementSystem());
+		world.addSystem(new HealthSystem());
+		world.addSystem(new MovementSystem());
 
-		EntityWorld.addEntity(new Player(4, 6));
-		EntityWorld.addEntity(new PlayerWithAttack(12, 9));
-		EntityWorld.addEntity(new Zombie(1, 2));
+		world.addEntity(new Player(4, 6));
+		world.addEntity(new PlayerWithAttack(12, 9));
+		world.addEntity(new Zombie(1, 2));
+		world.addEntity(new Player(1,2));
 
 		//game loop
 		float totalTime = 0f;
@@ -40,7 +42,7 @@ public class UsageExample {
 			accumulator += deltaSec;
 			while(accumulator > timeStep) {
 				accumulator -= timeStep;
-				EntityWorld.process(timeStep);
+				world.process(timeStep);
 			}
 
 			totalTime += deltaSec;

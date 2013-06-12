@@ -12,34 +12,39 @@ public class Benchmark {
 	private static final int NR_ZOMBIES = 50000;
 	private static final boolean DYNAMIC = true;
 	private static final Class<?>[] COMPONENTS = { Position.class, Velocity.class };
+	private final EntityWorld world;
 
 	public static void main(String[] args) {
-		Benchmark b = new Benchmark();
+		new Benchmark();
+	}
+
+	public Benchmark() {
+		world = new EntityWorld();
 
 		if (DYNAMIC) {
-			b.testDynamicAdd();
-			b.testDynamicAdd();
-			b.testDynamicAdd();
-			b.testDynamicAdd();
-			b.testDynamicAdd();
+			testDynamicAdd();
+			testDynamicAdd();
+			testDynamicAdd();
+			testDynamicAdd();
+			testDynamicAdd();
 		} else {
-			b.testReflectionAdd();
-			b.testReflectionAdd();
-			b.testReflectionAdd();
-			b.testReflectionAdd();
-			b.testReflectionAdd();
+			testReflectionAdd();
+			testReflectionAdd();
+			testReflectionAdd();
+			testReflectionAdd();
+			testReflectionAdd();
 		}
 	}
 
 	private void testReflectionAdd() {
-		EntityWorld.reset();
-		EntityWorld.registerComponents(COMPONENTS);
+		world.reset();
+		world.registerComponents(COMPONENTS);
 
-		EntityWorld.addSystem(new MovementSystem());
+		world.addSystem(new MovementSystem());
 
 		long startAdd = System.nanoTime();
 		for (int i = 0; i < NR_ZOMBIES; i++)
-			EntityWorld.addEntity(new Zombie(10, 10));
+			world.addEntity(new Zombie(10, 10));
 		System.out.println("RECS: addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
 		// game loop
@@ -52,7 +57,7 @@ public class Benchmark {
 			currentTime = start;
 			float deltaSec = deltaNano * RECSMathUtils.nanoToSec;
 
-			EntityWorld.process(deltaSec);
+			world.process(deltaSec);
 			loopCount++;
 
 			totalTime += deltaSec;
@@ -66,20 +71,20 @@ public class Benchmark {
 		System.out.println("RECS: used Memory: " + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) + " mb");
 
 		//So EntityWorld does not get GC'd.
-		if(EntityWorld.getComponent(0, Position.class) != null) {
+		if(world.getComponent(0, Position.class) != null) {
 			System.out.println("");
 		}
 	}
 
 	private void testDynamicAdd() {
-		EntityWorld.reset();
-		EntityWorld.registerComponents(COMPONENTS);
+		world.reset();
+		world.registerComponents(COMPONENTS);
 
-		EntityWorld.addSystem(new MovementSystem());
+		world.addSystem(new MovementSystem());
 
 		long startAdd = System.nanoTime();
 		for (int i = 0; i < NR_ZOMBIES; i++)
-			EntityWorld.addEntity(createZombie(10, 10));
+			world.addEntity(createZombie(10, 10));
 		System.out.println("RECS: addtime: " + ((System.nanoTime() - startAdd) * RECSMathUtils.nanoToSec));
 
 		// game loop
@@ -93,7 +98,7 @@ public class Benchmark {
 			currentTime = start;
 			float deltaSec = deltaNano * RECSMathUtils.nanoToSec;
 
-			EntityWorld.process(timeStep);
+			world.process(timeStep);
 
 			totalTime += deltaSec;
 			loopCount++;
@@ -107,7 +112,7 @@ public class Benchmark {
 		System.out.println("RECS: used Memory: " + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) + " mb");
 
 		//So EntityWorld does not get GC'd.
-		if(EntityWorld.getComponent(0, Position.class) != null) {
+		if(world.getComponent(0, Position.class) != null) {
 			System.out.println("");
 		}
 	}

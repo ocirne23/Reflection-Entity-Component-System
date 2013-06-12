@@ -1,7 +1,6 @@
 package recs.test.systems;
 
 import recs.core.EntitySystem;
-import recs.core.EntityWorld;
 import recs.core.utils.RECSMathUtils;
 import recs.test.components.Attack;
 import recs.test.events.DamageEvent;
@@ -16,7 +15,7 @@ public class AttackSystem extends EntitySystem {
 		//send damage message 10% chance.
 		int random = RECSMathUtils.random(0, 10);
 		if(random == 0) {
-			EntityWorld.sendEvent(new DamageEvent(entityId, 1));
+			world.sendEvent(new DamageEvent(entityId, 1));
 		}
 	}
 }

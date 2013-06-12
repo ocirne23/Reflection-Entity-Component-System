@@ -11,34 +11,62 @@ import recs.core.utils.RECSObjectMap;
 
 /**
  * The main world class containing all the logic. Add Entities with components
- * and systems to this class and call the process method.
- *
- *  //////////////////////////Public Methods////////////////////////////////
- *  /// registerComponents(Class<?>[] components) -> register the classes that serve as components.
- *  /// addSystem(EntitySystem system) -> add a system to the world.
- *  /// addEntity(Entity entity) -> add an entity to the systems
- *  /// process(float deltaInSec) -> process all the systems
- *  /// removeEntity(Entity entity) -> remove an entity from the systems
- *  /// getEntity(int id) -> retrieve an entity using it's id
- *  /// getComponent(int entityId, Class<?> componentClass) ->
- *  		get the component of a type from an entity with the given id.
- *  		The preferred method of retrieving components is by using ComponentMapper<>
+ * and systems to this class and call the process method. </br>
+ * //////////////////////////Public Methods////////////////////////////////</br>
+ * registerComponents(Class<?>[] components) -> register the classes that serve
+ * as components. </br> addSystem(EntitySystem system) -> add a system to the
+ * world. </br> addEntity(Entity entity) -> add an entity to the systems. </br>
+ * process(float deltaInSec) -> process all the systems. </br>
+ * removeEntity(Entity entity) -> remove an entity from the systems. </br>
+ * getEntity(int id) -> retrieve an entity using it's id. </br> getComponent(int
+ * entityId, Class<?> componentClass) -> get the component of a type from an
+ * entity with the given id. The preferred method of retrieving components is by
+ * using ComponentMapper<>
  *
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
-	private static EntitySystemManager systemManager = new EntitySystemManager();
-	private static ComponentManager componentManager = new ComponentManager();
-	private static EntityDefManager defManager = new EntityDefManager();
-	private static EventManager eventManager = new EventManager();
-	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
-	private static RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
-	private static RECSIntMap<Entity> addedEntities = new RECSIntMap<Entity>();
-	private static RECSIntMap<LinkedList<Object>> scheduledAddComponents = new RECSIntMap<LinkedList<Object>>();
-	private static RECSBits entityIds = new RECSBits();
-	private static int lastUsedId = 0;
-	private static int numFreedIds = 0;
+	private EntitySystemManager systemManager = new EntitySystemManager(this);
+	private ComponentManager componentManager = new ComponentManager(this);
+	private EntityDefManager defManager = new EntityDefManager(this);
+	private EventManager eventManager = new EventManager();
+	private RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
+	private RECSIntMap<Entity> addedEntities = new RECSIntMap<Entity>();
+	private RECSBits entityIds = new RECSBits();
+	private int lastUsedId = 0;
+	private int numFreedIds = 0;
 
+	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
+	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Object>>();
+	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Object>>();
+
+	static void addComp(Entity e, Object... comps) {
+		if(e.def == null) {
+			LinkedList<Object> scheduled = scheduledAdds.get(e);
+			if(scheduled == null) {
+				scheduled = new LinkedList<Object>();
+				scheduledAdds.put(e, scheduled);
+			}
+			for(Object o: comps)
+				scheduled.add(o);
+		} else {
+			e.def.world.addComponent(e, comps);
+		}
+	}
+
+	static void removeComp(Entity e, Object... comps) {
+		if(e.def == null) {
+			LinkedList<Object> scheduled = scheduledRemoves.get(e);
+			if(scheduled == null) {
+				scheduled = new LinkedList<Object>();
+				scheduledRemoves.put(e, scheduled);
+			}
+			for(Object o: comps)
+				scheduled.add(o);
+		} else {
+			e.def.world.removeComponent(e, comps);
+		}
+	}
 
 	/**
 	 * Process all the systems.
@@ -47,7 +75,7 @@ public final class EntityWorld {
 	 *            The time passed in seconds since the last update.
 	 *            EntityTaskSystems are updated independantly of this delta.
 	 */
-	public static void process(float deltaInSec) {
+	public void process(float deltaInSec) {
 		systemManager.process(deltaInSec);
 	}
 
@@ -58,12 +86,16 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	public static void addEntity(Entity entity) {
+	public void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
-		int id = entity.id;
+		int id = getEntityId();
+		entity.id = id;
 		addedEntities.put(id, entity);
 
 		EntityReflection reflection = defManager.getReflection(entityClass);
+		if(reflection == null) {
+			reflection = defManager.addNewEntityReflection(entity.getClass());
+		}
 		Keys k = reflection.componentFields.keys();
 		while (k.hasNext) {
 			int next = k.next();
@@ -77,10 +109,15 @@ public final class EntityWorld {
 				e.printStackTrace();
 			}
 		}
-		LinkedList<Object> scheduleAddList = scheduledAddComponents.remove(id);
+		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
 		if (scheduleAddList != null) {
 			addComponent(entity, scheduleAddList.toArray());
 		}
+		LinkedList<Object> scheduledRemovesList = scheduledRemoves.remove(entity);
+		if (scheduledRemovesList != null) {
+			removeComponent(entity, scheduledRemovesList.toArray());
+		}
+
 		addEntityToSystems(entity);
 	}
 
@@ -90,7 +127,7 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	public static Entity removeEntity(int id) {
+	public Entity removeEntity(int id) {
 		numFreedIds++;
 		removeEntityFromSystem(id);
 		removeEntityFromMappers(id);
@@ -99,11 +136,11 @@ public final class EntityWorld {
 		return addedEntities.remove(id);
 	}
 
-	public static Entity getEntity(int id) {
+	public Entity getEntity(int id) {
 		return addedEntities.get(id);
 	}
 
-	public static void addSystem(EntitySystem system) {
+	public void addSystem(EntitySystem system) {
 		systemManager.addSystem(system);
 	}
 
@@ -116,7 +153,7 @@ public final class EntityWorld {
 	 * @param componentClasses
 	 *            A list of component classes.
 	 */
-	public static <T> void registerComponents(Class<?>... componentClasses) {
+	public <T> void registerComponents(Class<?>... componentClasses) {
 		componentManager.registerComponents(componentClasses);
 	}
 
@@ -130,7 +167,7 @@ public final class EntityWorld {
 	 *            The type of that component
 	 * @return The component
 	 */
-	public static <T> T getComponent(int entityId, Class<T> class1) {
+	public <T> T getComponent(int entityId, Class<T> class1) {
 		return componentManager.getComponent(entityId, class1);
 	}
 
@@ -143,19 +180,19 @@ public final class EntityWorld {
 	 * @return The component manager, or null if none exists (component not
 	 *         registered).
 	 */
-	public static <T> ComponentMapper<T> getComponentMapper(Class<T> class1) {
+	public <T> ComponentMapper<T> getComponentMapper(Class<T> class1) {
 		return componentManager.getComponentMapper(class1);
 	}
 
-	public static <T> ComponentMapper<T> getComponentMapper(int componentId) {
+	public <T> ComponentMapper<T> getComponentMapper(int componentId) {
 		return componentManager.getComponentMapper(componentId);
 	}
 
-	public static void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
+	public void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
 		destructionListeners.put(componentClass, listener);
 	}
 
-	public static ComponentDestructionListener getDestructionListener(Class<?> class1) {
+	public ComponentDestructionListener getDestructionListener(Class<?> class1) {
 		return destructionListeners.get(class1);
 	}
 
@@ -166,20 +203,21 @@ public final class EntityWorld {
 	 * @param event
 	 *            The event.
 	 */
-	public static void sendEvent(Object event) {
+	public void sendEvent(Object event) {
 		eventManager.sendEvent(event);
 	}
 
 	/**
 	 * Use this to clear everything in the EntityWorld. Use with care.
 	 */
-	public static void reset() {
+	public void reset() {
 		addedEntities.clear();
 		componentManager.clear();
 		systemManager.clear();
 		defManager.clear();
-		scheduledAddComponents.clear();
 		destructionListeners.clear();
+		scheduledAdds.clear();
+		scheduledRemoves.clear();
 		entityIds.clear();
 		eventManager.clear();
 		lastUsedId = 0;
@@ -187,26 +225,21 @@ public final class EntityWorld {
 		System.gc();
 	}
 
-	static int createEntity(Entity e) {
+	void createEntity(Entity e) {
 		Class<? extends Entity> entityClass = e.getClass();
 		EntityReflection reflection = defManager.getReflection(entityClass);
 		if (reflection == null) {
 			reflection = addNewEntityReflection(entityClass);
 		}
 		e.def = reflection.def;
-		int id = getEntityId();
-		return id;
 	}
 
-	static void addComponent(Entity e, Object... components) {
-		if (!addedEntities.containsKey(e.id)) {
-			scheduleAddComponent(e, components);
-			return;
-		}
+	void addComponent(Entity e, Object... components) {
 		EntityDef def = e.def;
 		RECSBits componentBits = new RECSBits();
 		RECSBits systemBits = new RECSBits();
-		componentBits.copy(def.componentBits);
+		if(def != null)
+			componentBits.copy(def.componentBits);
 		for (Object component : components) {
 			int componentId = getComponentId(component.getClass());
 			ComponentMapper<?> mapper = getComponentMapper(componentId);
@@ -218,18 +251,14 @@ public final class EntityWorld {
 		EntityDef newDef = defManager.getDef(componentBits);
 		if (newDef == null) {
 			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(componentBits, systemBits);
+			newDef = new EntityDef(this, componentBits, systemBits);
 			defManager.putDef(componentBits, newDef);
 		}
 		e.def = newDef;
-		addToSystems(e, def.systemBits, newDef.systemBits);
+		addToSystems(e, newDef.systemBits, newDef.systemBits);
 	}
 
-	static void removeComponent(Entity e, Object... components) {
-		if (!addedEntities.containsKey(e.id)) {
-			scheduleRemoveComponent(e, components);
-			return;
-		}
+	void removeComponent(Entity e, Object... components) {
 		EntityDef def = e.def;
 		RECSBits componentBits = new RECSBits();
 		RECSBits systemBits = new RECSBits();
@@ -242,18 +271,18 @@ public final class EntityWorld {
 		EntityDef newDef = defManager.getDef(componentBits);
 		if (newDef == null) {
 			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(componentBits, systemBits);
+			newDef = new EntityDef(this, componentBits, systemBits);
 			defManager.putDef(componentBits, def);
 		}
 		e.def = def;
 		removeFromSystems(e, def.systemBits, newDef.systemBits);
 	}
 
-	static RECSBits getSystemBits(RECSBits componentBits) {
+	RECSBits getSystemBits(RECSBits componentBits) {
 		return systemManager.getSystemBits(componentBits);
 	}
 
-	static int getSystemId() {
+	int getSystemId() {
 		return systemManager.getSystemId();
 	}
 
@@ -262,7 +291,7 @@ public final class EntityWorld {
 	 *
 	 * @return
 	 */
-	static int getEntityId() {
+	int getEntityId() {
 		if (numFreedIds > entityIds.numBits() * 0.2f) {
 			lastUsedId = 0;
 			numFreedIds = 0;
@@ -272,8 +301,8 @@ public final class EntityWorld {
 		return lastUsedId;
 	}
 
-	static int getComponentId(Class<?> component) {
-		 return componentManager.getComponentId(component);
+	int getComponentId(Class<?> component) {
+		return componentManager.getComponentId(component);
 	}
 
 	/**
@@ -285,7 +314,7 @@ public final class EntityWorld {
 	 * @param messageTags
 	 *            The tags listened to.
 	 */
-	static void registerEventListener(EventListener<?> listener, Class<?> eventType) {
+	void registerEventListener(EventListener<?> listener, Class<?> eventType) {
 		eventManager.registerListener(listener, eventType);
 	}
 
@@ -293,34 +322,15 @@ public final class EntityWorld {
 		threads.execute(r);
 	}
 
-
-	private static void removeEntityFromMappers(int id) {
+	private void removeEntityFromMappers(int id) {
 		componentManager.removeEntityFromMappers(id);
 	}
 
-	private static void scheduleAddComponent(Entity e, Object... components) {
-		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
-		if (scheduleList == null) {
-			scheduleList = new LinkedList<Object>();
-			scheduledAddComponents.put(e.id, scheduleList);
-		}
-		for (Object o : components)
-			scheduleList.add(o);
-	}
-
-	private static void scheduleRemoveComponent(Entity e, Object... components) {
-		LinkedList<Object> scheduleList = scheduledAddComponents.get(e.id);
-		if (scheduleList == null)
-			return;
-		for (Object o : components)
-			scheduleList.remove(o);
-	}
-
-	private static void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+	private void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
 		systemManager.addToSystems(entity, existingSystemBits, newSystemBits);
 	}
 
-	private static void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+	private void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
 		systemManager.removeFromSystems(entity, existingSystemBits, newSystemBits);
 	}
 
@@ -331,7 +341,7 @@ public final class EntityWorld {
 	 *            The entity's class.
 	 * @return
 	 */
-	private static EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
+	private EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
 		return defManager.addNewEntityReflection(class1);
 	}
 
@@ -343,11 +353,19 @@ public final class EntityWorld {
 	 * @param entity
 	 *            The entity.
 	 */
-	private static void addEntityToSystems(Entity entity) {
+	private void addEntityToSystems(Entity entity) {
 		systemManager.addEntityToSystems(entity);
 	}
 
-	private static void removeEntityFromSystem(int id) {
+	private void removeEntityFromSystem(int id) {
 		systemManager.removeEntityFromSystems(id);
+	}
+
+	public RECSBits getComponentBits(Class<?>[] components) {
+		RECSBits bits = new RECSBits();
+		for(Class<?> c: components) {
+			bits.set(getComponentId(c));
+		}
+		return bits;
 	}
 }

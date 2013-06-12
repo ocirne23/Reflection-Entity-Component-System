@@ -13,38 +13,25 @@ import recs.core.utils.RECSIntSet.Items;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
-	public final int id;
-	/**
-	 * Array of entities this system will use.
-	 */
-	final RECSIntSet entitiyIds;
-	/**
-	 * Collection of the classes of the components this system will use.
-	 */
-	final RECSBits componentBits;
-	/**
-	 * Used by EntityWorld to determine if processSystem should be called.
-	 */
+	int id;
+	RECSIntSet entitiyIds = new RECSIntSet(16);
+	RECSBits componentBits;
+	Class<?>[] components;
+
 	private boolean enabled = true;
-	private final LinkedBlockingQueue<Object> receivedEvents;
-	private final LinkedList<Object> polledEventsList;
+	private final LinkedBlockingQueue<Object> receivedEvents = new LinkedBlockingQueue<Object>();
+	private final LinkedList<Object> polledEventsList = new LinkedList<Object>();
+	private float timeAccumulator = 0f;
 
 	protected float intervalInSeconds = 0f;
-	private float timeAccumulator = 0f;
+	protected EntityWorld world;
 
 	/**
 	 *
 	 * @param components
 	 */
 	public EntitySystem(Class<?>... components) {
-		componentBits = new RECSBits();
-		for (Class<?> class1 : components) {
-			componentBits.set(EntityWorld.getComponentId(class1));
-		}
-		id = EntityWorld.getSystemId();
-		receivedEvents = new LinkedBlockingQueue<Object>();
-		polledEventsList = new LinkedList<Object>();
-		entitiyIds = new RECSIntSet(16);
+		this.components = components;
 	}
 
 	/**

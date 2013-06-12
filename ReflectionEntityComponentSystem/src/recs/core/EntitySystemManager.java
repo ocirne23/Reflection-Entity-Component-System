@@ -14,8 +14,12 @@ public class EntitySystemManager {
 	 */
 	private LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
 	private RECSIntMap<EntitySystem> systemMap = new RECSIntMap<EntitySystem>();
+	private EntityWorld world;
 	private int systemIdCounter = 0;
 
+	public EntitySystemManager(EntityWorld world) {
+		this.world = world;
+	}
 
 	/**
 	 * Add a list of systems to the world
@@ -58,6 +62,7 @@ public class EntitySystemManager {
 	public void addSystem(EntitySystem system) {
 		if (systems.contains(system))
 			throw new RuntimeException("System already added");
+		system.componentBits = world.getComponentBits(system.components);
 
 		Class<? extends EntitySystem> class1 = system.getClass();
 		do {
@@ -70,7 +75,7 @@ public class EntitySystemManager {
 					try {
 						// Set the component manager declaration with the right
 						// component manager.
-						field.set(system, EntityWorld.getComponentMapper((Class<?>) type));
+						field.set(system, world.getComponentMapper((Class<?>) type));
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
@@ -83,7 +88,7 @@ public class EntitySystemManager {
 					// Read the type in the <> of eventListener.
 					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 					EventListener<?> eventListener = new EventListener<>();
-					EntityWorld.registerEventListener(eventListener, (Class<?>) type);
+					world.registerEventListener(eventListener, (Class<?>) type);
 
 					try {
 						// Set the event listener declaration with the right

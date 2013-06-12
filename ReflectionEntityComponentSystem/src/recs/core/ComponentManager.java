@@ -4,16 +4,20 @@ import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSObjectIntMap;
 
 public class ComponentManager {
+	private EntityWorld world;
+	public ComponentManager(EntityWorld world) {
+		this.world = world;
+	}
 	/**
 	 * Collection of ComponentManagers, managers are retrievable by using the
 	 * class they represent.
 	 */
-	private static RECSIntMap<ComponentMapper<?>> componentMappers = new RECSIntMap<ComponentMapper<?>>();
+	private RECSIntMap<ComponentMapper<?>> componentMappers = new RECSIntMap<ComponentMapper<?>>();
 	/**
 	 * Map with Id's for components.
 	 */
-	private static RECSObjectIntMap<Class<?>> componentIds = new RECSObjectIntMap<Class<?>>();
-	private static int componentIdCounter = 0;
+	private RECSObjectIntMap<Class<?>> componentIds = new RECSObjectIntMap<Class<?>>();
+	private int componentIdCounter = 0;
 
 	public int getComponentId(Class<?> component) {
 		return componentIds.get(component, -1);
@@ -48,7 +52,7 @@ public class ComponentManager {
 		for (ComponentMapper<?> manager : componentMappers.values()) {
 			Object removedComponent = manager.remove(id);
 			if (removedComponent != null) {
-				ComponentDestructionListener listener = EntityWorld.getDestructionListener(removedComponent.getClass());
+				ComponentDestructionListener listener = world.getDestructionListener(removedComponent.getClass());
 				if (listener != null)
 					listener.destroyed(removedComponent);
 			}

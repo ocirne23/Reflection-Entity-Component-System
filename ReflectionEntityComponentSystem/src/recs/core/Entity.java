@@ -7,12 +7,8 @@ package recs.core;
  * @author Enrico van Oosten
  */
 public class Entity {
-	public final int id;
+	int id;
 	EntityDef def = null;
-
-	public Entity() {
-		id = EntityWorld.createEntity(this);
-	}
 
 	/**
 	 * Add an component to this entity runtime.
@@ -21,10 +17,14 @@ public class Entity {
 	 *            The component.
 	 */
 	public void addComponent(Object... components) {
-		EntityWorld.addComponent(this, components);
+		EntityWorld.addComp(this, components);
 	}
 
 	public void removeComponent(Object... components) {
-		EntityWorld.removeComponent(this, components);
+		EntityWorld.removeComp(this, components);
+	}
+
+	public int getId() {
+		return id;
 	}
 }

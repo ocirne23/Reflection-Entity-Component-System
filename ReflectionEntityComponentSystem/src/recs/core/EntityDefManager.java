@@ -7,8 +7,13 @@ import recs.core.utils.RECSIntMap;
 import recs.core.utils.RECSObjectMap;
 
 public class EntityDefManager {
+	private EntityWorld world;
 	private RECSObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new RECSObjectMap<Class<? extends Entity>, EntityReflection>();
 	private RECSObjectMap<RECSBits, EntityDef> defMap = new RECSObjectMap<RECSBits, EntityDef>();
+
+	public EntityDefManager(EntityWorld world) {
+		this.world = world;
+	}
 
 	public EntityReflection getReflection(Class<? extends Entity> class1) {
 		return reflectionMap.get(class1);
@@ -41,9 +46,9 @@ public class EntityDefManager {
 			// Put every field object in a map with the fields class as key.
 			for (Field f : class1.getDeclaredFields()) {
 				Class<?> fieldClass = f.getType();
-				if (EntityWorld.getComponentMapper(fieldClass) != null) {
+				if (world.getComponentMapper(fieldClass) != null) {
 					f.setAccessible(true);
-					int componentId = EntityWorld.getComponentId(fieldClass);
+					int componentId = world.getComponentId(fieldClass);
 
 					componentBits.set(componentId);
 					fieldMap.put(componentId, f);
@@ -52,8 +57,8 @@ public class EntityDefManager {
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
 		}
 
-		RECSBits systemBits = EntityWorld.getSystemBits(componentBits);
-		EntityDef def = new EntityDef(componentBits, systemBits);
+		RECSBits systemBits = world.getSystemBits(componentBits);
+		EntityDef def = new EntityDef(world, componentBits, systemBits);
 		putDef(componentBits, def);
 
 		EntityReflection reflection = new EntityReflection(fieldMap, def);
