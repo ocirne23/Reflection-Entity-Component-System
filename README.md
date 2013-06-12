@@ -95,6 +95,17 @@ Allows for full inheritance programming (not reccomended, but completely possibl
 		}
 	}
 	
+Can dynamically create entities.
+
+	public void createSomeEntity(EntityWorld world) {
+		Entity e = new Entity();
+		e.addComponent(new Health(10, 20);
+		e.addComponent(new Position(2, 0);
+		e.addComponent(new Velocity());
+		world.addEntity(e);
+	}
+	
+	
 Event handling with EventListeners
 
 	public class HealthSystem extends EntitySystem {
