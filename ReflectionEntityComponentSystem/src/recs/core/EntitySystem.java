@@ -66,7 +66,7 @@ public abstract class EntitySystem {
 		}
 	}
 
-	protected abstract void process(int entityId, float deltaInSec);
+	protected abstract void process(int id, float deltaSec);
 
 	/**
 	 * Set if this system should be processed by the world.
