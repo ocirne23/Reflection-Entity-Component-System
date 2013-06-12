@@ -1,8 +1,8 @@
 Reflection-Entity-Component-System
 ==================================
 
-An entity component system which is high performance with focus on ease of use and minimal programmer overhead. Useful for smaller projects
-where you don't need more than 1 Entity World. Event handling implemented, allows for inheritance in entities, dynamic component adding.
+An entity component system which is high performance with focus on ease of use and minimal programmer overhead.
+
 
 Libary .jar:
 
@@ -10,25 +10,27 @@ https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
 <br>
 
 	public class UsageExample {
-		public static void main(String[] args) {
+		EntityWorld world;
+		public UsageExample() {
 			//Register what component classes to use
-			EntityWorld.registerComponents({ Health.class, Position.class, Velocity.class });
+			world = new EntityWorld();
+			world.registerComponents({ Health.class, Position.class, Velocity.class });
 			
 			//Add your systems.
-			EntityWorld.addSystem(new HealthSystem());
-			EntityWorld.addSystem(new MovementSystem());
+			world.addSystem(new HealthSystem());
+			world.addSystem(new MovementSystem());
 			
 			//Create entities.
-			EntityWorld.createEntity(new Player(4, 6));
-			EntityWorld.createEntity(new Player(12, 9));
-			EntityWorld.createEntity(new Zombie(1, 2));
+			world.createEntity(new Player(4, 6));
+			world.createEntity(new Player(12, 9));
+			world.createEntity(new Zombie(1, 2));
 			
 			startGameLoop();
 		}
 		
 		private void loop(float deltaInSec) {
 			//Process the systems.
-			EntityWorld.process(deltaInSec);
+			world.process(deltaInSec);
 		}
 	}
 
@@ -134,4 +136,4 @@ An event  can be any object.
 
 Events can be created easily and are passed to every system with a listener.
 
-	EntityWorld.sendEvent(new DamageEvent(entityId, 1));
+	world.sendEvent(new DamageEvent(entityId, 1));
