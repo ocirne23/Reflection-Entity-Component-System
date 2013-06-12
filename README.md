@@ -22,10 +22,10 @@ https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
 			world.addSystem(new HealthSystem());
 			world.addSystem(new MovementSystem());
 			
-			//Create entities.
-			world.createEntity(new Player(4, 6));
-			world.createEntity(new Player(12, 9));
-			world.createEntity(new Zombie(1, 2));
+			//Add entities.
+			world.addEntity(new Player(4, 6));
+			world.addEntity(new Player(12, 9));
+			world.addEntity(new Zombie(1, 2));
 			
 			startGameLoop();
 		}
