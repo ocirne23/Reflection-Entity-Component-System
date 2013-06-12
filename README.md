@@ -10,7 +10,9 @@ https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
 <br>
 
 	public class UsageExample {
-		EntityWorld world;
+	
+		private EntityWorld world;
+		
 		public UsageExample() {
 			//Register what component classes to use
 			world = new EntityWorld();
@@ -64,8 +66,8 @@ A system is a class which extends EntitySystem:
 
 	public class MovementSystem extends EntitySystem {
 		//Declare component managers so you can retrieve components easily.
-		private ComponentManager<Position> positionManager;
-		private ComponentManager<Velocity> velocityManager;
+		private ComponentMapper<Position> positionMapper;
+		private ComponentMapper<Velocity> velocityMapper;
 		
 		public MovementSystem() {
 			//Define what components an entity requires to let it be processed by this system.
@@ -75,8 +77,8 @@ A system is a class which extends EntitySystem:
 		@Override
 		private void process(int entityId, float deltaInSec) {
 			//Retrieve components from entities using the component managers.
-			Position position = positionManager.get(entityId);
-			Velocity velocity = velocityManager.get(entityId);
+			Position position = positionMapper.get(entityId);
+			Velocity velocity = velocityMapper.get(entityId);
 			//Do something with the components.
 			position.x += velocity.x * deltaInSec;
 			position.y += velocity.y * deltaInSec;
@@ -96,7 +98,7 @@ Allows for full inheritance programming (not reccomended, but completely possibl
 Event handling with EventListeners
 
 	public class HealthSystem extends EntitySystem {
-		public ComponentManager<Health> healthManager;
+		public ComponentMapper<Health> healthMapper;
 	
 		public EventListener<DamageEvent> damageListener;
 	
@@ -107,7 +109,7 @@ Event handling with EventListeners
 		@Override
 		protected void processSystem(float deltaInSec) {
 			for(DamageEvent damageEvent: damageListener.pollEvents()) {
-				Health health = healthManager.get(damageEvent.entityId);
+				Health health = healthMapper.get(damageEvent.entityId);
 				health.health -= damageEvent.damage;
 			}
 			super.processSystem(deltaInSec);
@@ -115,7 +117,7 @@ Event handling with EventListeners
 	
 		@Override
 		protected void process(int entityId, float deltaInSec) {
-			Health health = healthManager.get(entityId);
+			Health health = healthMapper.get(entityId);
 			if (health.health <= 0) {
 				EntityWorld.removeEntity(entityId);
 			}
