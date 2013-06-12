@@ -96,6 +96,7 @@ public final class EntityWorld {
 		if(reflection == null) {
 			reflection = defManager.addNewEntityReflection(entity.getClass());
 		}
+		entity.def = reflection.def;
 		Keys k = reflection.componentFields.keys();
 		while (k.hasNext) {
 			int next = k.next();
@@ -109,6 +110,7 @@ public final class EntityWorld {
 				e.printStackTrace();
 			}
 		}
+
 		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
 		if (scheduleAddList != null) {
 			addComponent(entity, scheduleAddList.toArray());
@@ -117,7 +119,6 @@ public final class EntityWorld {
 		if (scheduledRemovesList != null) {
 			removeComponent(entity, scheduledRemovesList.toArray());
 		}
-
 		addEntityToSystems(entity);
 	}
 
@@ -255,7 +256,7 @@ public final class EntityWorld {
 			defManager.putDef(componentBits, newDef);
 		}
 		e.def = newDef;
-		addToSystems(e, newDef.systemBits, newDef.systemBits);
+		addToSystems(e, def.systemBits, newDef.systemBits);
 	}
 
 	void removeComponent(Entity e, Object... components) {

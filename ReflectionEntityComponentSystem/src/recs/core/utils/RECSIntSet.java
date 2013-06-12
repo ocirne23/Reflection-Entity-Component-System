@@ -401,7 +401,7 @@ public class RECSIntSet {
 			hasNext = false;
 			int[] itemTable = map.itemTable;
 			for (int n = map.capacity + map.stashSize; ++nextIndex < n;) {
-				if (itemTable[nextIndex] != EMPTY) {
+				if (itemTable[nextIndex] != EMPTY && itemTable[nextIndex] != INDEX_ZERO) {
 					hasNext = true;
 					break;
 				}

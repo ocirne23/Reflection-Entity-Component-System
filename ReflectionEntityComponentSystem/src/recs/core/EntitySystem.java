@@ -113,4 +113,8 @@ public abstract class EntitySystem {
 	public void sendMessage(Object message) {
 		receivedEvents.add(message);
 	}
+
+	public int getId() {
+		return id;
+	}
 }

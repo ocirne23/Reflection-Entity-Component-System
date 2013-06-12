@@ -62,6 +62,7 @@ public class EntitySystemManager {
 	public void addSystem(EntitySystem system) {
 		if (systems.contains(system))
 			throw new RuntimeException("System already added");
+		system.id = getSystemId();
 		system.componentBits = world.getComponentBits(system.components);
 
 		Class<? extends EntitySystem> class1 = system.getClass();
