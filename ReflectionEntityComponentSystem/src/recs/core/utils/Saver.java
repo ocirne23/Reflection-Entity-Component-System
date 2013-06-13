@@ -1,183 +1,347 @@
 package recs.core.utils;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 
-import recs.test.components.Position;
+import recs.core.Entity;
+import recs.test.entities.Player;
 
+/**
+ * Can write/read almost any object to/from a file. Classes with generic Object[] or likewise are not supported.
+ * 
+ * @author Enrico van Oosten
+ */
 public class Saver {
 
-	private static StringBuilder builder = new StringBuilder();
+    public static void main(String[] args) {
+        Entity player = new Player(3, 5);
 
-	public static void main(String[] args) {
-		Position p = new Position(1, 2);
-		String data = saveObject(p);
+        File playerFile = Saver.storeObject(player, new File("player"));
+        System.out.println("filesize: " + playerFile.length()); // no overhead, 4 ints = 16 bytes.
+        Player player2 = Saver.loadObject(new Player(), playerFile);
+        System.out.println(player2.position.x + ":" + player2.position.y); // 3:5
+    }
 
-		Position p2 = new Position();
-		readObject(p2, data, 0);
-	}
+    private Saver() {
+    }
 
-	public static String saveObject(Object o) {
-		try {
-			appendObject(o);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		String data = builder.toString();
-		builder.delete(0, builder.length());
-		System.out.println("data: " + data);
-		return data;
-	}
+    /**
+     * Stores any object in the given file.
+     */
+    public static File storeObject(Object o, File file) {
+        try {
+            FileOutputStream fileOStream = new FileOutputStream(file);
+            DataOutputStream ostream = new DataOutputStream(fileOStream);
 
-	private static void appendObject(Object o) throws IllegalArgumentException, IllegalAccessException {
-		System.out.println("appending class: " + o.getClass());
-		for (Field f : o.getClass().getDeclaredFields()) {
-			System.out.println("type: " + f.getType());
-			Class<?> type = f.getType();
-			if (type == Object.class)
-				continue;
-			f.setAccessible(true);
-			Object value = f.get(o);
-			if (value == null)
-				continue;
-			if (type.isPrimitive()) {
-				if (Modifier.isFinal(f.getModifiers()))
-					continue;
-				builder.append(value);
-				builder.append(';');
-			} else if(type.isArray()) {
-				appendArray(o, f);
-			} else {
-				appendObject(value);
-			}
-		}
-	}
+            appendObject(o, ostream);
 
-	private static void appendArray(Object o, Field f) throws IllegalArgumentException, IllegalAccessException {
-		Class<?> type = f.getType();
+            ostream.flush();
+            fileOStream.flush();
+            ostream.close();
+            fileOStream.close();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
 
-		System.out.println("array of: " + type );
-		//Class<?> elementType = Array.get(f.get(o), 0).getClass();
-		int length = Array.getLength(f.get(o));
-		for(int i = 0; i < length; i++) {
-			Object item = Array.get(f.get(o), i);
-			if(item != null)
-				builder.append(item.toString());
-			else
-				builder.append("null");
-			if(i == length - 1) {
-				builder.append(';');
-			} else {
-				builder.append(',');
-			}
-		}
-	}
+    private static void appendObject(Object o, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+        for (Field f : o.getClass().getDeclaredFields()) {
+            Class<?> type = f.getType();
+            int modifiers = f.getModifiers();
+            if (Modifier.isTransient(modifiers))
+                continue;
+            if (Modifier.isStatic(modifiers))
+                continue;
 
-	private static int readObject(Object o, String data, int fromIndex) {
-		try {
-			for (Field f : o.getClass().getDeclaredFields()) {
-				Class<?> type = f.getType();
-				if (type == Object.class)
-					continue;
+            if (type.isPrimitive()) {
+                writePrimitive(o, f, ostream);
+            } else if (type.isArray()) {
+                writeArray(o, f, ostream);
+            } else {
+                f.setAccessible(true);
+                appendObject(f.get(o), ostream);
+            }
+        }
+    }
 
-				System.out.println("setting for type: " + type);
+    private static void writePrimitive(Object o, Field f, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+        Class<?> type = f.getType();
+        System.out.println("Writing primitive: " + f.getType());
+        f.setAccessible(true);
+        if (type == float.class) {
+            ostream.writeFloat(f.getFloat(o));
+        } else if (type == int.class) {
+            ostream.writeInt(f.getInt(o));
+        } else if (type == boolean.class) {
+            ostream.writeBoolean(f.getBoolean(o));
+        } else if (type == double.class) {
+            ostream.writeDouble(f.getDouble(o));
+        } else if (type == short.class) {
+            ostream.writeShort(f.getShort(o));
+        } else if (type == byte.class) {
+            ostream.writeByte(f.getByte(o));
+        } else if (type == char.class) {
+            ostream.writeChar(f.getChar(o));
+        } else if (type == long.class) {
+            ostream.writeLong(f.getLong(o));
+        }
+    }
 
-				if (type.isPrimitive()) {
-					if (Modifier.isFinal(f.getModifiers()))
-						continue;
-					f.setAccessible(true);
-					int nextIndex = data.indexOf(';', fromIndex);
-					String contents = data.substring(fromIndex, nextIndex);
+    private static void writeArray(Object o, Field f, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+        Class<?> type = f.getType();
+        f.setAccessible(true);
+        int length = Array.getLength(f.get(o));
 
-					if (type == float.class) {
-						System.out.println("setting float: " + contents);
-						f.setFloat(o, Float.valueOf(contents));
-					} else if (type == double.class) {
-						System.out.println("setting double: " + contents);
-						f.setDouble(o, Double.valueOf(contents));
-					} else if (type == int.class) {
-						System.out.println("setting int: " + contents);
-						f.setInt(o, Integer.valueOf(contents));
-					} else if (type == short.class) {
-						System.out.println("setting short: " + contents);
-						f.setShort(o, Short.valueOf(contents));
-					} else if (type == byte.class) {
-						System.out.println("setting byte: " + contents);
-						f.setByte(o, Byte.valueOf(contents));
-					} else if (type == char.class) {
-						System.out.println("setting char: " + contents);
-						f.setChar(o, Character.valueOf(contents.charAt(0)));
-					} else if (type == long.class) {
-						System.out.println("setting long: " + contents);
-						f.setLong(o, Long.valueOf(contents));
-					} else if (type == String.class) {
-						f.set(o, contents);
-					} else if (type == int[].class) {
+        ByteBuffer buffer = null;
+        if (type == int[].class) {
+            buffer = ByteBuffer.allocate(length * 4 + 4);
+            buffer.putInt(length);
+            buffer.asIntBuffer().put((int[]) f.get(o));
+        } else if (type == float[].class) {
+            buffer = ByteBuffer.allocate(length * 4 + 4);
+            buffer.putInt(length);
+            buffer.asFloatBuffer().put((float[]) f.get(o));
+        } else if (type == boolean[].class) {
+            buffer = ByteBuffer.allocate(length + 4);
+            buffer.putInt(length);
+            buffer.put(BitUtils.createByteArr((boolean[]) f.get(o)));
+        } else if (type == double[].class) {
+            buffer = ByteBuffer.allocate(length * 8 + 4);
+            buffer.putInt(length);
+            buffer.asDoubleBuffer().put((double[]) f.get(o));
+        } else if (type == short[].class) {
+            buffer = ByteBuffer.allocate(length * 2 + 4);
+            buffer.putInt(length);
+            buffer.asShortBuffer().put((short[]) f.get(o));
+        } else if (type == byte[].class) {
+            buffer = ByteBuffer.allocate(length + 4);
+            buffer.putInt(length);
+            buffer.put((byte[]) f.get(o));
+        } else if (type == char[].class) {
+            buffer = ByteBuffer.allocate(length * 2 + 4); // wattafak java.
+            buffer.putInt(length);
+            buffer.asCharBuffer().put((char[]) f.get(o));
+        } else if (type == long[].class) {
+            buffer = ByteBuffer.allocate(length * 8 + 4);
+            buffer.putInt(length);
+            buffer.asLongBuffer().put((long[]) f.get(o));
+        }
+        if (buffer != null) {
+            ostream.write(buffer.array());
+        } else {
+            ostream.writeInt(length);
+            for (Object obj : (Object[]) f.get(o)) {
+                appendObject(obj, ostream);
+            }
+        }
+    }
 
-					}
-					fromIndex = nextIndex + 1;
-				} else {
-					boolean hasNoArg = false;
-					Constructor<?> c = null;
-					for (Constructor<?> constructor : type.getDeclaredConstructors()) {
-						c = constructor;
-						if (c.getParameterTypes().length == 0) {
-							hasNoArg = true;
-							c.setAccessible(true);
-							Object next = c.newInstance();
-							fromIndex = readObject(next, data, fromIndex);
-						}
-					}
-					if (!hasNoArg) {
-						System.out.println(type.getName());
-						if (type.isArray()) {
-							Object next = Array.newInstance(type, 0);
-							fromIndex = readObject(next, data, fromIndex);
-						} else {
-							Class<?>[] parameters = c.getParameterTypes();
-							Object[] params = new Object[parameters.length];
+    /**
+     * Sets the values of the given object equal to the stored object in the file.
+     * 
+     * @param <T>
+     */
+    public static <T> T loadObject(T o, File file) {
+        FileInputStream fileIStream;
+        try {
+            fileIStream = new FileInputStream(file);
+            DataInputStream istream = new DataInputStream(fileIStream);
+            byte[] bytes = new byte[(int) file.length()];
+            istream.readFully(bytes);
+            ByteBuffer b = ByteBuffer.wrap(bytes);
 
-							for (int i = 0; i < parameters.length; i++) {
-								if (parameters[i].isPrimitive()) {
-									if (parameters[i] == char.class)
-										params[i] = '0';
-									else if (parameters[i] == boolean.class)
-										params[i] = false;
-									else
-										params[i] = 0;
-								} else {
-									params[i] = null;
-								}
-							}
-							c.setAccessible(true);
-							Object next = c.newInstance(params);
-							fromIndex = readObject(next, data, fromIndex);
-						}
-					}
-				}
-			}
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Could not load class");
-		}
-		return fromIndex;
+            readObject(o, b);
 
-	}
+            istream.close();
+            fileIStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return o;
+    }
+
+    private static void readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+        for (Field f : o.getClass().getDeclaredFields()) {
+            Class<?> type = f.getType();
+            int modifiers = f.getModifiers();
+            if (Modifier.isTransient(modifiers))
+                continue;
+            if (Modifier.isStatic(modifiers))
+                continue;
+
+            if (type.isPrimitive()) {
+                readPrimitive(o, f, b);
+            } else if (type.isArray()) {
+                readArray(o, f, b);
+            } else {
+                f.setAccessible(true);
+                Object obj = f.get(o);
+                if (obj == null) {
+                    obj = createNewInstance(f.getType());
+                    f.set(o, obj);
+                }
+                readObject(obj, b);
+            }
+        }
+    }
+
+    private static void readArray(Object o, Field f, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+        Class<?> type = f.getType();
+        int length = b.getInt();
+
+        f.setAccessible(true);
+        if (type == int[].class) {
+            byte[] data = new byte[length * 4];
+            b.get(data, 0, length * 4);
+            IntBuffer buf = ByteBuffer.wrap(data).asIntBuffer();
+            int[] array = new int[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else if (type == float[].class) {
+            byte[] data = new byte[length * 4];
+            b.get(data, 0, length * 4);
+            FloatBuffer buf = ByteBuffer.wrap(data).asFloatBuffer();
+            float[] array = new float[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else if (type == boolean[].class) {
+            byte[] data = new byte[length / 8 + 1];
+            b.get(data, 0, length / 8 + 1);
+            boolean[] array = BitUtils.getBooleans(data, length);
+            f.set(o, array);
+        } else if (type == double[].class) {
+            byte[] data = new byte[length * 8];
+            b.get(data, 0, length * 8);
+            DoubleBuffer buf = ByteBuffer.wrap(data).asDoubleBuffer();
+            double[] array = new double[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else if (type == short[].class) {
+            byte[] data = new byte[length * 2];
+            b.get(data, 0, length * 2);
+            ShortBuffer buf = ByteBuffer.wrap(data).asShortBuffer();
+            short[] array = new short[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else if (type == byte[].class) {
+            byte[] data = new byte[length];
+            b.get(data, 0, length);
+            f.set(o, data);
+        } else if (type == char[].class) {
+            byte[] data = new byte[length * 2];
+            b.get(data, 0, length * 2);
+            CharBuffer buf = ByteBuffer.wrap(data).asCharBuffer();
+            char[] array = new char[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else if (type == long[].class) {
+            byte[] data = new byte[length * 8];
+            b.get(data, 0, length * 8);
+            LongBuffer buf = ByteBuffer.wrap(data).asLongBuffer();
+            long[] array = new long[buf.remaining()];
+            buf.get(array);
+            f.set(o, array);
+        } else {
+            Class<?> componentType = type.getComponentType();
+            if (componentType == Object.class) {
+                throw new RuntimeException("Cannot parse generics");
+            }
+            f.set(o, Array.newInstance(componentType, length));
+            for (int i = 0; i < length; i++) {
+                Object element = createNewInstance(componentType);
+                ((Object[]) f.get(o))[i] = element;
+
+                readObject(componentType.cast(element), b);
+            }
+        }
+    }
+
+    /**
+     * Creates a new instance of the given class type by using the best available constructor. Succeeds as long as passing 0/null values into the constructor does not crash the
+     * application.
+     * 
+     * @param type
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        for (Constructor<?> c : type.getDeclaredConstructors()) {
+            if (c.getParameterTypes().length == 0) {
+                c.setAccessible(true);
+                return (T) c.newInstance();
+            }
+        }
+        Constructor<?> c = type.getDeclaredConstructors()[0];
+        Class<?>[] parameters = c.getParameterTypes();
+        Object[] params = new Object[parameters.length];
+
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i].isPrimitive()) {
+                if (parameters[i] == char.class)
+                    params[i] = '0';
+                else if (parameters[i] == String.class)
+                    params[i] = "0";
+                else if (parameters[i] == boolean.class)
+                    params[i] = false;
+                else
+                    params[i] = 0;
+            } else {
+                params[i] = null;
+            }
+        }
+        c.setAccessible(true);
+        return (T) c.newInstance(params);
+    }
+
+    private static void readPrimitive(Object o, Field f, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException {
+        Class<?> type = f.getType();
+
+        f.setAccessible(true);
+        if (type == float.class) {
+            f.set(o, b.getFloat());
+        } else if (type == int.class) {
+            f.set(o, b.getInt());
+        } else if (type == boolean.class) {
+            f.set(o, b.get() == 1);
+        } else if (type == double.class) {
+            f.set(o, b.getDouble());
+        } else if (type == short.class) {
+            f.set(o, b.getShort());
+        } else if (type == byte.class) {
+            f.set(o, b.get());
+        } else if (type == char.class) {
+            f.set(o, b.getChar());
+        } else if (type == long.class) {
+            f.set(o, b.getLong());
+        }
+    }
 }

@@ -6,15 +6,13 @@ import recs.test.components.Position;
 import recs.test.components.Velocity;
 
 public class Player extends Entity {
-	Position position;
-	Velocity velocity = new Velocity(2, 1);
-	Health health = new Health(10, 15);
+	public Position position;
+	public Velocity velocity = new Velocity(2, 1);
+	public Health health = new Health(10, 15);
 
 	public Player(float x, float y) {
 		position = new Position(x, y);
 	}
 
-	public Player() {
-
-	}
+	public Player() {}
 }
