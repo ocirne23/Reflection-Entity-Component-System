@@ -482,7 +482,7 @@ public class TestAllTehThings {
         assertTrue(playerFile.length() == 24);
 
         Player player2 = new Player();
-        Saver.loadObject(player2, playerFile);
+        Saver.readObject(player2, playerFile);
         assertTrue(player2.position.x == 3);
         assertTrue(player2.position.y == 5);
     }
