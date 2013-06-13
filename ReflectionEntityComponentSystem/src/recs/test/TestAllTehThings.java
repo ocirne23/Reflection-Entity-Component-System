@@ -11,6 +11,7 @@ import recs.core.ComponentDestructionListener;
 import recs.core.Entity;
 import recs.core.EntitySystem;
 import recs.core.EntityWorld;
+import recs.core.utils.Saver;
 import recs.test.components.Attack;
 import recs.test.components.Gravity;
 import recs.test.components.Health;
@@ -454,6 +455,19 @@ public class TestAllTehThings {
 		}
 		addEntities();
 		assertTrue(true);
+	}
+
+	@Test
+	public void testSaveableComponent() {
+		Position p = new Position(1, 3);
+
+
+
+		String data = Saver.saveObject(p);
+
+
+		Position p2 = new Position();
+
 	}
 
 	@After
