@@ -478,15 +478,24 @@ public class TestAllTehThings {
         float x = player.position.x;
         float y = player.position.y;
         int health = player.health.amount -= 5;
-        
-        
+
         File playerFile = Saver.saveObject(player, new File("player"));
 
         Player player2 = Saver.readObject(new Player(), playerFile);
-        
+
         assertTrue(player2.health.amount == health);
         assertTrue(player2.position.x == x);
         assertTrue(player2.position.y == y);
+    }
+
+    @Test
+    public void testSaveLotsEntities() {
+        final int amount = 10000;
+        Entity[] entities = new Entity[amount];
+        for (int i = 0; i < amount; i++) {
+            entities[i] = new Player(i, i / 2f);
+        }
+        File entitiesFile = Saver.saveObject(entities, new File("entities"));
     }
 
     @After

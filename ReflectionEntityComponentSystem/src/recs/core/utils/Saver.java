@@ -31,6 +31,7 @@ public class Saver {
     public static boolean ignoreTransient = false;
 
     public static void main(String[] args) {
+
         Player player = new Player(3, 5);
         System.out.println("player: " + player.position.x + ":" + player.position.y + ":" + player.getId());
         File playerFile = Saver.saveObject(player, new File("player"));
@@ -39,6 +40,33 @@ public class Saver {
         Player player2 = Saver.readObject(new Player(), playerFile);
         // 3:5
         System.out.println("player2: " + player2.position.x + ":" + player2.position.y);
+
+        final int amount = 7;
+        Player[] entities = new Player[amount];
+        for (int i = 0; i < amount; i++) {
+            if (i % 5 == 1)
+                continue;
+            entities[i] = new Player(i + 2, i / 2f + 2);
+        }
+        System.out.println("Saving...");
+        long saveStart = System.currentTimeMillis();
+        File entitiesFile = Saver.saveObject(new PlayerWrap(entities), new File("entities"));
+        System.out.println("save time: " + (System.currentTimeMillis() - saveStart) + " ms");
+
+        System.out.println("Loading...");
+        long loadStart = System.currentTimeMillis();
+        PlayerWrap entities2 = Saver.readObject(new PlayerWrap(null), entitiesFile);
+        System.out.println("load time: " + (System.currentTimeMillis() - loadStart) + " ms");
+
+        System.out.println(((Player) entities2.data[3]).position.x);
+    }
+
+    public static class PlayerWrap {
+        public Player[] data;
+
+        public PlayerWrap(Player[] data) {
+            this.data = data;
+        }
     }
 
     private Saver() {
@@ -49,6 +77,12 @@ public class Saver {
      */
     public static File saveObject(Object o, File file) {
         try {
+            Class<?> c = o.getClass();
+            if (c.isArray())
+                throw new RuntimeException("Array should be wrapped in an object class");
+            else if (c.isPrimitive())
+                throw new RuntimeException("Primitive should be wrapped in an object class");
+
             FileOutputStream fileOStream = new FileOutputStream(file);
             DataOutputStream ostream = new DataOutputStream(fileOStream);
             LinkedList<Object> antiRecurstionList = new LinkedList<Object>();
@@ -72,6 +106,11 @@ public class Saver {
             return;
         else
             antiRecurstionList.add(o);
+        if (o == null) {
+            ostream.write(0);
+            return;
+        } else
+            ostream.write(1);
 
         Class<?> c = o.getClass();
         do {
@@ -90,10 +129,7 @@ public class Saver {
                 } else {
                     f.setAccessible(true);
                     Object obj = f.get(o);
-                    if (obj == null)
-                        ostream.writeInt(0);
-                    else
-                        writeObject(obj, ostream, antiRecurstionList);
+                    writeObject(obj, ostream, antiRecurstionList);
                 }
             }
             c = c.getSuperclass();
@@ -170,10 +206,7 @@ public class Saver {
                 throw new RuntimeException("Cannot parse generic Object[] array");
             }
             for (Object obj : (Object[]) f.get(o)) {
-                if (obj == null)
-                    ostream.writeInt(0);
-                else
-                    writeObject(obj, ostream, antiRecursionList);
+                writeObject(obj, ostream, antiRecursionList);
             }
         }
     }
@@ -212,6 +245,10 @@ public class Saver {
 
     private static void readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
         Class<?> c = o.getClass();
+        System.out.println(b.remaining() + " reading: " + c);
+        if (b.get() == 0)
+            return;
+
         do {
             for (Field f : c.getDeclaredFields()) {
                 Class<?> type = f.getType();
@@ -228,7 +265,7 @@ public class Saver {
                 } else {
                     f.setAccessible(true);
                     Object obj = f.get(o);
-                    if (obj == null && b.getInt(b.position()) != 0) {
+                    if (obj == null) {
                         obj = createNewInstance(f.getType());
                         f.set(o, obj);
                     }
