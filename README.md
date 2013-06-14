@@ -1,12 +1,12 @@
 Reflection-Entity-Component-System
 ==================================
 
-An entity component system which is high performance with focus on ease of use and minimal programmer overhead.
+An high performance Entity-Component-System with focus on ease of use and minimal programmer overhead.
 
 
 Libary .jar:
 
-https://dl.dropboxusercontent.com/u/18555381/Permanent/reflectionecs.jar
+https://dl.dropboxusercontent.com/u/18555381/Permanent/recs.jar
 <br>
 
 	public class UsageExample {
@@ -150,3 +150,10 @@ An event  can be any object.
 Events can be created easily and are passed to every system with a listener.
 
 	world.sendEvent(new DamageEvent(entityId, 1));
+
+Can easily save/read almost any object to/from a file using the Saver class.
+
+	File playerFile = Saver.saveObject(player, new File("player"));
+	
+	Player loadedPlayer = Saver.readObject(new Player(), playerFile));
+	
