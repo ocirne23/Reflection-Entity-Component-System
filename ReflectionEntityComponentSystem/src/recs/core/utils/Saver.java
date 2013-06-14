@@ -41,11 +41,9 @@ public class Saver {
 		 * playerFile); // 3:5 System.out.println("player2: " +
 		 * player2.position.x + ":" + player2.position.y);
 		 */
-		final int amount = 7;
+		final int amount = 2000;
 		Player[] entities = new Player[amount];
 		for (int i = 0; i < amount; i++) {
-			if (i == 4 || i == 2)
-				continue;
 			entities[i] = new Player(i + 2, i / 2f + 2);
 		}
 		System.out.println("Saving...");
