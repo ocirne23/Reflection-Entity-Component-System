@@ -480,7 +480,7 @@ public class TestAllTehThings {
         int health = player.health.amount -= 5;
         
         
-        File playerFile = Saver.storeObject(player, new File("player"));
+        File playerFile = Saver.saveObject(player, new File("player"));
 
         Player player2 = Saver.readObject(new Player(), playerFile);
         

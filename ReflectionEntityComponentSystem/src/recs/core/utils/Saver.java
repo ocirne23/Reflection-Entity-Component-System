@@ -33,7 +33,7 @@ public class Saver {
     public static void main(String[] args) {
         Player player = new Player(3, 5);
         System.out.println("player: " + player.position.x + ":" + player.position.y + ":" + player.getId());
-        File playerFile = Saver.storeObject(player, new File("player"));
+        File playerFile = Saver.saveObject(player, new File("player"));
         // no overhead, 4 ints = 16 bytes.
         System.out.println("filesize: " + playerFile.length());
         Player player2 = Saver.readObject(new Player(), playerFile);
@@ -47,7 +47,7 @@ public class Saver {
     /**
      * Stores any object in the given file.
      */
-    public static File storeObject(Object o, File file) {
+    public static File saveObject(Object o, File file) {
         try {
             FileOutputStream fileOStream = new FileOutputStream(file);
             DataOutputStream ostream = new DataOutputStream(fileOStream);
