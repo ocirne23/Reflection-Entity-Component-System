@@ -18,8 +18,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.LinkedList;
 
-import recs.core.EntityWorld;
 import recs.test.entities.Player;
 
 /**
@@ -32,8 +32,6 @@ public class Saver {
 
     public static void main(String[] args) {
         Player player = new Player(3, 5);
-        EntityWorld world = new EntityWorld();
-        world.addEntity(player);
         System.out.println("player: " + player.position.x + ":" + player.position.y + ":" + player.getId());
         File playerFile = Saver.storeObject(player, new File("player"));
         // no overhead, 4 ints = 16 bytes.
@@ -53,7 +51,8 @@ public class Saver {
         try {
             FileOutputStream fileOStream = new FileOutputStream(file);
             DataOutputStream ostream = new DataOutputStream(fileOStream);
-            writeObject(o, ostream);
+            LinkedList<Object> antiRecurstionList = new LinkedList<Object>();
+            writeObject(o, ostream, antiRecurstionList);
             ostream.flush();
             fileOStream.flush();
             ostream.close();
@@ -68,7 +67,12 @@ public class Saver {
         return file;
     }
 
-    private static void writeObject(Object o, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+    private static void writeObject(Object o, DataOutputStream ostream, LinkedList<Object> antiRecurstionList) throws IllegalArgumentException, IllegalAccessException, IOException {
+        if (antiRecurstionList.contains(o))
+            return;
+        else
+            antiRecurstionList.add(o);
+
         Class<?> c = o.getClass();
         do {
             for (Field f : c.getDeclaredFields()) {
@@ -82,14 +86,14 @@ public class Saver {
                 if (type.isPrimitive()) {
                     writePrimitive(o, f, ostream);
                 } else if (type.isArray()) {
-                    writeArray(o, f, ostream);
+                    writeArray(o, f, ostream, antiRecurstionList);
                 } else {
                     f.setAccessible(true);
                     Object obj = f.get(o);
                     if (obj == null)
                         ostream.writeInt(0);
                     else
-                        writeObject(obj, ostream);
+                        writeObject(obj, ostream, antiRecurstionList);
                 }
             }
             c = c.getSuperclass();
@@ -118,7 +122,8 @@ public class Saver {
         }
     }
 
-    private static void writeArray(Object o, Field f, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+    private static void writeArray(Object o, Field f, DataOutputStream ostream, LinkedList<Object> antiRecursionList) throws IllegalArgumentException, IllegalAccessException,
+            IOException {
         Class<?> type = f.getType();
         f.setAccessible(true);
         int length = Array.getLength(f.get(o));
@@ -161,11 +166,14 @@ public class Saver {
             ostream.write(buffer.array());
         } else {
             ostream.writeInt(length);
+            if (type.getComponentType() == Object.class) {
+                throw new RuntimeException("Cannot parse generic Object[] array");
+            }
             for (Object obj : (Object[]) f.get(o)) {
                 if (obj == null)
                     ostream.writeInt(0);
                 else
-                    writeObject(obj, ostream);
+                    writeObject(obj, ostream, antiRecursionList);
             }
         }
     }
@@ -289,9 +297,6 @@ public class Saver {
             f.set(o, array);
         } else {
             Class<?> componentType = type.getComponentType();
-            if (componentType == Object.class) {
-                throw new RuntimeException("Cannot parse generic Object[] array");
-            }
             f.set(o, Array.newInstance(componentType, length));
             for (int i = 0; i < length; i++) {
                 Object element = createNewInstance(componentType);
