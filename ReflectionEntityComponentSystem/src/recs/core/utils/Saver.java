@@ -19,7 +19,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
-import recs.core.Entity;
 import recs.core.EntityWorld;
 import recs.test.entities.Player;
 
@@ -29,19 +28,19 @@ import recs.test.entities.Player;
  * @author Enrico van Oosten
  */
 public class Saver {
-    public static byte version = 1;
+    public static boolean ignoreTransient = false;
 
     public static void main(String[] args) {
         Player player = new Player(3, 5);
         EntityWorld world = new EntityWorld();
         world.addEntity(player);
-        System.out.println("player: " + player.position.x + ":" + player.position.y+":"+player.getId());
+        System.out.println("player: " + player.position.x + ":" + player.position.y + ":" + player.getId());
         File playerFile = Saver.storeObject(player, new File("player"));
         // no overhead, 4 ints = 16 bytes.
         System.out.println("filesize: " + playerFile.length());
         Player player2 = Saver.readObject(new Player(), playerFile);
         // 3:5
-        System.out.println("player2: " + player2.position.x + ":" + player2.position.y+":"+player2.getId());
+        System.out.println("player2: " + player2.position.x + ":" + player2.position.y);
     }
 
     private Saver() {
@@ -75,7 +74,7 @@ public class Saver {
             for (Field f : c.getDeclaredFields()) {
                 Class<?> type = f.getType();
                 int modifiers = f.getModifiers();
-                if (Modifier.isTransient(modifiers))
+                if (!ignoreTransient && Modifier.isTransient(modifiers))
                     continue;
                 if (Modifier.isStatic(modifiers))
                     continue;
@@ -86,7 +85,11 @@ public class Saver {
                     writeArray(o, f, ostream);
                 } else {
                     f.setAccessible(true);
-                    writeObject(f.get(o), ostream);
+                    Object obj = f.get(o);
+                    if (obj == null)
+                        ostream.writeInt(0);
+                    else
+                        writeObject(obj, ostream);
                 }
             }
             c = c.getSuperclass();
@@ -159,7 +162,7 @@ public class Saver {
         } else {
             ostream.writeInt(length);
             for (Object obj : (Object[]) f.get(o)) {
-                if(obj == null)
+                if (obj == null)
                     ostream.writeInt(0);
                 else
                     writeObject(obj, ostream);
@@ -205,7 +208,7 @@ public class Saver {
             for (Field f : c.getDeclaredFields()) {
                 Class<?> type = f.getType();
                 int modifiers = f.getModifiers();
-                if (Modifier.isTransient(modifiers))
+                if (!ignoreTransient && Modifier.isTransient(modifiers))
                     continue;
                 if (Modifier.isStatic(modifiers))
                     continue;
@@ -287,13 +290,12 @@ public class Saver {
         } else {
             Class<?> componentType = type.getComponentType();
             if (componentType == Object.class) {
-                throw new RuntimeException("Cannot parse generics");
+                throw new RuntimeException("Cannot parse generic Object[] array");
             }
             f.set(o, Array.newInstance(componentType, length));
             for (int i = 0; i < length; i++) {
                 Object element = createNewInstance(componentType);
                 ((Object[]) f.get(o))[i] = element;
-
                 readObject(componentType.cast(element), b);
             }
         }
