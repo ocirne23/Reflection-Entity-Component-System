@@ -1,7 +1,7 @@
 package recs.core.utils;
 
 /**
- * 
+ *
  * @author Enrico van Oosten
  */
 public class BitUtils {
@@ -29,7 +29,7 @@ public class BitUtils {
 
     public static boolean[] getBooleans(byte[] bytes, int length) {
         boolean[] booleans = new boolean[length];
-        
+
         for (int i = 0; i < length; i++) {
             final int word = i >>> 3;
             booleans[i] = (bytes[word] & (1 << (i & 7))) != 0;

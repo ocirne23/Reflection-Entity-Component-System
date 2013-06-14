@@ -38,7 +38,7 @@ public class Saver {
 		System.out.println("filesize: " + playerFile.length());
 		Player player2 = Saver.readObject(new Player(), playerFile);
 		// 3:5
-		System.out.println(player2.position.x + ":" + player2.position.y);
+		//System.out.println(player2.position.x + ":" + player2.position.y);
 	}
 
 	private Saver() {
@@ -123,7 +123,7 @@ public class Saver {
 			buffer.putInt(length);
 			buffer.asFloatBuffer().put((float[]) f.get(o));
 		} else if (type == boolean[].class) {
-			buffer = ByteBuffer.allocate(length + 4);
+			buffer = ByteBuffer.allocate(length / 8 + 1 + 4);
 			buffer.putInt(length);
 			buffer.put(BitUtils.createByteArr((boolean[]) f.get(o)));
 		} else if (type == double[].class) {
