@@ -7,8 +7,8 @@ package recs.core;
  * @author Enrico van Oosten
  */
 public class Entity {
-	int id;
-	EntityDef def = null;
+	transient int id;
+	transient EntityDef def = null;
 
 	/**
 	 * Add an component to this entity runtime.

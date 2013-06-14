@@ -19,7 +19,7 @@ public class HealthSystem extends EntitySystem {
 	protected void processSystem(float deltaInSec) {
 		for(DamageEvent damageEvent: damageListener.pollEvents()) {
 			Health health = healthManager.get(damageEvent.entityId);
-			health.health -= damageEvent.damage;
+			health.amount -= damageEvent.damage;
 		}
 		super.processSystem(deltaInSec);
 	}
@@ -27,7 +27,7 @@ public class HealthSystem extends EntitySystem {
 	@Override
 	protected void process(int entityId, float deltaInSec) {
 		Health health = healthManager.get(entityId);
-		if (health.health <= 0) {
+		if (health.amount <= 0) {
 			world.removeEntity(entityId);
 		}
 	}

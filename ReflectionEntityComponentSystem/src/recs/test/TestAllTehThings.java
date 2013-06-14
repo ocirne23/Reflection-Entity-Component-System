@@ -137,7 +137,7 @@ public class TestAllTehThings {
 
         assertTrue(position.x == 4f && position.y == 6f);
         assertTrue(velocity.x == 2f && velocity.y == 1f);
-        assertTrue(health.health == 10 && health.maxHealth == 15);
+        assertTrue(health.amount == 10 && health.max == 15);
 
         // player2
         int player2Id = player2.getId();
@@ -240,12 +240,12 @@ public class TestAllTehThings {
         addEntities();
 
         Health health = world.getComponent(player.getId(), Health.class);
-        int currentHealth = health.health;
+        int currentHealth = health.amount;
 
         world.sendEvent(new DamageEvent(player.getId(), 2));
         world.process(1f);
 
-        assertTrue(health.health == currentHealth - 2);
+        assertTrue(health.amount == currentHealth - 2);
     }
 
     @Test
@@ -474,17 +474,19 @@ public class TestAllTehThings {
 
     @Test
     public void testSaveEntity() {
-        File playerFile = new File("player");
+        Player player = new Player(3, 5);
+        float x = player.position.x;
+        float y = player.position.y;
+        int health = player.health.amount -= 5;
+        
+        
+        File playerFile = Saver.storeObject(player, new File("player"));
 
-        Entity player = new Player(3, 5);
-        Saver.storeObject(player, playerFile);
-
-        assertTrue(playerFile.length() == 24);
-
-        Player player2 = new Player();
-        Saver.readObject(player2, playerFile);
-        assertTrue(player2.position.x == 3);
-        assertTrue(player2.position.y == 5);
+        Player player2 = Saver.readObject(new Player(), playerFile);
+        
+        assertTrue(player2.health.amount == health);
+        assertTrue(player2.position.x == x);
+        assertTrue(player2.position.y == y);
     }
 
     @After

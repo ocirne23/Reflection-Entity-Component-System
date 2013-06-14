@@ -1,11 +1,11 @@
 package recs.test.components;
 
 public class Health {
-	public int health;
-	public int maxHealth;
+	public int amount;
+	public int max;
 
 	public Health(int health, int maxHealth) {
-		this.health = health;
-		this.maxHealth = maxHealth;
+		this.amount = health;
+		this.max = maxHealth;
 	}
 }
