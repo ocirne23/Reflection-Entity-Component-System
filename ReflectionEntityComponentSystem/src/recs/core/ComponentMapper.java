@@ -1,6 +1,7 @@
 package recs.core;
 
 import recs.core.utils.RECSIntMap;
+import recs.core.utils.RECSIntMap.Keys;
 
 /**
  * Used to easily retrieve components from entities.
@@ -20,8 +21,12 @@ public final class ComponentMapper<T> {
 		return components.remove(entityId);
 	}
 
-	public T get(int entityId) {
-		return components.get(entityId);
+	public T get(int id) {
+		return components.get(id);
+	}
+
+	public Keys entities() {
+		return components.keys();
 	}
 
 	@SuppressWarnings("unchecked")

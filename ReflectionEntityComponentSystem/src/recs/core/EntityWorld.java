@@ -59,9 +59,8 @@ public final class EntityWorld {
 		addedEntities.put(id, entity);
 
 		EntityReflection reflection = defManager.getReflection(entityClass);
-		if(reflection == null) {
+		if (reflection == null)
 			reflection = defManager.addNewEntityReflection(entity.getClass());
-		}
 		entity.def = reflection.def;
 		Keys k = reflection.componentFields.keys();
 		while (k.hasNext) {
@@ -78,13 +77,11 @@ public final class EntityWorld {
 		}
 
 		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
-		if (scheduleAddList != null) {
+		if (scheduleAddList != null)
 			addComp(entity, scheduleAddList.toArray());
-		}
 		LinkedList<Object> scheduledRemovesList = scheduledRemoves.remove(entity);
-		if (scheduledRemovesList != null) {
+		if (scheduledRemovesList != null)
 			removeComp(entity, scheduledRemovesList.toArray());
-		}
 		addEntityToSystems(entity);
 	}
 
@@ -178,38 +175,35 @@ public final class EntityWorld {
 	}
 
 	static void addComponent(Entity e, Object... components) {
-		if(e.def == null) {
+		if (e.def == null) {
 			LinkedList<Object> scheduled = scheduledAdds.get(e);
-			if(scheduled == null) {
+			if (scheduled == null) {
 				scheduled = new LinkedList<Object>();
 				scheduledAdds.put(e, scheduled);
 			}
-			for(Object o: components)
+			for (Object o : components)
 				scheduled.add(o);
-		} else {
+		} else
 			e.def.world.addComp(e, components);
-		}
 	}
 
 	static void removeComponent(Entity e, Object... components) {
-		if(e.def == null) {
+		if (e.def == null) {
 			LinkedList<Object> scheduled = scheduledRemoves.get(e);
-			if(scheduled == null) {
+			if (scheduled == null) {
 				scheduled = new LinkedList<Object>();
 				scheduledRemoves.put(e, scheduled);
 			}
-			for(Object o: components)
+			for (Object o : components)
 				scheduled.add(o);
-		} else {
+		} else
 			e.def.world.removeComp(e, components);
-		}
 	}
 
 	RECSBits getComponentBits(Class<?>[] components) {
 		RECSBits bits = new RECSBits();
-		for(Class<?> c: components) {
+		for (Class<?> c : components)
 			bits.set(getComponentId(c));
-		}
 		return bits;
 	}
 
@@ -217,7 +211,7 @@ public final class EntityWorld {
 		EntityDef def = e.def;
 		RECSBits componentBits = new RECSBits();
 		RECSBits systemBits = new RECSBits();
-		if(def != null)
+		if (def != null)
 			componentBits.copy(def.componentBits);
 		for (Object component : components) {
 			int componentId = getComponentId(component.getClass());

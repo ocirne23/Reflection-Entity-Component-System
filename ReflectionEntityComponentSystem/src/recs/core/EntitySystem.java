@@ -103,13 +103,13 @@ public abstract class EntitySystem {
 		return componentBits;
 	}
 
-	void addEntity(int id) {
+	protected void addEntity(int id) {
 		if (!entitiyIds.contains(id)) {
 			entitiyIds.add(id);
 		}
 	}
 
-	void removeEntity(int id) {
+	protected void removeEntity(int id) {
 		entitiyIds.remove(id);
 	}
 }
