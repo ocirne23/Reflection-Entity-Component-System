@@ -2,7 +2,7 @@ package recs.core;
 
 import java.util.LinkedList;
 
-import recs.core.utils.RECSObjectMap;
+import recs.core.utils.libgdx.RECSObjectMap;
 
 
 /**

@@ -1,7 +1,8 @@
 package recs.core;
 
-import recs.core.utils.RECSIntMap;
-import recs.core.utils.RECSObjectIntMap;
+import recs.core.utils.RECSBits;
+import recs.core.utils.libgdx.RECSIntMap;
+import recs.core.utils.libgdx.RECSObjectIntMap;
 
 public final class ComponentManager {
 	private EntityWorld world;
@@ -49,15 +50,62 @@ public final class ComponentManager {
 		componentMappers.clear();
 	}
 
-	void removeEntityFromMappers(int id) {
-		for (ComponentMapper<?> manager : componentMappers.values()) {
-			Object removedComponent = manager.remove(id);
+	void removeEntityFromMappers(Entity e) {
+		RECSBits componentBits = e.def.componentBits;
+
+		for (int i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
+			Object removedComponent = componentMappers.get(i).remove(e.id);
 			if (removedComponent != null) {
 				ComponentDestructionListener listener = world.getDestructionListener(removedComponent.getClass());
 				if (listener != null)
 					listener.destroyed(removedComponent);
 			}
 		}
+	}
+
+	void addComp(Entity e, Object... components) {
+		EntityDef def = e.def;
+		RECSBits componentBits = new RECSBits();
+		RECSBits systemBits = new RECSBits();
+		if (def != null)
+			componentBits.copy(def.componentBits);
+		for (Object component : components) {
+			int componentId = getComponentId(component.getClass());
+			ComponentMapper<?> mapper = getComponentMapper(componentId);
+			if (mapper == null)
+				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
+			mapper.add(e.id, component);
+			componentBits.set(componentId);
+		}
+		EntityDef newDef = world.getDef(componentBits);
+		if (newDef == null) {
+			systemBits = world.getSystemBits(componentBits);
+			newDef = new EntityDef(world, componentBits, systemBits);
+			world.putDef(componentBits, newDef);
+		}
+		e.def = newDef;
+		world.addToSystems(e, def.systemBits, newDef.systemBits);
+	}
+
+
+	void removeComp(Entity e, Object... components) {
+		EntityDef def = e.def;
+		RECSBits componentBits = new RECSBits();
+		RECSBits systemBits = new RECSBits();
+		componentBits.copy(def.componentBits);
+		for (Object component : components) {
+			int componentId = getComponentId(component.getClass());
+			getComponentMapper(componentId).remove(e.id);
+			componentBits.clear(componentId);
+		}
+		EntityDef newDef = world.getDef(componentBits);
+		if (newDef == null) {
+			systemBits = world.getSystemBits(componentBits);
+			newDef = new EntityDef(world, componentBits, systemBits);
+			world.putDef(componentBits, def);
+		}
+		e.def = def;
+		world.removeFromSystems(e, def.systemBits, newDef.systemBits);
 	}
 
 	@SuppressWarnings("unchecked")

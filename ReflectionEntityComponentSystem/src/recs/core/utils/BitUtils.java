@@ -4,7 +4,10 @@ package recs.core.utils;
  *
  * @author Enrico van Oosten
  */
-public class BitUtils {
+public final class BitUtils {
+	private BitUtils() {
+	}
+
     public static byte[] createByteArr(boolean[] booleans) {
         int length = booleans.length;
         byte[] bytes = new byte[length / 8 + 1];

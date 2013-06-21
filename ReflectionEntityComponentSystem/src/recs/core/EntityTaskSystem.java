@@ -27,8 +27,8 @@ public abstract class EntityTaskSystem extends EntitySystem implements Runnable 
 	public void run() {
 		float currTime = System.nanoTime() * NANO_TO_SEC;
 		float deltaInSec = lastTime != 0f ? currTime - lastTime : 0;
-		lastTime = System.nanoTime() * NANO_TO_SEC;
 
 		super.processSystem(deltaInSec);
+		lastTime = System.nanoTime() * NANO_TO_SEC;
 	}
 }

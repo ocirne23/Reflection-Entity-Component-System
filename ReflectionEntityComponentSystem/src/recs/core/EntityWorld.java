@@ -5,31 +5,54 @@ import java.util.LinkedList;
 
 import recs.core.utils.BlockingThreadPoolExecutor;
 import recs.core.utils.RECSBits;
-import recs.core.utils.RECSIntMap;
-import recs.core.utils.RECSIntMap.Keys;
-import recs.core.utils.RECSObjectMap;
+import recs.core.utils.libgdx.RECSIntMap;
+import recs.core.utils.libgdx.RECSIntMap.Keys;
+import recs.core.utils.libgdx.RECSObjectMap;
 
 /**
- * The main world class containing all the logic. Add Entities with components
- * and systems to this class and call the process method. </br>
+ * The main world class connecting all the logic. Add Entities with components
+ * and systems to this class and call the process method.
  *
  * @author Enrico van Oosten
  */
 public final class EntityWorld {
+	/**
+	 * Global thread pool used by TaskSystems
+	 */
+	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
+	/**
+	 * Maps used to temporarily store added/removed components from entities
+	 * that are not yet added to the EntityWorld.
+	 */
+	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Object>>();
+	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Object>>();
+
+	/**
+	 * Contains all the entities so they can be retrieved with getEntity
+	 */
+	private final RECSIntMap<Entity> addedEntities;
+
+	/**
+	 * Managers sepparate logic.
+	 */
 	private final EntitySystemManager systemManager;
 	private final ComponentManager componentManager;
 	private final EntityDefManager defManager;
 	private final EventManager eventManager;
+
 	private final RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners;
-	private final RECSIntMap<Entity> addedEntities;
+
+	/**
+	 * Values used to give entities an unique id.
+	 */
 	private final RECSBits entityIds;
 	private int lastUsedId = 0;
 	private int numFreedIds = 0;
 
-	private static BlockingThreadPoolExecutor threads = new BlockingThreadPoolExecutor(2, 10);
-	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Object>>();
-	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Object>>();
-
+	/**
+	 * Add Entities with components and systems to this class and call the
+	 * process method.
+	 */
 	public EntityWorld() {
 		systemManager = new EntitySystemManager(this);
 		componentManager = new ComponentManager(this);
@@ -52,6 +75,9 @@ public final class EntityWorld {
 		systemManager.process(deltaInSec);
 	}
 
+	/**
+	 * Add an entitiy to the world so it can be processed by the systems.
+	 */
 	public void addEntity(Entity entity) {
 		Class<? extends Entity> entityClass = entity.getClass();
 		int id = getEntityId();
@@ -78,17 +104,18 @@ public final class EntityWorld {
 
 		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
 		if (scheduleAddList != null)
-			addComp(entity, scheduleAddList.toArray());
+			componentManager.addComp(entity, scheduleAddList.toArray());
 		LinkedList<Object> scheduledRemovesList = scheduledRemoves.remove(entity);
 		if (scheduledRemovesList != null)
-			removeComp(entity, scheduledRemovesList.toArray());
-		addEntityToSystems(entity);
+			componentManager.removeComp(entity, scheduledRemovesList.toArray());
+		systemManager.addEntityToNewSystems(entity, null, entity.def.systemBits);
 	}
 
 	public Entity removeEntity(int entityId) {
 		numFreedIds++;
-		removeEntityFromSystem(entityId);
-		removeEntityFromMappers(entityId);
+		Entity e = getEntity(entityId);
+		systemManager.removeEntityFromRemovedSystems(e, e.def.systemBits, null);
+		componentManager.removeEntityFromMappers(e);
 
 		entityIds.clear(entityId);
 		return addedEntities.remove(entityId);
@@ -175,7 +202,8 @@ public final class EntityWorld {
 	}
 
 	static void addComponent(Entity e, Object... components) {
-		if (e.def == null) {
+		EntityDef def = e.def;
+		if (def == null) {
 			LinkedList<Object> scheduled = scheduledAdds.get(e);
 			if (scheduled == null) {
 				scheduled = new LinkedList<Object>();
@@ -184,11 +212,12 @@ public final class EntityWorld {
 			for (Object o : components)
 				scheduled.add(o);
 		} else
-			e.def.world.addComp(e, components);
+			def.world.componentManager.addComp(e, components);
 	}
 
 	static void removeComponent(Entity e, Object... components) {
-		if (e.def == null) {
+		EntityDef def = e.def;
+		if (def == null) {
 			LinkedList<Object> scheduled = scheduledRemoves.get(e);
 			if (scheduled == null) {
 				scheduled = new LinkedList<Object>();
@@ -197,7 +226,7 @@ public final class EntityWorld {
 			for (Object o : components)
 				scheduled.add(o);
 		} else
-			e.def.world.removeComp(e, components);
+			def.world.componentManager.removeComp(e, components);
 	}
 
 	RECSBits getComponentBits(Class<?>[] components) {
@@ -207,56 +236,12 @@ public final class EntityWorld {
 		return bits;
 	}
 
-	void addComp(Entity e, Object... components) {
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		if (def != null)
-			componentBits.copy(def.componentBits);
-		for (Object component : components) {
-			int componentId = getComponentId(component.getClass());
-			ComponentMapper<?> mapper = getComponentMapper(componentId);
-			if (mapper == null)
-				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
-			mapper.add(e.id, component);
-			componentBits.set(componentId);
-		}
-		EntityDef newDef = defManager.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(this, componentBits, systemBits);
-			defManager.putDef(componentBits, newDef);
-		}
-		e.def = newDef;
-		addToSystems(e, def.systemBits, newDef.systemBits);
-	}
-
-	void removeComp(Entity e, Object... components) {
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		componentBits.copy(def.componentBits);
-		for (Object component : components) {
-			int componentId = getComponentId(component.getClass());
-			getComponentMapper(componentId).remove(e.id);
-			componentBits.clear(componentId);
-		}
-		EntityDef newDef = defManager.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = getSystemBits(componentBits);
-			newDef = new EntityDef(this, componentBits, systemBits);
-			defManager.putDef(componentBits, def);
-		}
-		e.def = def;
-		removeFromSystems(e, def.systemBits, newDef.systemBits);
-	}
-
 	RECSBits getSystemBits(RECSBits componentBits) {
 		return systemManager.getSystemBits(componentBits);
 	}
 
 	int getSystemId() {
-		return systemManager.getSystemId();
+		return systemManager.getNewSystemId();
 	}
 
 	int getEntityId() {
@@ -286,23 +271,19 @@ public final class EntityWorld {
 		eventManager.registerListener(listener, eventType);
 	}
 
-	private void removeEntityFromMappers(int id) {
-		componentManager.removeEntityFromMappers(id);
+	void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+		systemManager.addEntityToNewSystems(entity, existingSystemBits, newSystemBits);
 	}
 
-	private void addToSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		systemManager.addToSystems(entity, existingSystemBits, newSystemBits);
+	void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
+		systemManager.removeEntityFromRemovedSystems(entity, existingSystemBits, newSystemBits);
 	}
 
-	private void removeFromSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		systemManager.removeFromSystems(entity, existingSystemBits, newSystemBits);
+	EntityDef getDef(RECSBits componentBits) {
+		return defManager.getDef(componentBits);
 	}
 
-	private void addEntityToSystems(Entity entity) {
-		systemManager.addEntityToSystems(entity);
-	}
-
-	private void removeEntityFromSystem(int id) {
-		systemManager.removeEntityFromSystems(id);
+	void putDef(RECSBits componentBits, EntityDef def) {
+		defManager.putDef(componentBits, def);
 	}
 }

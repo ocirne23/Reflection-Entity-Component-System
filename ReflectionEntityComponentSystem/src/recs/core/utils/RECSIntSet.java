@@ -1,21 +1,12 @@
 package recs.core.utils;
 
-/*******************************************************************************
- * Copyright 2011 See AUTHORS file.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- ******************************************************************************/
+import recs.core.utils.libgdx.RECSMathUtils;
 
+/**
+ * Modified IntMap from Nathan Sweet to only contain an int table accessable through hashes.
+ * Log(N) contains, add and remove.
+ * @author Enrico
+ */
 public class RECSIntSet {
 	// private static final int PRIME1 = 0xbe1f14b1;
 	private static final int PRIME2 = 0xb4b82e39;

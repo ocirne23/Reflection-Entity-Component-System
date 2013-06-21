@@ -13,6 +13,10 @@ import recs.core.utils.RECSIntSet.Items;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
+	protected boolean useInterval = false;
+	protected float intervalInSeconds = 0f;
+	protected EntityWorld world;
+
 	int id;
 	RECSIntSet entitiyIds = new RECSIntSet(16);
 	RECSBits componentBits;
@@ -22,9 +26,6 @@ public abstract class EntitySystem {
 	private final LinkedBlockingQueue<Object> receivedEvents = new LinkedBlockingQueue<Object>();
 	private final LinkedList<Object> polledEventsList = new LinkedList<Object>();
 	private float timeAccumulator = 0f;
-
-	protected float intervalInSeconds = 0f;
-	protected EntityWorld world;
 
 	/**
 	 * Create an entitysystem that processes entities with the specified
@@ -41,6 +42,7 @@ public abstract class EntitySystem {
 	public EntitySystem(float intervalInSeconds, Class<?>... components) {
 		this(components);
 		this.intervalInSeconds = intervalInSeconds;
+		useInterval = true;
 	}
 
 	/**
@@ -51,12 +53,12 @@ public abstract class EntitySystem {
 	 */
 	protected void processSystem(float deltaInSec) {
 		Items i = entitiyIds.items();
-		// if set interval process with delta.
-		if (intervalInSeconds == 0f) {
+		if (!useInterval) {
 			while (i.hasNext)
 				process(i.next(), deltaInSec);
+
 		} else {
-			// else fixed timestep.
+			// if has interval process if enough time has passed.
 			timeAccumulator += deltaInSec;
 			if (timeAccumulator >= intervalInSeconds) {
 				timeAccumulator -= intervalInSeconds;
@@ -99,10 +101,6 @@ public abstract class EntitySystem {
 		return polledEventsList;
 	}
 
-	RECSBits getComponentBits() {
-		return componentBits;
-	}
-
 	protected void addEntity(int id) {
 		if (!entitiyIds.contains(id)) {
 			entitiyIds.add(id);
@@ -111,5 +109,9 @@ public abstract class EntitySystem {
 
 	protected void removeEntity(int id) {
 		entitiyIds.remove(id);
+	}
+
+	RECSBits getComponentBits() {
+		return componentBits;
 	}
 }

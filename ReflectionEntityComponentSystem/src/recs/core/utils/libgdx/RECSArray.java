@@ -1,4 +1,4 @@
-package recs.core.utils;
+package recs.core.utils.libgdx;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

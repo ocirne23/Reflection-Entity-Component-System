@@ -2,7 +2,7 @@ package recs.test;
 
 import recs.core.Entity;
 import recs.core.EntityWorld;
-import recs.core.utils.RECSMathUtils;
+import recs.core.utils.libgdx.RECSMathUtils;
 import recs.test.components.Position;
 import recs.test.components.Velocity;
 import recs.test.entities.Zombie;

@@ -3,8 +3,8 @@ package recs.core;
 import java.lang.reflect.Field;
 
 import recs.core.utils.RECSBits;
-import recs.core.utils.RECSIntMap;
-import recs.core.utils.RECSObjectMap;
+import recs.core.utils.libgdx.RECSIntMap;
+import recs.core.utils.libgdx.RECSObjectMap;
 
 public final class EntityDefManager {
 	private EntityWorld world;

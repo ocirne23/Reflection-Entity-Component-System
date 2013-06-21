@@ -332,9 +332,9 @@ public class TestAllTehThings {
 	}
 
 	private class MyDestructionListener extends ComponentDestructionListener {
-		public boolean destroyed = false;
+		private boolean destroyed = false;
 
-		public MyDestructionListener() {
+		private MyDestructionListener() {
 			super(world, Position.class);
 		}
 

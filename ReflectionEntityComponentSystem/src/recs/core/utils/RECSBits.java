@@ -3,6 +3,8 @@ package recs.core.utils;
 import java.util.Arrays;
 
 /**
+ * Bit container used to efficiently specify components and systems.
+ *
  * @author Enrico van Oosten
  */
 public class RECSBits {
@@ -10,11 +12,7 @@ public class RECSBits {
 	int[] bits = { 0 };
 
 	/**
-	 * @param index
-	 *            the index of the bit
-	 * @return whether the bit is set
-	 * @throws ArrayIndexOutOfBoundsException
-	 *             if index < 0
+	 * Returns if the bit at the index was set to true.
 	 */
 	public boolean get(int index) {
 		final int word = index >>> 5;
@@ -24,10 +22,7 @@ public class RECSBits {
 	}
 
 	/**
-	 * @param index
-	 *            the index of the bit to set
-	 * @throws ArrayIndexOutOfBoundsException
-	 *             if index < 0
+	 * Set the bit at the index to true.
 	 */
 	public void set(int index) {
 		final int word = index >>> 5;
@@ -36,42 +31,15 @@ public class RECSBits {
 	}
 
 	/**
-	 * @param index
-	 *            the index of the bit to flip
+	 * flip the bit at the given index.
 	 */
 	public void flip(int index) {
 		final int word = index >>> 5;
 		bits[word] ^= 1 << (index & 31);
 	}
 
-	/*
-	private void grow(int nrBits) {
-		if (nrBits > bits.length * 32 - 1) {
-			int[] newBits = new int[(int) Math.ceil(nrBits / 32)];
-			System.arraycopy(bits, 0, newBits, 0, bits.length);
-			bits = newBits;
-		}
-	}
-	*/
-
-	public void setWord(int wordNr, int word) {
-		growWord(wordNr);
-		bits[wordNr] = word;
-	}
-
-	private void growWord(int wordCount) {
-		if (wordCount >= bits.length) {
-			int[] newBits = new int[wordCount + 1];
-			System.arraycopy(bits, 0, newBits, 0, bits.length);
-			bits = newBits;
-		}
-	}
-
 	/**
-	 * @param index
-	 *            the index of the bit to clear
-	 * @throws ArrayIndexOutOfBoundsException
-	 *             if index < 0
+	 * Set the bit at the index to false.
 	 */
 	public void clear(int index) {
 		final int word = index >>> 5;
@@ -90,6 +58,9 @@ public class RECSBits {
 		}
 	}
 
+	/**
+	 * Set this Bits equal to the given Bits.
+	 */
 	public void copy(RECSBits other) {
 		bits = Arrays.copyOf(other.bits, other.bits.length);
 	}
@@ -116,6 +87,9 @@ public class RECSBits {
 		return total;
 	}
 
+	/**
+	 * Add all the true bits of the given Bits to this.
+	 */
 	public void add(RECSBits other) {
 		int otherLength = other.bits.length;
 		if (bits.length < otherLength)
@@ -166,7 +140,11 @@ public class RECSBits {
 		return addedBits;
 	}
 
-	public RECSBits getRemovedBits(RECSBits otherBits)  {
+	/**
+	 * Get a bitset representing the removed bits between this Bits and the
+	 * other.
+	 */
+	public RECSBits getRemovedBits(RECSBits otherBits) {
 		RECSBits addedBits = new RECSBits();
 		for (int i = 0, max = Math.max(otherBits.bits.length, bits.length); i < max; i++) {
 			if (i > bits.length)
@@ -179,11 +157,8 @@ public class RECSBits {
 		return addedBits;
 	}
 
-
 	/**
 	 * Get the number of bits set to true.
-	 *
-	 * @return
 	 */
 	public int cardinality() {
 		int sum = 0;
@@ -200,11 +175,8 @@ public class RECSBits {
 	 *
 	 * To iterate over the true bits in a BitSet, use the following loop:
 	 *
-	 * for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
-	 * //operate on index i here }
-	 *
-	 * @param fromIndex
-	 * @return
+	 * for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) { </br>
+	 * //operate on index i here </br> }
 	 */
 	public int nextSetBit(int fromIndex) {
 		int wordIndex = fromIndex / 32;
@@ -222,10 +194,13 @@ public class RECSBits {
 		}
 	}
 
+	/**
+	 * Prints a binary representation of this Bits.
+	 */
 	public String binaryString() {
 		StringBuilder b = new StringBuilder();
 		for (int i = 0; i < bits.length; i++) {
-			b.append("["+Integer.toBinaryString(bits[i])+"],");
+			b.append("[" + Integer.toBinaryString(bits[i]) + "],");
 		}
 		return b.toString();
 	}
@@ -241,5 +216,18 @@ public class RECSBits {
 			}
 		}
 		return b.toString();
+	}
+
+	private void setWord(int wordNr, int word) {
+		growWord(wordNr);
+		bits[wordNr] = word;
+	}
+
+	private void growWord(int wordCount) {
+		if (wordCount >= bits.length) {
+			int[] newBits = new int[wordCount + 1];
+			System.arraycopy(bits, 0, newBits, 0, bits.length);
+			bits = newBits;
+		}
 	}
 }

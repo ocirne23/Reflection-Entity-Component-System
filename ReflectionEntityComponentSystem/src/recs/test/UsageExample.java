@@ -1,7 +1,7 @@
 package recs.test;
 
 import recs.core.EntityWorld;
-import recs.core.utils.RECSMathUtils;
+import recs.core.utils.libgdx.RECSMathUtils;
 import recs.test.components.Attack;
 import recs.test.components.Health;
 import recs.test.components.Position;
@@ -28,8 +28,8 @@ public class UsageExample {
 		world.addEntity(new Zombie(1, 2));
 		world.addEntity(new Player(1,2));
 
-		//game loop
 		float totalTime = 0f;
+		//game loop
 		float accumulator = 0f;
 		float timeStep = 1/60f;
 		long currentTime = System.nanoTime();

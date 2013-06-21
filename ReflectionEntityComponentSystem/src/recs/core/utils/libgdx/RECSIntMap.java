@@ -1,4 +1,4 @@
-package recs.core.utils;
+package recs.core.utils.libgdx;
 
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.

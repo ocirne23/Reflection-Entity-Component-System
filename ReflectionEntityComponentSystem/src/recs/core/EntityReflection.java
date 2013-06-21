@@ -2,7 +2,7 @@ package recs.core;
 
 import java.lang.reflect.Field;
 
-import recs.core.utils.RECSIntMap;
+import recs.core.utils.libgdx.RECSIntMap;
 
 /**
  * Representation of a single Entity class, used by the EntityWorld to remember reflection data.

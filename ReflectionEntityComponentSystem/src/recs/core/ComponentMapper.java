@@ -1,7 +1,7 @@
 package recs.core;
 
-import recs.core.utils.RECSIntMap;
-import recs.core.utils.RECSIntMap.Keys;
+import recs.core.utils.libgdx.RECSIntMap;
+import recs.core.utils.libgdx.RECSIntMap.Keys;
 
 /**
  * Used to easily retrieve components from entities.

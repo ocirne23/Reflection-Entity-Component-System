@@ -6,8 +6,4 @@ public class Attack {
 	public Attack(int amount) {
 		this.attack = amount;
 	}
-
-	public Attack(char c) {
-
-	}
 }

@@ -1,7 +1,7 @@
 package recs.test.systems;
 
 import recs.core.EntitySystem;
-import recs.core.utils.RECSMathUtils;
+import recs.core.utils.libgdx.RECSMathUtils;
 import recs.test.components.Attack;
 import recs.test.events.DamageEvent;
 

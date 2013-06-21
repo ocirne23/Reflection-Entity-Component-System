@@ -20,8 +20,6 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.LinkedList;
 
-import recs.test.entities.Player;
-
 /**
  * Can write/read almost any object to/from a file. Classes with generic
  * Object[] or likewise are not supported.
@@ -30,42 +28,6 @@ import recs.test.entities.Player;
  */
 public class Saver {
 	public static boolean ignoreTransient = false;
-
-	public static void main(String[] args) {
-		/*
-		 * Player player = new Player(3, 5); System.out.println("player: " +
-		 * player.position.x + ":" + player.position.y + ":" + player.getId());
-		 * File playerFile = Saver.saveObject(player, new File("player")); // no
-		 * overhead, 4 ints = 16 bytes. System.out.println("filesize: " +
-		 * playerFile.length()); Player player2 = Saver.readObject(new Player(),
-		 * playerFile); // 3:5 System.out.println("player2: " +
-		 * player2.position.x + ":" + player2.position.y);
-		 */
-		final int amount = 2000;
-		Player[] entities = new Player[amount];
-		for (int i = 0; i < amount; i++) {
-			entities[i] = new Player(i + 2, i / 2f + 2);
-		}
-		System.out.println("Saving...");
-		long saveStart = System.currentTimeMillis();
-		File entitiesFile = Saver.saveObject(new PlayerWrap(entities), new File("entities"));
-		System.out.println("save time: " + (System.currentTimeMillis() - saveStart) + " ms");
-
-		System.out.println("Loading...");
-		long loadStart = System.currentTimeMillis();
-		PlayerWrap entities2 = Saver.readObject(new PlayerWrap(null), entitiesFile);
-		System.out.println("load time: " + (System.currentTimeMillis() - loadStart) + " ms");
-
-		System.out.println(entities2.data[3].position.x);
-	}
-
-	public static class PlayerWrap {
-		public Player[] data;
-
-		public PlayerWrap(Player[] data) {
-			this.data = data;
-		}
-	}
 
 	private Saver() {
 	}
@@ -97,6 +59,37 @@ public class Saver {
 			e.printStackTrace();
 		}
 		return file;
+	}
+
+	/**
+	 * Sets the values of the given object equal to the stored object in the
+	 * file.
+	 */
+	public static <T> T readObject(T o, File file) {
+		FileInputStream fileIStream;
+		try {
+			fileIStream = new FileInputStream(file);
+			DataInputStream istream = new DataInputStream(fileIStream);
+			byte[] bytes = new byte[(int) file.length()];
+			istream.readFully(bytes);
+			ByteBuffer b = ByteBuffer.wrap(bytes);
+
+			readObject(o, b);
+
+			istream.close();
+			fileIStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return o;
 	}
 
 	private static void writeObject(Object o, DataOutputStream ostream, LinkedList<Object> antiRecurstionList) throws IllegalArgumentException, IllegalAccessException, IOException {
@@ -209,39 +202,6 @@ public class Saver {
 		}
 	}
 
-	/**
-	 * Sets the values of the given object equal to the stored object in the
-	 * file.
-	 *
-	 * @param <T>
-	 */
-	public static <T> T readObject(T o, File file) {
-		FileInputStream fileIStream;
-		try {
-			fileIStream = new FileInputStream(file);
-			DataInputStream istream = new DataInputStream(fileIStream);
-			byte[] bytes = new byte[(int) file.length()];
-			istream.readFully(bytes);
-			ByteBuffer b = ByteBuffer.wrap(bytes);
-
-			readObject(o, b);
-
-			istream.close();
-			fileIStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		return o;
-	}
-
 	private static void readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		if (b.get() == 0)
 			return;
@@ -344,9 +304,6 @@ public class Saver {
 	 * Creates a new instance of the given class type by using the best
 	 * available constructor. Succeeds as long as passing 0/null values into the
 	 * constructor does not crash the application.
-	 *
-	 * @param type
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
