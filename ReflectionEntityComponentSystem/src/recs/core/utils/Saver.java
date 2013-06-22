@@ -321,8 +321,6 @@ public class Saver {
 			if (parameters[i].isPrimitive()) {
 				if (parameters[i] == char.class)
 					params[i] = '0';
-				else if (parameters[i] == String.class)
-					params[i] = "0";
 				else if (parameters[i] == boolean.class)
 					params[i] = false;
 				else

@@ -13,6 +13,8 @@ public final class BitUtils {
         byte[] bytes = new byte[length / 8 + 1];
 
         for (int i = 0; i < length; i++) {
+        	if(!booleans[i])
+        		continue;
             int word = i >>> 3;
             bytes[word] |= 1 << (i & 7);
         }
@@ -24,6 +26,8 @@ public final class BitUtils {
         byte[] bytes = new byte[length / 8 + 1];
 
         for (int i = 0; i < length; i++) {
+        	if(!booleans[i])
+        		continue;
             int word = i >>> 3;
             bytes[word] |= 1 << (i & 7);
         }

@@ -114,6 +114,8 @@ public final class EntityWorld {
 	public Entity removeEntity(int entityId) {
 		numFreedIds++;
 		Entity e = getEntity(entityId);
+		if(e == null)
+			throw new RuntimeException("Entity was not added to this world: " + entityId);
 		systemManager.removeEntityFromRemovedSystems(e, e.def.systemBits, null);
 		componentManager.removeEntityFromMappers(e);
 
