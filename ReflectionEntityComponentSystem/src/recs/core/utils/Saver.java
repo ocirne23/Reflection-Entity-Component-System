@@ -291,6 +291,8 @@ public class Saver {
 			f.set(o, array);
 		} else {
 			Class<?> componentType = type.getComponentType();
+			if(componentType.isArray())
+				throw new RuntimeException("array arrays are not supported([][])");
 			f.set(o, Array.newInstance(componentType, length));
 			for (int i = 0; i < length; i++) {
 				Object element = createNewInstance(componentType);
