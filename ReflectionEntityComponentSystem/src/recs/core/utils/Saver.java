@@ -202,9 +202,9 @@ public class Saver {
 		}
 	}
 
-	private static void readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+	private static boolean readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		if (b.get() == 0)
-			return;
+			return false;
 		Class<?> c = o.getClass();
 		do {
 			for (Field f : c.getDeclaredFields()) {
@@ -231,6 +231,7 @@ public class Saver {
 			}
 			c = c.getSuperclass();
 		} while (c != Object.class);
+		return true;
 	}
 
 	private static void readArray(Object o, Field f, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
@@ -296,8 +297,8 @@ public class Saver {
 			f.set(o, Array.newInstance(componentType, length));
 			for (int i = 0; i < length; i++) {
 				Object element = createNewInstance(componentType);
-				((Object[]) f.get(o))[i] = element;
-				readObject(componentType.cast(element), b);
+				if(readObject(componentType.cast(element), b))
+					((Object[]) f.get(o))[i] = element;
 			}
 		}
 	}
