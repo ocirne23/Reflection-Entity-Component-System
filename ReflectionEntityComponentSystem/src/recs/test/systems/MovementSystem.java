@@ -14,7 +14,7 @@ public class MovementSystem extends EntitySystem {
 	}
 
 	@Override
-	public void process(int entityId, float deltaInSec) {
+	public void processEntity(int entityId, float deltaInSec) {
 		Position position = positionMapper.get(entityId);
 		Velocity velocity = velocityMapper.get(entityId);
 		position.x += velocity.x * deltaInSec;

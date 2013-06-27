@@ -13,8 +13,6 @@ import recs.core.utils.RECSIntSet.Items;
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
-	protected boolean useInterval = false;
-	protected float intervalInSeconds = 0f;
 	protected EntityWorld world;
 
 	int id;
@@ -25,7 +23,6 @@ public abstract class EntitySystem {
 	private boolean enabled = true;
 	private final LinkedBlockingQueue<Object> receivedEvents = new LinkedBlockingQueue<Object>();
 	private final LinkedList<Object> polledEventsList = new LinkedList<Object>();
-	private float timeAccumulator = 0f;
 
 	/**
 	 * Create an entitysystem that processes entities with the specified
@@ -35,40 +32,31 @@ public abstract class EntitySystem {
 		this.components = components;
 	}
 
-	/**
-	 * Create an entitysystem that processes with the given interval in seconds.
-	 * (1/60f is 60 times a second.)
-	 */
-	public EntitySystem(float intervalInSeconds, Class<?>... components) {
-		this(components);
-		this.intervalInSeconds = intervalInSeconds;
-		useInterval = true;
+	void process(float deltaInSec) {
+		processSystem(deltaInSec);
 	}
 
 	/**
-	 * Iterate all the entities and call process() for each.
+	 * Iterates all the entities and call process() for each. Override to
+	 * only process once per loop.
 	 *
 	 * @param deltaInSec
 	 *            The time that has passed in seconds since last update.
 	 */
 	protected void processSystem(float deltaInSec) {
 		Items i = entitiyIds.items();
-		if (!useInterval) {
-			while (i.hasNext)
-				process(i.next(), deltaInSec);
-
-		} else {
-			// if has interval process if enough time has passed.
-			timeAccumulator += deltaInSec;
-			if (timeAccumulator >= intervalInSeconds) {
-				timeAccumulator -= intervalInSeconds;
-				while (i.hasNext)
-					process(i.next(), intervalInSeconds);
-			}
-		}
+		while (i.hasNext)
+			processEntity(i.next(), deltaInSec);
 	}
 
-	protected abstract void process(int id, float deltaSec);
+	/**
+	 * Override to process each entity individually.
+	 * @param id The id of the entity.
+	 * @param deltaSec Time passed in seconds since the last process.
+	 */
+	protected void processEntity(int id, float deltaSec) {
+
+	}
 
 	/**
 	 * Set if this system should be processed by the world.

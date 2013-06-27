@@ -204,10 +204,7 @@ public class TestAllTehThings {
 		float startX = position.x;
 		float startY = position.y;
 		try {
-			// First iteration does not process threaded systems.
-			world.process(0);
-			Thread.sleep(100);
-			world.process(0);
+			world.process(100);
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -451,9 +448,7 @@ public class TestAllTehThings {
 	public void testLotsOfSystems() {
 		for (int i = 0; i < 40; i++) {
 			world.addSystem(new EntitySystem(Health.class) {
-				@Override
-				protected void process(int entityId, float deltaInSec) {
-				}
+
 			});
 		}
 		addEntities();

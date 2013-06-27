@@ -14,7 +14,7 @@ public class ThreadedMovementSystem extends EntityTaskSystem {
 	}
 
 	@Override
-	protected void process(int entityId, float deltaInSec) {
+	protected void processEntity(int entityId, float deltaInSec) {
 		Position position = positionManager.get(entityId);
 		Velocity velocity = velocityManager.get(entityId);
 

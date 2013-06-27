@@ -10,25 +10,43 @@ public abstract class EntityTaskSystem extends EntitySystem implements Runnable 
 	private static final float NANO_TO_SEC = 1 / 1000000000f;
 	private float lastTime = 0;
 
+	private boolean useInterval = false;
+	private float timePassed = 0;
+	private float intervalInSec = 0;
+
 	public EntityTaskSystem(Class<?>... components) {
 		super(components);
 	}
 
-	public EntityTaskSystem(float intervalInSeconds, Class<?>... components) {
-		super(intervalInSeconds, components);
+	public EntityTaskSystem(float intervalInSec, Class<?>... components) {
+		super(components);
+		this.intervalInSec = intervalInSec;
+		useInterval = true;
 	}
 
 	@Override
-	protected void processSystem(float deltaInSec) {
-		EntityWorld.postRunnable(this);
+	void process(float deltaInSec) {
+		if (useInterval) {
+			timePassed += deltaInSec;
+			while (timePassed > intervalInSec) {
+				timePassed -= intervalInSec;
+				EntityWorld.postRunnable(this);
+			}
+		} else {
+			EntityWorld.postRunnable(this);
+		}
 	}
 
 	@Override
 	public void run() {
-		float currTime = System.nanoTime() * NANO_TO_SEC;
-		float deltaInSec = lastTime != 0f ? currTime - lastTime : 0;
+		if(useInterval) {
+			processSystem(intervalInSec);
+		} else {
+			float currTime = System.nanoTime() * NANO_TO_SEC;
+			float deltaInSec = lastTime != 0f ? currTime - lastTime : 0;
 
-		super.processSystem(deltaInSec);
-		lastTime = System.nanoTime() * NANO_TO_SEC;
+			processSystem(deltaInSec);
+			lastTime = System.nanoTime() * NANO_TO_SEC;
+		}
 	}
 }
