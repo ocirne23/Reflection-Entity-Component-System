@@ -14,7 +14,7 @@ public class IntervalEntitySystem extends EntitySystem {
 		timePassed += deltaInSec;
 		while(timePassed > intervalInSec) {
 			timePassed -= intervalInSec;
-			processSystem(deltaInSec);
+			processSystem(intervalInSec);
 		}
 	}
 }

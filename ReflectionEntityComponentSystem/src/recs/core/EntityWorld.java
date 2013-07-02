@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import recs.core.utils.BlockingThreadPoolExecutor;
 import recs.core.utils.RECSBits;
+import recs.core.utils.RECSIntSet.Items;
 import recs.core.utils.libgdx.RECSIntMap;
 import recs.core.utils.libgdx.RECSIntMap.Keys;
 import recs.core.utils.libgdx.RECSObjectMap;
@@ -129,6 +130,22 @@ public final class EntityWorld {
 
 	public void addSystem(EntitySystem system) {
 		systemManager.addSystem(system);
+
+		if(addedEntities.size != 0) {
+			for(Entity e: addedEntities.values()) {
+				RECSBits newSystemBits = systemManager.getSystemBits(e.def.componentBits);
+				systemManager.addEntityToNewSystems(e, e.def.systemBits, newSystemBits);
+				e.def.systemBits.copy(newSystemBits);
+			}
+		}
+	}
+
+	public void removeSystem(EntitySystem system) {
+		Items i = system.entitiyIds.items();
+		while (i.hasNext)
+			system.removeEntity(i.next());
+		defManager.removeSystem(system.id);
+		systemManager.removeSystem(system);
 	}
 
 	/**

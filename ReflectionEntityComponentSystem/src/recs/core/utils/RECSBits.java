@@ -129,7 +129,7 @@ public class RECSBits {
 	 */
 	public RECSBits getAddedBits(RECSBits otherBits) {
 		if (!this.contains(otherBits))
-			throw new RuntimeException("bits were not contained");
+			throw new RuntimeException("bits were not contained: " + binaryString() + ":"+ otherBits.binaryString());
 		RECSBits addedBits = new RECSBits();
 		for (int i = 0, max = otherBits.bits.length; i < max; i++) {
 			if (i > bits.length)

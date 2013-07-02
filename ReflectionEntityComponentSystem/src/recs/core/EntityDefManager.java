@@ -31,6 +31,12 @@ public final class EntityDefManager {
 		return defMap.put(componentBits, def);
 	}
 
+	void removeSystem(int id) {
+		for(EntityDef def: defMap.values()) {
+			def.systemBits.clear(id);
+		}
+	}
+
 	void clear() {
 		defMap.clear();
 		reflectionMap.clear();

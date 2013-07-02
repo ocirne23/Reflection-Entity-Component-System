@@ -20,7 +20,7 @@ public final class EntitySystemManager {
 	private LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
 	private RECSIntMap<EntitySystem> systemMap = new RECSIntMap<EntitySystem>();
 	private EntityWorld world;
-	private int systemIdCounter = 0;
+	private RECSBits freeSystemBits = new RECSBits();
 
 	EntitySystemManager(EntityWorld world) {
 		this.world = world;
@@ -151,12 +151,27 @@ public final class EntitySystemManager {
 	}
 
 	int getNewSystemId() {
-		return ++systemIdCounter;
+		int i = 0;
+		for (; i < freeSystemBits.numBits(); i++) {
+			if (!freeSystemBits.get(i)) {
+				freeSystemBits.set(i);
+				return i;
+			}
+		}
+		freeSystemBits.set(i + 1);
+		return i + 1;
 	}
 
 	void clear() {
 		systems.clear();
 		systemMap.clear();
-		systemIdCounter = 0;
+		freeSystemBits.clear();
+	}
+
+	public void removeSystem(EntitySystem system) {
+		freeSystemBits.clear(system.id);
+		systems.remove(system);
+		systemMap.remove(system.id);
+		system.clear();
 	}
 }

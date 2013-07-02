@@ -58,6 +58,10 @@ public abstract class EntitySystem {
 
 	}
 
+	protected RECSIntSet getAllEntities() {
+		return entitiyIds;
+	}
+
 	/**
 	 * Set if this system should be processed by the world.
 	 *
@@ -101,5 +105,11 @@ public abstract class EntitySystem {
 
 	RECSBits getComponentBits() {
 		return componentBits;
+	}
+
+	void clear() {
+		entitiyIds.clear();
+		receivedEvents.clear();
+		polledEventsList.clear();
 	}
 }
