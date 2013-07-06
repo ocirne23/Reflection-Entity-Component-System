@@ -3,13 +3,11 @@ package recs.core;
 import recs.core.utils.RECSBits;
 import recs.core.utils.libgdx.RECSIntMap;
 import recs.core.utils.libgdx.RECSObjectIntMap;
+import recs.core.utils.libgdx.RECSObjectMap;
 
 public final class ComponentManager {
 	private EntityWorld world;
 
-	ComponentManager(EntityWorld world) {
-		this.world = world;
-	}
 	/**
 	 * Collection of ComponentManagers, managers are retrievable by using the
 	 * class they represent.
@@ -20,6 +18,15 @@ public final class ComponentManager {
 	 */
 	private RECSObjectIntMap<Class<?>> componentIds = new RECSObjectIntMap<Class<?>>();
 	private int componentIdCounter = 0;
+	/**
+	 * Map which handles notification of destroyed components.
+	 */
+	private final RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners;
+
+	ComponentManager(EntityWorld world) {
+		this.world = world;
+		destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
+	}
 
 	int getComponentId(Class<?> component) {
 		return componentIds.get(component, -1);
@@ -48,7 +55,17 @@ public final class ComponentManager {
 		componentIdCounter = 0;
 		componentIds.clear();
 		componentMappers.clear();
+		destructionListeners.clear();
 	}
+
+	void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
+		destructionListeners.put(componentClass, listener);
+	}
+
+	ComponentDestructionListener getDestructionListener(Class<?> componentClass) {
+		return destructionListeners.get(componentClass);
+	}
+
 
 	void removeEntityFromMappers(Entity e) {
 		RECSBits componentBits = e.def.componentBits;
@@ -86,7 +103,6 @@ public final class ComponentManager {
 		e.def = newDef;
 		world.addToSystems(e, def.systemBits, newDef.systemBits);
 	}
-
 
 	void removeComp(Entity e, Object... components) {
 		EntityDef def = e.def;

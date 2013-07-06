@@ -41,8 +41,6 @@ public final class EntityWorld {
 	private final EntityDefManager defManager;
 	private final EventManager eventManager;
 
-	private final RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners;
-
 	/**
 	 * Values used to give entities an unique id.
 	 */
@@ -60,7 +58,6 @@ public final class EntityWorld {
 		defManager = new EntityDefManager(this);
 		eventManager = new EventManager();
 
-		destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
 		addedEntities = new RECSIntMap<Entity>();
 		entityIds = new RECSBits();
 	}
@@ -85,6 +82,8 @@ public final class EntityWorld {
 		entity.id = id;
 		addedEntities.put(id, entity);
 
+		// Read reflection data and use it to add all the components that were
+		// declared as fields.
 		EntityReflection reflection = defManager.getReflection(entityClass);
 		if (reflection == null)
 			reflection = defManager.addNewEntityReflection(entity.getClass());
@@ -103,19 +102,25 @@ public final class EntityWorld {
 			}
 		}
 
+		// Add all the components that were added to the entity before the
+		// entity was added to the world.
 		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
-		if (scheduleAddList != null)
+		if (scheduleAddList != null) {
 			componentManager.addComp(entity, scheduleAddList.toArray());
+		}
+		// Remove all the components that were removed from the entity before
+		// the entity was added to the world.
 		LinkedList<Object> scheduledRemovesList = scheduledRemoves.remove(entity);
-		if (scheduledRemovesList != null)
+		if (scheduledRemovesList != null) {
 			componentManager.removeComp(entity, scheduledRemovesList.toArray());
+		}
 		systemManager.addEntityToNewSystems(entity, null, entity.def.systemBits);
 	}
 
 	public Entity removeEntity(int entityId) {
 		numFreedIds++;
 		Entity e = getEntity(entityId);
-		if(e == null)
+		if (e == null)
 			throw new RuntimeException("Entity was not added to this world: " + entityId);
 		systemManager.removeEntityFromRemovedSystems(e, e.def.systemBits, null);
 		componentManager.removeEntityFromMappers(e);
@@ -131,8 +136,8 @@ public final class EntityWorld {
 	public void addSystem(EntitySystem system) {
 		systemManager.addSystem(system);
 
-		if(addedEntities.size != 0) {
-			for(Entity e: addedEntities.values()) {
+		if (addedEntities.size != 0) {
+			for (Entity e : addedEntities.values()) {
 				RECSBits newSystemBits = systemManager.getSystemBits(e.def.componentBits);
 				systemManager.addEntityToNewSystems(e, e.def.systemBits, newSystemBits);
 				e.def.systemBits.copy(newSystemBits);
@@ -181,12 +186,8 @@ public final class EntityWorld {
 		return componentManager.getComponentMapper(componentId);
 	}
 
-	public void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
-		destructionListeners.put(componentClass, listener);
-	}
-
 	public ComponentDestructionListener getDestructionListener(Class<?> componentClass) {
-		return destructionListeners.get(componentClass);
+		return componentManager.getDestructionListener(componentClass);
 	}
 
 	/**
@@ -212,7 +213,6 @@ public final class EntityWorld {
 		componentManager.clear();
 		systemManager.clear();
 		defManager.clear();
-		destructionListeners.clear();
 		entityIds.clear();
 		eventManager.clear();
 		lastUsedId = 0;
@@ -253,6 +253,10 @@ public final class EntityWorld {
 		for (Class<?> c : components)
 			bits.set(getComponentId(c));
 		return bits;
+	}
+
+	void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
+		componentManager.registerDestuctionListener(listener, componentClass);
 	}
 
 	RECSBits getSystemBits(RECSBits componentBits) {
