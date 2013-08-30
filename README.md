@@ -4,9 +4,6 @@ Reflection-Entity-Component-System
 An high performance Entity-Component-System with focus on ease of use and minimal programmer overhead.
 
 
-Libary .jar:
-
-https://dl.dropboxusercontent.com/u/18555381/Permanent/recs.jar
 <br>
 
 	public class UsageExample {
