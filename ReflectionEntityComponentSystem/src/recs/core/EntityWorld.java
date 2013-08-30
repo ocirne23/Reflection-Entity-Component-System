@@ -86,6 +86,7 @@ public final class EntityWorld {
 		// declared as fields.
 		EntityReflection reflection = entitydataManager.getReflection(entityClass);
 		entity.data = reflection.data;
+
 		if (entity.getClass() != Entity.class) {
 			Keys k = reflection.componentFields.keys();
 			while (k.hasNext) {

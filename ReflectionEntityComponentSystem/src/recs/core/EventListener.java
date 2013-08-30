@@ -25,10 +25,10 @@ public class EventListener<T> {
 	}
 
 	/**
-	 * Constructor used to create a listener outside of an
-	 * @param world
+	 * Constructor used to create a listener outside of an entity system, do not use this to create a listener
+	 * inside an EntitySystem.
 	 */
-	protected EventListener(EntityWorld world) {
+	public EventListener(EntityWorld world) {
 		//Reflection hax for clean api, otherwise pass a class as parameter.
 		@SuppressWarnings("unchecked")
 		Class<T> genericParameter = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];

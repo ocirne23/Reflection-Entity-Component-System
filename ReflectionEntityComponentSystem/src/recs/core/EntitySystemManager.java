@@ -87,7 +87,8 @@ public final class EntitySystemManager {
 					field.setAccessible(true);
 					// Read the type in the <> of eventListener.
 					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-					EventListener<?> eventListener = new EventListener<>();
+					@SuppressWarnings("rawtypes")
+					EventListener<?> eventListener = new EventListener();
 					world.registerEventListener(eventListener, (Class<?>) type);
 
 					try {
