@@ -75,13 +75,13 @@ A system is a class which extends EntitySystem:
 		}
 	
 		@Override
-		private void process(int entityId, float deltaInSec) {
+		private void processEntity(int id, float deltaSec) {
 			//Retrieve components from entities using the component managers.
-			Position position = positionMapper.get(entityId);
-			Velocity velocity = velocityMapper.get(entityId);
+			Position position = positionMapper.get(id);
+			Velocity velocity = velocityMapper.get(id);
 			//Do something with the components.
-			position.x += velocity.x * deltaInSec;
-			position.y += velocity.y * deltaInSec;
+			position.x += velocity.x * deltaSec;
+			position.y += velocity.y * deltaSec;
 		}
 	}
 	
@@ -151,9 +151,4 @@ Events can be created easily and are passed to every system with a listener.
 
 	world.sendEvent(new DamageEvent(entityId, 1));
 
-Can easily save/read almost any object to/from a file using the Saver class.
-
-	File playerFile = Saver.saveObject(player, new File("player"));
-	
-	Player loadedPlayer = Saver.readObject(new Player(), playerFile));
 	
