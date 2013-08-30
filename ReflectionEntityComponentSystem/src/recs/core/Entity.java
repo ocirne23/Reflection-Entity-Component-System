@@ -69,6 +69,6 @@ public class Entity {
 			components[i] = data.world.getComponent(id, componentIds[i]);
 		}
 
-		return null;
+		return components;
 	}
 }
