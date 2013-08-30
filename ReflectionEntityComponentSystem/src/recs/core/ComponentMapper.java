@@ -21,6 +21,10 @@ public final class ComponentMapper<T> {
 		return components.remove(entityId);
 	}
 
+	/**
+	 * Retrieve a component using an entityId, returns null if the component does
+	 * not exist.
+	 */
 	public T get(int id) {
 		return components.get(id);
 	}

@@ -32,6 +32,15 @@ public final class ComponentManager {
 		return componentIds.get(component, -1);
 	}
 
+	/**
+	 * Get a component with the componentId from the entity with entityId.
+	 */
+	Object getComponent(int entityId, int componentId) {
+		return componentMappers.get(componentId).get(entityId);
+	}
+
+
+
 	<T> T getComponent(int entityId, Class<T> class1) {
 		int componentId = componentIds.get(class1, -1);
 		if (componentId == -1)

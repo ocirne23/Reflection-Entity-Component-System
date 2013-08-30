@@ -213,6 +213,13 @@ public final class EntityWorld {
 	}
 
 	/**
+	 * Get a component with the componentId from the entity with entityId.
+	 */
+	public Object getComponent(int entityId, int componentId) {
+		return componentManager.getComponent(entityId, componentId);
+	}
+
+	/**
 	 * Get a DestructionListener that is notified whenever a component of the
 	 * given class is destroyed.
 	 */
