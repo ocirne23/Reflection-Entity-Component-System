@@ -1,5 +1,6 @@
 package recs.core;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -14,7 +15,25 @@ public class EventListener<T> {
 	private final LinkedBlockingQueue<T> receivedEvents;
 	private final LinkedList<T> polledEventsList;
 
+
+	/**
+	 * Constructor used by EntityWorld to initialize the listener after reading the field inside a system.
+	 */
 	protected EventListener() {
+		receivedEvents = new LinkedBlockingQueue<T>();
+		polledEventsList = new LinkedList<T>();
+	}
+
+	/**
+	 * Constructor used to create a listener outside of an
+	 * @param world
+	 */
+	protected EventListener(EntityWorld world) {
+		//Reflection hax for clean api, otherwise pass a class as parameter.
+		@SuppressWarnings("unchecked")
+		Class<T> genericParameter = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+
+		world.registerEventListener(this, genericParameter);
 		receivedEvents = new LinkedBlockingQueue<T>();
 		polledEventsList = new LinkedList<T>();
 	}

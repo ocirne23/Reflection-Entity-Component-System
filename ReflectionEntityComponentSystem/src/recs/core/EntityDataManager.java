@@ -6,44 +6,55 @@ import recs.core.utils.RECSBits;
 import recs.core.utils.libgdx.RECSIntMap;
 import recs.core.utils.libgdx.RECSObjectMap;
 
-public final class EntityDefManager {
+public final class EntityDataManager {
 	private EntityWorld world;
 	private RECSObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new RECSObjectMap<Class<? extends Entity>, EntityReflection>();
-	private RECSObjectMap<RECSBits, EntityDef> defMap = new RECSObjectMap<RECSBits, EntityDef>();
+	private RECSObjectMap<RECSBits, EntityData> entityDataMap = new RECSObjectMap<RECSBits, EntityData>();
 
-	EntityDefManager(EntityWorld world) {
+	EntityDataManager(EntityWorld world) {
 		this.world = world;
 	}
 
 	EntityReflection getReflection(Class<? extends Entity> class1) {
-		return reflectionMap.get(class1);
+		EntityReflection reflectionData = reflectionMap.get(class1);
+		if (reflectionData == null)
+			reflectionData = createNewEntityReflection(class1);
+
+		return reflectionData;
 	}
 
 	void putReflection(Class<? extends Entity> class1, EntityReflection reflection) {
 		reflectionMap.put(class1, reflection);
 	}
 
-	EntityDef getDef(RECSBits componentBits) {
-		return defMap.get(componentBits);
+	/**
+	 * Retrieve an EntityData object matching the set of components
+	 */
+	EntityData getEntityData(RECSBits componentBits) {
+		return entityDataMap.get(componentBits);
 	}
 
-	EntityDef putDef(RECSBits componentBits, EntityDef def) {
-		return defMap.put(componentBits, def);
+	EntityData putEntityData(EntityData data) {
+		return entityDataMap.put(data.componentBits, data);
 	}
 
 	void removeSystem(int id) {
-		for(EntityDef def: defMap.values()) {
-			def.systemBits.clear(id);
+		for(EntityData data: entityDataMap.values()) {
+			data.systemBits.clear(id);
 		}
 	}
 
 	void clear() {
-		defMap.clear();
+		entityDataMap.clear();
 		reflectionMap.clear();
 	}
 
+	/**
+	 * Create an EntityReflection containing the reflection data of a class
+	 * by scanning its fields.
+	 */
 	@SuppressWarnings("unchecked")
-	EntityReflection addNewEntityReflection(Class<? extends Entity> class1) {
+	private EntityReflection createNewEntityReflection(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
 		RECSIntMap<Field> fieldMap = new RECSIntMap<Field>();
 		RECSBits componentBits = new RECSBits();
@@ -64,10 +75,10 @@ public final class EntityDefManager {
 		}
 
 		RECSBits systemBits = world.getSystemBits(componentBits);
-		EntityDef def = new EntityDef(world, componentBits, systemBits);
-		putDef(componentBits, def);
+		EntityData data = new EntityData(world, componentBits, systemBits);
+		putEntityData(data);
 
-		EntityReflection reflection = new EntityReflection(fieldMap, def);
+		EntityReflection reflection = new EntityReflection(fieldMap, data);
 		reflectionMap.put(mainClass, reflection);
 
 		return reflection;

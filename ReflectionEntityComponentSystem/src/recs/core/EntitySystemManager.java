@@ -37,39 +37,20 @@ public final class EntitySystemManager {
 	}
 
 	/**
-	 * Remove the entity from the systems using the systembits that are removed
-	 * from the newSystemBits compared to the existingSystemBits.
-	 *
-	 * Give null to newSystemBits to remove the entity from all its systems.
+	 * Add the entity to all the systems in the given systembits;
 	 */
-	void removeEntityFromRemovedSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		RECSBits removedSystemBits;
-		if (newSystemBits == null)
-			removedSystemBits = existingSystemBits;
-		else
-			removedSystemBits = existingSystemBits.getRemovedBits(newSystemBits);
-
-		for (int i = removedSystemBits.nextSetBit(0); i >= 0; i = removedSystemBits.nextSetBit(i + 1)) {
-			systemMap.get(i).removeEntity(entity.id);
+	void addEntityToSystems(Entity e, RECSBits systemBits) {
+		for (int i = systemBits.nextSetBit(0); i >= 0; i = systemBits.nextSetBit(i + 1)) {
+			systemMap.get(i).addEntity(e.id);
 		}
 	}
 
 	/**
-	 * Add an entity to the systems so it can be processed.
-	 *
-	 * Adds to the systems in the newSystemBits but not in the
-	 * existingSystemBits. Give null to existingSystemBits to add the entity to
-	 * every system in newSystemBits.
+	 * Remove the entity from all the systems in the given systembits;
 	 */
-	void addEntityToNewSystems(Entity entity, RECSBits existingSystemBits, RECSBits newSystemBits) {
-		RECSBits addedSystemBits;
-		if (existingSystemBits != null)
-			addedSystemBits = existingSystemBits.getAddedBits(newSystemBits);
-		else
-			addedSystemBits = newSystemBits;
-
-		for (int i = addedSystemBits.nextSetBit(0); i >= 0; i = addedSystemBits.nextSetBit(i + 1)) {
-			systemMap.get(i).addEntity(entity.id);
+	void removeEntityFromSystems(Entity e, RECSBits systemBits) {
+		for (int i = systemBits.nextSetBit(0); i >= 0; i = systemBits.nextSetBit(i + 1)) {
+			systemMap.get(i).removeEntity(e.id);
 		}
 	}
 

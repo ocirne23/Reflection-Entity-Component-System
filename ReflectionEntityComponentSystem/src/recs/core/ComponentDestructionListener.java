@@ -1,9 +1,19 @@
 package recs.core;
 
-public abstract class ComponentDestructionListener {
-	public ComponentDestructionListener(EntityWorld world, Class<?> componentType) {
-		world.registerDestuctionListener(this, componentType);
+import java.lang.reflect.ParameterizedType;
+
+public abstract class ComponentDestructionListener<T> {
+
+	public ComponentDestructionListener(EntityWorld world) {
+		//Reflection hax for clean api, otherwise pass a class as parameter.
+		@SuppressWarnings("unchecked")
+		Class<T> genericParameter = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+
+		world.registerDestuctionListener(this, genericParameter);
 	}
 
-	public abstract void destroyed(Object object);
+	/**
+	 * Called when a component of the same type as the type parameter is destroyed.
+	 */
+	public abstract void destroyed(T component);
 }

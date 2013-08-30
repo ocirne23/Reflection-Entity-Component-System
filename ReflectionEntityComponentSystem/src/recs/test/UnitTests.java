@@ -63,7 +63,7 @@ import recs.test.systems.HealthSystem;
 import recs.test.systems.MovementSystem;
 import recs.test.systems.ThreadedMovementSystem;
 
-public class TestAllTehThings {
+public class UnitTests {
 
 	private static final Class<?>[] COMPONENTS = { Health.class, Position.class, Velocity.class, Attack.class, Gravity.class };
 	private static final Class<?>[] COMPONENTS1 = { CopyOfHealth.class, CopyOfPosition.class, CopyOfVelocity.class, CopyOfAttack.class, CopyOfGravity.class };
@@ -328,18 +328,18 @@ public class TestAllTehThings {
 		assertFalse(as.hasEntity(playerId));
 	}
 
-	private class MyDestructionListener extends ComponentDestructionListener {
+	private class MyDestructionListener extends ComponentDestructionListener<Position> {
+
+		public MyDestructionListener(EntityWorld world) {
+			super(world);
+		}
+
 		private boolean destroyed = false;
 
-		private MyDestructionListener() {
-			super(world, Position.class);
-		}
-
 		@Override
-		public void destroyed(Object object) {
+		public void destroyed(Position component) {
 			destroyed = true;
 		}
-
 	}
 
 	@Test
@@ -349,7 +349,7 @@ public class TestAllTehThings {
 		Position position = world.getComponent(playerId, Position.class);
 		assertTrue(position != null);
 
-		MyDestructionListener dl = new MyDestructionListener();
+		MyDestructionListener dl = new MyDestructionListener(world);
 
 		world.removeEntity(playerId);
 

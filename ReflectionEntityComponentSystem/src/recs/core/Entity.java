@@ -1,14 +1,16 @@
 package recs.core;
 
 /**
- * All entities should extend this class. Add component objects to the child
- * class and create the entity to let the systems process it.
+ * Base class for all entities, either extend this class and add Components as fields to the parent,
+ * or use addComponent to add components to the entity.
+ *
+ * Then add the entity to the world so it can be processed by the systems.
  *
  * @author Enrico van Oosten
  */
 public class Entity {
-	transient int id;
-	transient EntityDef def = null;
+	int id;
+	EntityData data = null;
 
 	/**
 	 * Add an component to this entity runtime.

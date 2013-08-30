@@ -1,8 +1,5 @@
 package recs.core;
 
-import java.util.LinkedList;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import recs.core.utils.RECSBits;
 import recs.core.utils.RECSIntSet;
 import recs.core.utils.RECSIntSet.Items;
@@ -10,19 +7,38 @@ import recs.core.utils.RECSIntSet.Items;
 /**
  * Extend this class and add it to the EntityWorld to create a new EntitySystem.
  *
+ * Override processEntity to process entities one by one, or override processSystem
+ * to do an action once per iteration of the system. (call super on processSystem to do both).
+ *
  * @author Enrico van Oosten
  */
 public abstract class EntitySystem {
+	/**
+	 * The world this system belongs to.
+	 */
 	protected EntityWorld world;
 
+	/**
+	 * The id of this system.
+	 */
 	int id;
-	RECSIntSet entitiyIds = new RECSIntSet(16);
+	/**
+	 * A set of the entityIds of the entities that are being processed by this system.
+	 */
+	RECSIntSet entityIds = new RECSIntSet(16);
+	/**
+	 * A bitset of the components required for an entity to be processed by this system.
+	 */
 	RECSBits componentBits;
+	/**
+	 * An array of the classes of the components this system requires.
+	 */
 	Class<?>[] components;
 
+	/**
+	 * Indicates if this system will be processed by the world or not.
+	 */
 	private boolean enabled = true;
-	private final LinkedBlockingQueue<Object> receivedEvents = new LinkedBlockingQueue<Object>();
-	private final LinkedList<Object> polledEventsList = new LinkedList<Object>();
 
 	/**
 	 * Create an entitysystem that processes entities with the specified
@@ -44,7 +60,7 @@ public abstract class EntitySystem {
 	 *            The time that has passed in seconds since last update.
 	 */
 	protected void processSystem(float deltaInSec) {
-		Items i = entitiyIds.items();
+		Items i = entityIds.items();
 		while (i.hasNext)
 			processEntity(i.next(), deltaInSec);
 	}
@@ -58,8 +74,11 @@ public abstract class EntitySystem {
 
 	}
 
+	/**
+	 * Return a set of all the ids of all the entities that are being processed by this system.
+	 */
 	protected RECSIntSet getAllEntities() {
-		return entitiyIds;
+		return entityIds;
 	}
 
 	/**
@@ -71,45 +90,56 @@ public abstract class EntitySystem {
 		this.enabled = enabled;
 	}
 
+	/**
+	 * Return true if this system should be processed by the world.
+	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+	/**
+	 * Returns if an entity is being processed by this system.
+	 */
 	public boolean hasEntity(int entityId) {
-		return entitiyIds.contains(entityId);
+		return entityIds.contains(entityId);
 	}
 
+	/**
+	 * Get the id of this system.
+	 */
 	public int getId() {
 		return id;
 	}
 
-	public void sendMessage(Object message) {
-		receivedEvents.add(message);
-	}
-
-	protected LinkedList<Object> pollEvents() {
-		polledEventsList.clear();
-		receivedEvents.drainTo(polledEventsList);
-		return polledEventsList;
-	}
-
+	/**
+	 * Add an entity to this system so it can be processed.
+	 */
 	protected void addEntity(int id) {
-		if (!entitiyIds.contains(id)) {
-			entitiyIds.add(id);
+		if (!entityIds.contains(id)) {
+			entityIds.add(id);
+		} else {
+			throw new RuntimeException("Entity is being added twice, this should not happen");
 		}
 	}
 
+	/**
+	 * Remove an entity from the system.
+	 */
 	protected void removeEntity(int id) {
-		entitiyIds.remove(id);
+		entityIds.remove(id);
 	}
 
+	/**
+	 * Get the componentbits that this system requires.
+	 */
 	RECSBits getComponentBits() {
 		return componentBits;
 	}
 
+	/**
+	 * Remove all the entities from this system.
+	 */
 	void clear() {
-		entitiyIds.clear();
-		receivedEvents.clear();
-		polledEventsList.clear();
+		entityIds.clear();
 	}
 }

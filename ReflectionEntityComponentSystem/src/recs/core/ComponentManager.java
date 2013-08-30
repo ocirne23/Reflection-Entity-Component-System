@@ -21,11 +21,11 @@ public final class ComponentManager {
 	/**
 	 * Map which handles notification of destroyed components.
 	 */
-	private final RECSObjectMap<Class<?>, ComponentDestructionListener> destructionListeners;
+	private final RECSObjectMap<Class<?>, ComponentDestructionListener<?>> destructionListeners;
 
 	ComponentManager(EntityWorld world) {
 		this.world = world;
-		destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener>();
+		destructionListeners = new RECSObjectMap<Class<?>, ComponentDestructionListener<?>>();
 	}
 
 	int getComponentId(Class<?> component) {
@@ -58,70 +58,87 @@ public final class ComponentManager {
 		destructionListeners.clear();
 	}
 
-	void registerDestuctionListener(ComponentDestructionListener listener, Class<?> componentClass) {
+	void registerDestuctionListener(ComponentDestructionListener<?> listener, Class<?> componentClass) {
 		destructionListeners.put(componentClass, listener);
 	}
 
-	ComponentDestructionListener getDestructionListener(Class<?> componentClass) {
+	ComponentDestructionListener<?> getDestructionListener(Class<?> componentClass) {
 		return destructionListeners.get(componentClass);
 	}
 
 
 	void removeEntityFromMappers(Entity e) {
-		RECSBits componentBits = e.def.componentBits;
+		RECSBits componentBits = e.data.componentBits;
 
 		for (int i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
 			Object removedComponent = componentMappers.get(i).remove(e.id);
 			if (removedComponent != null) {
-				ComponentDestructionListener listener = world.getDestructionListener(removedComponent.getClass());
+				@SuppressWarnings("unchecked")
+				ComponentDestructionListener<Object> listener = world.getDestructionListener(removedComponent.getClass());
 				if (listener != null)
 					listener.destroyed(removedComponent);
 			}
 		}
 	}
 
-	void addComp(Entity e, Object... components) {
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		if (def != null)
-			componentBits.copy(def.componentBits);
-		for (Object component : components) {
+	/**
+	 * Add the given components to this entity, updating its EntityData.
+	 * Does not add the entity to the systems yet.
+	 */
+	void addComponent(Entity e, Object... components) {
+		//Copy the old componentBits.
+		RECSBits newComponentBits = new RECSBits(e.data.componentBits);
+
+		////Update componentbits.
+		//For every component added
+		for(Object component: components) {
+			//Get its id
 			int componentId = getComponentId(component.getClass());
+
+			//Add the component to its componentMapper
 			ComponentMapper<?> mapper = getComponentMapper(componentId);
 			if (mapper == null)
 				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
 			mapper.add(e.id, component);
-			componentBits.set(componentId);
+
+			//set the id in the componentBits
+			newComponentBits.set(componentId);
 		}
-		EntityDef newDef = world.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = world.getSystemBits(componentBits);
-			newDef = new EntityDef(world, componentBits, systemBits);
-			world.putDef(componentBits, newDef);
-		}
-		e.def = newDef;
-		world.addToSystems(e, def.systemBits, newDef.systemBits);
+
+		//Retrieve a new EntityData object matching the new set of components.
+		EntityData newData = world.getEntityData(newComponentBits);
+
+		e.data = newData;
 	}
 
-	void removeComp(Entity e, Object... components) {
-		EntityDef def = e.def;
-		RECSBits componentBits = new RECSBits();
-		RECSBits systemBits = new RECSBits();
-		componentBits.copy(def.componentBits);
-		for (Object component : components) {
+	/**
+	 * Remove the given components from this entity, updating its EntityData.
+	 * Does not remove the entity from the systems yet.
+	 */
+	void removeComponent(Entity e, Object... components) {
+		//Copy the old componentBits.
+		RECSBits newComponentBits = new RECSBits(e.data.componentBits);
+
+		////Update componentbits.
+		//For every component added
+		for(Object component: components) {
+			//Get its id
 			int componentId = getComponentId(component.getClass());
-			getComponentMapper(componentId).remove(e.id);
-			componentBits.clear(componentId);
+
+			//Add the component to its componentMapper
+			ComponentMapper<?> mapper = getComponentMapper(componentId);
+			if (mapper == null)
+				throw new RuntimeException("Unregistered component added: " + component.getClass().getName());
+			mapper.remove(e.id);
+
+			//remove the id from the componentBits
+			newComponentBits.clear(componentId);
 		}
-		EntityDef newDef = world.getDef(componentBits);
-		if (newDef == null) {
-			systemBits = world.getSystemBits(componentBits);
-			newDef = new EntityDef(world, componentBits, systemBits);
-			world.putDef(componentBits, def);
-		}
-		e.def = def;
-		world.removeFromSystems(e, def.systemBits, newDef.systemBits);
+
+		//Retrieve a new EntityData object matching the new set of components.
+		EntityData newData = world.getEntityData(newComponentBits);
+
+		e.data = newData;
 	}
 
 	@SuppressWarnings("unchecked")

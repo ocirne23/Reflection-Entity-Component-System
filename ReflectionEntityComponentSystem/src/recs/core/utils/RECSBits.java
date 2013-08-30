@@ -11,6 +11,18 @@ public class RECSBits {
 	private static final int WORD_MASK = 0xffffffff;
 	int[] bits = { 0 };
 
+	public RECSBits() {
+
+	}
+
+	/**
+	 * Copy constructor
+	 */
+	public RECSBits(RECSBits copyMe) {
+		bits = Arrays.copyOf(copyMe.bits, copyMe.bits.length);
+	}
+
+
 	/**
 	 * Returns if the bit at the index was set to true.
 	 */
