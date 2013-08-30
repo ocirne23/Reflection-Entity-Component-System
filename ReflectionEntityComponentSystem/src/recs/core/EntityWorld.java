@@ -258,6 +258,10 @@ public final class EntityWorld {
 		System.gc();
 	}
 
+	static Object[] getScheduledAdds(Entity e) {
+		return scheduledAdds.get(e).toArray();
+	}
+
 	/**
 	 * Add components to an entity, updating its EntityData and adding it to the new systems.
 	 */

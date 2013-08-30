@@ -62,6 +62,9 @@ public class Entity {
 	}
 
 	public Object[] getComponents() {
+		if(data == null)
+			return EntityWorld.getScheduledAdds(this);
+
 		int[] componentIds = getComponentIds();
 		Object[] components = new Object[componentIds.length];
 
