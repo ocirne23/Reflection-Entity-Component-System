@@ -2,7 +2,7 @@ package recs;
 
 import java.util.LinkedList;
 
-import recs.utils.libgdx.RECSObjectMap;
+import com.badlogic.gdx.utils.ObjectMap;
 
 
 
@@ -12,10 +12,10 @@ import recs.utils.libgdx.RECSObjectMap;
  * @author Enrico van Oosten
  */
 public final class EventManager {
-	private final RECSObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>> listeners;
+	private final ObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>> listeners;
 
 	EventManager() {
-		listeners = new RECSObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>>();
+		listeners = new ObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>>();
 	}
 
 	void sendEvent(Event message) {

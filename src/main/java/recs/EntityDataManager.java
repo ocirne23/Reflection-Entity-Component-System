@@ -3,14 +3,14 @@ package recs;
 import java.lang.reflect.Field;
 
 import recs.utils.RECSBits;
-import recs.utils.libgdx.RECSIntMap;
-import recs.utils.libgdx.RECSObjectMap;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.ObjectMap;
 
 
 public final class EntityDataManager {
 	private EntityWorld world;
-	private RECSObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new RECSObjectMap<Class<? extends Entity>, EntityReflection>();
-	private RECSObjectMap<RECSBits, EntityData> entityDataMap = new RECSObjectMap<RECSBits, EntityData>();
+	private ObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new ObjectMap<Class<? extends Entity>, EntityReflection>();
+	private ObjectMap<RECSBits, EntityData> entityDataMap = new ObjectMap<RECSBits, EntityData>();
 
 	EntityDataManager(EntityWorld world) {
 		this.world = world;
@@ -57,7 +57,7 @@ public final class EntityDataManager {
 	@SuppressWarnings("unchecked")
 	private EntityReflection createNewEntityReflection(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
-		RECSIntMap<Field> fieldMap = new RECSIntMap<Field>();
+		IntMap<Field> fieldMap = new IntMap<Field>();
 		RECSBits componentBits = new RECSBits();
 		// Iterate all the subclasses.
 		while (class1 != Entity.class) {

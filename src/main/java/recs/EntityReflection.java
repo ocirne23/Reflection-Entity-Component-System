@@ -2,7 +2,7 @@ package recs;
 
 import java.lang.reflect.Field;
 
-import recs.utils.libgdx.RECSIntMap;
+import com.badlogic.gdx.utils.IntMap;
 
 
 /**
@@ -14,9 +14,9 @@ import recs.utils.libgdx.RECSIntMap;
  */
 public final class EntityReflection {
 	final EntityData data;
-	final RECSIntMap<Field> componentFields;
+	final IntMap<Field> componentFields;
 
-	EntityReflection(RECSIntMap<Field> componentFields, EntityData data) {
+	EntityReflection(IntMap<Field> componentFields, EntityData data) {
 		this.componentFields = componentFields;
 		this.data = data;
 	}

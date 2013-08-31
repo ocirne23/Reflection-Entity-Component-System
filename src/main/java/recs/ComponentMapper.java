@@ -1,7 +1,7 @@
 package recs;
 
-import recs.utils.libgdx.RECSIntMap;
-import recs.utils.libgdx.RECSIntMap.Keys;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.IntMap.Keys;
 
 /**
  * Used to easily retrieve components from entities.
@@ -11,10 +11,10 @@ import recs.utils.libgdx.RECSIntMap.Keys;
  *            The component type this manager manages.
  */
 public final class ComponentMapper<T extends Component> {
-	final RECSIntMap<T> components;
+	final IntMap<T> components;
 
 	protected ComponentMapper() {
-		components = new RECSIntMap<T>();
+		components = new IntMap<T>();
 	}
 
 	protected Component remove(int entityId) {
