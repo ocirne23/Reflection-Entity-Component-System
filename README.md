@@ -131,9 +131,9 @@ Event handling with EventListeners
 		}
 	}
 	
-An event  can be any object.
+An event must extend Event.
 
-	public class DamageEvent {
+	public class DamageEvent extends Event {
 		public int entityId;
 		public int damage;
 	
