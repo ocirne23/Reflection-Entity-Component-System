@@ -25,8 +25,8 @@ public final class EntityWorld {
 	 * Maps used to temporarily store added/removed components from entities
 	 * that are not yet added to the EntityWorld.
 	 */
-	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Object>>();
-	private static RECSObjectMap<Entity, LinkedList<Object>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Object>>();
+	private static RECSObjectMap<Entity, LinkedList<Component>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Component>>();
+	private static RECSObjectMap<Entity, LinkedList<Component>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Component>>();
 
 	/**
 	 * Contains all the entities so they can be retrieved with getEntity
@@ -92,9 +92,9 @@ public final class EntityWorld {
 			while (k.hasNext) {
 				int next = k.next();
 				Field field = reflection.componentFields.get(next);
-				ComponentMapper<?> mapper = componentManager.getComponentMapper(next);
+				ComponentMapper<? extends Component> mapper = componentManager.getComponentMapper(next);
 				try {
-					mapper.add(id, field.get(entity));
+					mapper.add(id, (Component) field.get(entity));
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -104,15 +104,15 @@ public final class EntityWorld {
 		}
 		// Add all the components that were added to the entity before the
 		// entity was added to the world.
-		LinkedList<Object> scheduleAddList = scheduledAdds.remove(entity);
+		LinkedList<Component> scheduleAddList = scheduledAdds.remove(entity);
 		if (scheduleAddList != null) {
-			componentManager.addComponent(entity, scheduleAddList.toArray());
+			componentManager.addComponent(entity, scheduleAddList.toArray(new Component[0]));
 		}
 		// Remove all the components that were removed from the entity before
 		// the entity was added to the world.
-		LinkedList<Object> scheduledRemovesList = scheduledRemoves.remove(entity);
+		LinkedList<Component> scheduledRemovesList = scheduledRemoves.remove(entity);
 		if (scheduledRemovesList != null) {
-			componentManager.removeComponent(entity, scheduledRemovesList.toArray());
+			componentManager.removeComponent(entity, scheduledRemovesList.toArray(new Component[0]));
 		}
 
 		//Add the entity to the systems.
@@ -180,17 +180,6 @@ public final class EntityWorld {
 	}
 
 	/**
-	 * Register all the component classes that are being used here. {
-	 * Health.class, Position.class } etc.
-	 *
-	 * @param componentClasses
-	 *            A list of component classes.
-	 */
-	public void registerComponents(Class<?>... componentClasses) {
-		componentManager.registerComponents(componentClasses);
-	}
-
-	/**
 	 * Get a component of an entity. Always use a ComponentMapper<T> instead of
 	 * this to retrieve components.
 	 *
@@ -200,7 +189,7 @@ public final class EntityWorld {
 	 *            The type of that component
 	 * @return The component
 	 */
-	public <T> T getComponent(int entityId, Class<T> componentClass) {
+	public <T extends Component> T getComponent(int entityId, Class<T> componentClass) {
 		return componentManager.getComponent(entityId, componentClass);
 	}
 
@@ -208,7 +197,7 @@ public final class EntityWorld {
 	 * Get a componentMapper so you can efficiently retrieve components from Entities using
 	 * the class of a component.
 	 */
-	public <T> ComponentMapper<T> getComponentMapper(Class<T> componentClass) {
+	public <T extends Component> ComponentMapper<T> getComponentMapper(Class<T> componentClass) {
 		return componentManager.getComponentMapper(componentClass);
 	}
 
@@ -224,7 +213,7 @@ public final class EntityWorld {
 	 * given class is destroyed.
 	 */
 	@SuppressWarnings("rawtypes")
-	public ComponentDestructionListener getDestructionListener(Class<?> componentClass) {
+	public ComponentDestructionListener getDestructionListener(Class<? extends Component> componentClass) {
 		return componentManager.getDestructionListener(componentClass);
 	}
 
@@ -265,18 +254,18 @@ public final class EntityWorld {
 	/**
 	 * Add components to an entity, updating its EntityData and adding it to the new systems.
 	 */
-	static void addComponent(Entity e, Object... components) {
+	static void addComponent(Entity e, Component... components) {
 		EntityData oldData = e.data;
 
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
 			//Schedule the component for adding so its added once the entity is added to a world.
-			LinkedList<Object> scheduled = scheduledAdds.get(e);
+			LinkedList<Component> scheduled = scheduledAdds.get(e);
 			if (scheduled == null) {
-				scheduled = new LinkedList<Object>();
+				scheduled = new LinkedList<Component>();
 				scheduledAdds.put(e, scheduled);
 			}
-			for (Object o : components)
+			for (Component o : components)
 				scheduled.add(o);
 		//Entity is added to a world.
 		} else {
@@ -296,18 +285,18 @@ public final class EntityWorld {
 	/**
 	 * Remove components to an entity, updating its EntityData and removing it from the old systems.
 	 */
-	static void removeComponent(Entity e, Object... components) {
+	static void removeComponent(Entity e, Component... components) {
 		EntityData oldData = e.data;
 
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
 			//Schedule the component for removal so its removed once the entity is added to a world.
-			LinkedList<Object> scheduled = scheduledRemoves.get(e);
+			LinkedList<Component> scheduled = scheduledRemoves.get(e);
 			if (scheduled == null) {
-				scheduled = new LinkedList<Object>();
+				scheduled = new LinkedList<Component>();
 				scheduledRemoves.put(e, scheduled);
 			}
-			for (Object o : components)
+			for (Component o : components)
 				scheduled.add(o);
 		//Entity is added to a world.
 		} else {
@@ -327,9 +316,9 @@ public final class EntityWorld {
 	/**
 	 * Get a RECSBits object matching an array of component classes.
 	 */
-	RECSBits getComponentBits(Class<?>[] components) {
+	RECSBits getComponentBits(Class<? extends Component>[] components) {
 		RECSBits bits = new RECSBits();
-		for (Class<?> c : components)
+		for (Class<? extends Component> c : components)
 			bits.set(getComponentId(c));
 		return bits;
 	}
@@ -338,7 +327,7 @@ public final class EntityWorld {
 	 * Register a DestructionListener to the world so it receives notifications when a component
 	 * of the given class is destroyed.
 	 */
-	void registerDestuctionListener(ComponentDestructionListener<?> listener, Class<?> componentClass) {
+	void registerDestuctionListener(ComponentDestructionListener<?> listener, Class<? extends Component> componentClass) {
 		componentManager.registerDestuctionListener(listener, componentClass);
 	}
 
@@ -374,7 +363,7 @@ public final class EntityWorld {
 	/**
 	 * Get the id of a component class.
 	 */
-	int getComponentId(Class<?> component) {
+	int getComponentId(Class<? extends Component> component) {
 		return componentManager.getComponentId(component);
 	}
 

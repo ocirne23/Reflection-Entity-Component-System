@@ -19,41 +19,6 @@ import recs.test.components.Gravity;
 import recs.test.components.Health;
 import recs.test.components.Position;
 import recs.test.components.Velocity;
-import recs.test.components.extras.CopyOfAttack;
-import recs.test.components.extras.CopyOfGravity;
-import recs.test.components.extras.CopyOfHealth;
-import recs.test.components.extras.CopyOfPosition;
-import recs.test.components.extras.CopyOfVelocity;
-import recs.test.components.extras.Copy_2_of_Attack;
-import recs.test.components.extras.Copy_2_of_Gravity;
-import recs.test.components.extras.Copy_2_of_Health;
-import recs.test.components.extras.Copy_2_of_Position;
-import recs.test.components.extras.Copy_2_of_Velocity;
-import recs.test.components.extras.Copy_3_of_Attack;
-import recs.test.components.extras.Copy_3_of_Gravity;
-import recs.test.components.extras.Copy_3_of_Health;
-import recs.test.components.extras.Copy_3_of_Position;
-import recs.test.components.extras.Copy_3_of_Velocity;
-import recs.test.components.extras.Copy_4_of_Attack;
-import recs.test.components.extras.Copy_4_of_Gravity;
-import recs.test.components.extras.Copy_4_of_Health;
-import recs.test.components.extras.Copy_4_of_Position;
-import recs.test.components.extras.Copy_4_of_Velocity;
-import recs.test.components.extras.Copy_5_of_Attack;
-import recs.test.components.extras.Copy_5_of_Gravity;
-import recs.test.components.extras.Copy_5_of_Health;
-import recs.test.components.extras.Copy_5_of_Position;
-import recs.test.components.extras.Copy_5_of_Velocity;
-import recs.test.components.extras.Copy_6_of_Attack;
-import recs.test.components.extras.Copy_6_of_Gravity;
-import recs.test.components.extras.Copy_6_of_Health;
-import recs.test.components.extras.Copy_6_of_Position;
-import recs.test.components.extras.Copy_6_of_Velocity;
-import recs.test.components.extras.Copy_7_of_Attack;
-import recs.test.components.extras.Copy_7_of_Gravity;
-import recs.test.components.extras.Copy_7_of_Health;
-import recs.test.components.extras.Copy_7_of_Position;
-import recs.test.components.extras.Copy_7_of_Velocity;
 import recs.test.entities.Player;
 import recs.test.entities.PlayerWithAttack;
 import recs.test.entities.Zombie;
@@ -64,15 +29,6 @@ import recs.test.systems.MovementSystem;
 import recs.test.systems.ThreadedMovementSystem;
 
 public class UnitTests {
-
-	private static final Class<?>[] COMPONENTS = { Health.class, Position.class, Velocity.class, Attack.class, Gravity.class };
-	private static final Class<?>[] COMPONENTS1 = { CopyOfHealth.class, CopyOfPosition.class, CopyOfVelocity.class, CopyOfAttack.class, CopyOfGravity.class };
-	private static final Class<?>[] COMPONENTS2 = { Copy_2_of_Health.class, Copy_2_of_Position.class, Copy_2_of_Velocity.class, Copy_2_of_Attack.class, Copy_2_of_Gravity.class };
-	private static final Class<?>[] COMPONENTS3 = { Copy_3_of_Health.class, Copy_3_of_Position.class, Copy_3_of_Velocity.class, Copy_3_of_Attack.class, Copy_3_of_Gravity.class };
-	private static final Class<?>[] COMPONENTS4 = { Copy_4_of_Health.class, Copy_4_of_Position.class, Copy_4_of_Velocity.class, Copy_4_of_Attack.class, Copy_4_of_Gravity.class };
-	private static final Class<?>[] COMPONENTS5 = { Copy_5_of_Health.class, Copy_5_of_Position.class, Copy_5_of_Velocity.class, Copy_5_of_Attack.class, Copy_5_of_Gravity.class };
-	private static final Class<?>[] COMPONENTS6 = { Copy_6_of_Health.class, Copy_6_of_Position.class, Copy_6_of_Velocity.class, Copy_6_of_Attack.class, Copy_6_of_Gravity.class };
-	private static final Class<?>[] COMPONENTS7 = { Copy_7_of_Health.class, Copy_7_of_Position.class, Copy_7_of_Velocity.class, Copy_7_of_Attack.class, Copy_7_of_Gravity.class };
 
 	private Player player;
 	private Player player2;
@@ -90,7 +46,7 @@ public class UnitTests {
 	public void setup() {
 		world = new EntityWorld();
 		System.out.println("starting test");
-		world.registerComponents(COMPONENTS);
+		//world.registerComponents(COMPONENTS);
 
 		ms = new MovementSystem();
 		world.addSystem(ms);
@@ -392,7 +348,7 @@ public class UnitTests {
 		assertTrue(position != null);
 		assertTrue(ms.hasEntity(e.getId()));
 	}
-
+/*
 	@Test
 	public void testLotsOfComponents() {
 		addEntities();
@@ -443,7 +399,8 @@ public class UnitTests {
 		Copy_5_of_Velocity velocity = world.getComponent(e.getId(), Copy_5_of_Velocity.class);
 		assertTrue(velocity != null);
 	}
-
+*/
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testLotsOfSystems() {
 		for (int i = 0; i < 40; i++) {

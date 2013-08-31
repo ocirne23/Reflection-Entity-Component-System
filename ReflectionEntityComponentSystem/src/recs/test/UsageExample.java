@@ -2,10 +2,6 @@ package recs.test;
 
 import recs.core.EntityWorld;
 import recs.core.utils.libgdx.RECSMathUtils;
-import recs.test.components.Attack;
-import recs.test.components.Health;
-import recs.test.components.Position;
-import recs.test.components.Velocity;
 import recs.test.entities.Player;
 import recs.test.entities.PlayerWithAttack;
 import recs.test.entities.Zombie;
@@ -14,11 +10,10 @@ import recs.test.systems.MovementSystem;
 
 public class UsageExample {
 	//Register all component classes here.
-	private static final Class<?>[] COMPONENTS = { Health.class, Position.class, Velocity.class, Attack.class };
 
 	public static void main(String[] args) {
 		EntityWorld world = new EntityWorld();
-		world.registerComponents(COMPONENTS);
+		//world.registerComponents(COMPONENTS);
 
 		world.addSystem(new HealthSystem());
 		world.addSystem(new MovementSystem());

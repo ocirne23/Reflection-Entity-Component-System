@@ -20,11 +20,11 @@ public class Entity {
 	 * @param component
 	 *            The component.
 	 */
-	public void addComponent(Object... components) {
+	public void addComponent(Component... components) {
 		EntityWorld.addComponent(this, components);
 	}
 
-	public void removeComponent(Object... components) {
+	public void removeComponent(Component... components) {
 		EntityWorld.removeComponent(this, components);
 	}
 
@@ -33,11 +33,11 @@ public class Entity {
 	}
 
 
-	public <T> boolean hasComponent(Class<T> componentClass) {
+	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
 		return data.componentBits.get(data.world.getComponentId(componentClass));
 	}
 
-	public <T> T getComponent(Class<T> componentClass) {
+	public <T extends Component> T getComponent(Class<T> componentClass) {
 		return data.world.getComponent(id, componentClass);
 	}
 
@@ -68,7 +68,7 @@ public class Entity {
 		int[] componentIds = getComponentIds();
 		Object[] components = new Object[componentIds.length];
 
-		for (int i = 0; i < componentIds.length - 1; i++) {
+		for (int i = 0; i < componentIds.length; i++) {
 			components[i] = data.world.getComponent(id, componentIds[i]);
 		}
 

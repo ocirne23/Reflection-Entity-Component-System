@@ -4,7 +4,7 @@ public class IntervalEntitySystem extends EntitySystem {
 	private float timePassed = 0;
 	private float intervalInSec = 0;
 
-	public IntervalEntitySystem(float intervalInSec, Class<?>... components) {
+	public IntervalEntitySystem(float intervalInSec, Class<? extends Component>... components) {
 		super(components);
 		this.intervalInSec = intervalInSec;
 	}

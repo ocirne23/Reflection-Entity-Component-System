@@ -6,6 +6,7 @@ import recs.test.components.Attack;
 import recs.test.events.DamageEvent;
 
 public class AttackSystem extends IntervalEntitySystem {
+	@SuppressWarnings("unchecked")
 	public AttackSystem() {
 		super(1f, Attack.class);
 	}

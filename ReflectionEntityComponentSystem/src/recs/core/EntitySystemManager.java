@@ -75,7 +75,7 @@ public final class EntitySystemManager {
 					try {
 						// Set the component manager declaration with the right
 						// component manager.
-						field.set(system, world.getComponentMapper((Class<?>) type));
+						field.set(system, world.getComponentMapper((Class<? extends Component>) type));
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {

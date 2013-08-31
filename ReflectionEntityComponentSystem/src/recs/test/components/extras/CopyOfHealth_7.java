@@ -2,11 +2,11 @@ package recs.test.components.extras;
 
 import recs.core.Component;
 
-public class CopyOfHealth extends Component {
+public class CopyOfHealth_7 extends Component {
 	public int amount;
 	public int max;
 
-	public CopyOfHealth(int health, int maxHealth) {
+	public CopyOfHealth_7(int health, int maxHealth) {
 		this.amount = health;
 		this.max = maxHealth;
 	}

@@ -1,4 +1,4 @@
-package recs.test.components;
+package recs.test.components.extras;
 
 import recs.core.Component;
 

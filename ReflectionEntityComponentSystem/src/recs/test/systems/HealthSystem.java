@@ -11,6 +11,7 @@ public class HealthSystem extends EntitySystem {
 
 	public EventListener<DamageEvent> damageListener;
 
+	@SuppressWarnings("unchecked")
 	public HealthSystem() {
 		super(Health.class);
 	}

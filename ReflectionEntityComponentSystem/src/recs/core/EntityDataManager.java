@@ -63,9 +63,9 @@ public final class EntityDataManager {
 			// Put every field object in a map with the fields class as key.
 			for (Field f : class1.getDeclaredFields()) {
 				Class<?> fieldClass = f.getType();
-				if (world.getComponentMapper(fieldClass) != null) {
+				if (fieldClass.getSuperclass() == Component.class) {
 					f.setAccessible(true);
-					int componentId = world.getComponentId(fieldClass);
+					int componentId = world.getComponentId((Class<? extends Component>) fieldClass);
 
 					componentBits.set(componentId);
 					fieldMap.put(componentId, f);

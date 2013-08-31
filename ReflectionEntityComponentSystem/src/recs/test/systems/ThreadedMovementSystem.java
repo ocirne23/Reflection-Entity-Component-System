@@ -9,6 +9,7 @@ public class ThreadedMovementSystem extends EntityTaskSystem {
 	private ComponentMapper<Position> positionManager;
 	private ComponentMapper<Velocity> velocityManager;
 
+	@SuppressWarnings("unchecked")
 	public ThreadedMovementSystem() {
 		super(Position.class, Velocity.class);
 	}

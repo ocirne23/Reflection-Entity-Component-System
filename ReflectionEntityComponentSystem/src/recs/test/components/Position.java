@@ -1,6 +1,8 @@
 package recs.test.components;
 
-public class Position {
+import recs.core.Component;
+
+public class Position extends Component {
     public float x;
     public float y;
 

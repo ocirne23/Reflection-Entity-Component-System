@@ -9,6 +9,7 @@ public class MovementSystem extends EntitySystem {
 	private ComponentMapper<Position> positionMapper;
 	private ComponentMapper<Velocity> velocityMapper;
 
+	@SuppressWarnings("unchecked")
 	public MovementSystem() {
 		super(Position.class, Velocity.class);
 	}

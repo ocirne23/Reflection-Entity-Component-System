@@ -14,11 +14,11 @@ public abstract class EntityTaskSystem extends EntitySystem implements Runnable 
 	private float timePassed = 0;
 	private float intervalInSec = 0;
 
-	public EntityTaskSystem(Class<?>... components) {
+	public EntityTaskSystem(Class<? extends Component>... components) {
 		super(components);
 	}
 
-	public EntityTaskSystem(float intervalInSec, Class<?>... components) {
+	public EntityTaskSystem(float intervalInSec, Class<? extends Component>... components) {
 		super(components);
 		this.intervalInSec = intervalInSec;
 		useInterval = true;

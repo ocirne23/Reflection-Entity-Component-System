@@ -2,7 +2,7 @@ package recs.core;
 
 import java.lang.reflect.ParameterizedType;
 
-public abstract class ComponentDestructionListener<T> {
+public abstract class ComponentDestructionListener<T extends Component> {
 
 	public ComponentDestructionListener(EntityWorld world) {
 		//Reflection hax for clean api, otherwise pass a class as parameter.

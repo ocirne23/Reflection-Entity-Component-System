@@ -10,14 +10,14 @@ import recs.core.utils.libgdx.RECSIntMap.Keys;
  * @param <T>
  *            The component type this manager manages.
  */
-public final class ComponentMapper<T> {
+public final class ComponentMapper<T extends Component> {
 	final RECSIntMap<T> components;
 
 	protected ComponentMapper() {
 		components = new RECSIntMap<T>();
 	}
 
-	protected T remove(int entityId) {
+	protected Component remove(int entityId) {
 		return components.remove(entityId);
 	}
 
@@ -34,7 +34,7 @@ public final class ComponentMapper<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void add(int entityId, Object o) {
+	void add(int entityId, Component o) {
 		if (!components.containsKey(entityId)) {
 			components.put(entityId, (T) o);
 		}

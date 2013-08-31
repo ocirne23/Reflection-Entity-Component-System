@@ -33,7 +33,7 @@ public abstract class EntitySystem {
 	/**
 	 * An array of the classes of the components this system requires.
 	 */
-	Class<?>[] components;
+	Class<? extends Component>[] components;
 
 	/**
 	 * Indicates if this system will be processed by the world or not.
@@ -44,7 +44,7 @@ public abstract class EntitySystem {
 	 * Create an entitysystem that processes entities with the specified
 	 * components each process.
 	 */
-	public EntitySystem(Class<?>... components) {
+	public EntitySystem(Class<? extends Component>... components) {
 		this.components = components;
 	}
 
