@@ -77,7 +77,7 @@ public abstract class EntitySystem {
 	/**
 	 * Return a set of all the ids of all the entities that are being processed by this system.
 	 */
-	protected RECSIntSet getAllEntities() {
+	public RECSIntSet getAllEntities() {
 		return entityIds;
 	}
 
