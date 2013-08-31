@@ -1,6 +1,6 @@
 package recs;
 
-import recs.utils.libgdx.MathUtils;
+import com.badlogic.gdx.math.MathUtils;
 import recs.entities.Player;
 import recs.entities.PlayerWithAttack;
 import recs.entities.Zombie;

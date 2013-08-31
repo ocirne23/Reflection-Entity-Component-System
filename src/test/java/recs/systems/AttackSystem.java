@@ -1,7 +1,7 @@
 package recs.systems;
 
 import recs.IntervalEntitySystem;
-import recs.utils.libgdx.MathUtils;
+import com.badlogic.gdx.math.MathUtils;
 import recs.components.Attack;
 import recs.events.DamageEvent;
 
