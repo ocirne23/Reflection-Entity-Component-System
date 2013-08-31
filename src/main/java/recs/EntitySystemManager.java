@@ -65,6 +65,7 @@ public final class EntitySystemManager {
 			throw new RuntimeException("System already added");
 		system.id = getNewSystemId();
 		system.componentBits = world.getComponentBits(system.components);
+		system.world = world;
 
 		Class<? extends EntitySystem> class1 = system.getClass();
 		do {
@@ -108,7 +109,6 @@ public final class EntitySystemManager {
 		} while (class1 != EntitySystem.class);
 		systems.add(system);
 		systemMap.put(system.id, system);
-		system.world = world;
 	}
 
 	/**

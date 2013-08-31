@@ -1,6 +1,7 @@
 package recs;
 
 import recs.utils.RECSBits;
+
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -57,7 +58,7 @@ public final class ComponentManager {
 
 	@SuppressWarnings("unchecked")
 	<T extends Component> ComponentMapper<T> getComponentMapper(Class<? extends Component> class1) {
-		return (ComponentMapper<T>) componentMappers.get(componentIds.get(class1, -1));
+		return (ComponentMapper<T>) componentMappers.get(getComponentId(class1));
 	}
 
 	void clear() {
