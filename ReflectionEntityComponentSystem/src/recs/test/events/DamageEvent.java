@@ -1,6 +1,8 @@
 package recs.test.events;
 
-public class DamageEvent {
+import recs.core.Event;
+
+public class DamageEvent extends Event {
 	public int entityId;
 	public int damage;
 

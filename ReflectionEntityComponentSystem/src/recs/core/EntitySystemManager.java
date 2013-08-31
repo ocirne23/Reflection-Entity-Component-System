@@ -88,8 +88,8 @@ public final class EntitySystemManager {
 					// Read the type in the <> of eventListener.
 					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 					@SuppressWarnings("rawtypes")
-					EventListener<?> eventListener = new EventListener();
-					world.registerEventListener(eventListener, (Class<?>) type);
+					EventListener<? extends Event> eventListener = new EventListener();
+					world.registerEventListener(eventListener, (Class<? extends Event>) type);
 
 					try {
 						// Set the event listener declaration with the right

@@ -224,7 +224,7 @@ public final class EntityWorld {
 	 * @param event
 	 *            The event.
 	 */
-	public void sendEvent(Object event) {
+	public void sendEvent(Event event) {
 		eventManager.sendEvent(event);
 	}
 
@@ -370,7 +370,7 @@ public final class EntityWorld {
 	/**
 	 * Register a system so it can receive events with the specified type.
 	 */
-	void registerEventListener(EventListener<?> listener, Class<?> eventType) {
+	void registerEventListener(EventListener<? extends Event> listener, Class<? extends Event> eventType) {
 		eventManager.registerListener(listener, eventType);
 	}
 

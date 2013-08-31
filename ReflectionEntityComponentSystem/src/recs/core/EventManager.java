@@ -17,7 +17,7 @@ public final class EventManager {
 		listeners = new RECSObjectMap<Class<?>, LinkedList<EventListener<?>>>();
 	}
 
-	void sendEvent(Object message) {
+	void sendEvent(Event message) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(message.getClass());
 		if (listenerList != null) {
 			for (EventListener<?> listener : listenerList) {
@@ -26,7 +26,7 @@ public final class EventManager {
 		}
 	}
 
-	void registerListener(EventListener<?> listener, Class<?> eventClass) {
+	void registerListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			if (!listenerList.contains(listener)) {
@@ -39,7 +39,7 @@ public final class EventManager {
 		}
 	}
 
-	void unregisterListener(EventListener<?> listener, Class<?> eventClass) {
+	void unregisterListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
 		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			listenerList.remove(listener);

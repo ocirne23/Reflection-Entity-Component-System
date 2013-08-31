@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @param <T>
  *            The type of events listened for.
  */
-public class EventListener<T> {
+public class EventListener<T extends Event> {
 	private final LinkedBlockingQueue<T> receivedEvents;
 	private final LinkedList<T> polledEventsList;
 
