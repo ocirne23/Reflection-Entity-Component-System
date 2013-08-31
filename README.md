@@ -11,9 +11,7 @@ An high performance Entity-Component-System with focus on ease of use and minima
 		private EntityWorld world;
 		
 		public UsageExample() {
-			//Register what component classes to use
 			world = new EntityWorld();
-			world.registerComponents({ Health.class, Position.class, Velocity.class });
 			
 			//Add your systems.
 			world.addSystem(new HealthSystem());
@@ -33,9 +31,9 @@ An high performance Entity-Component-System with focus on ease of use and minima
 		}
 	}
 
-A component is a class with only data, no logic:
+A component is a class which extends Component with only data, no logic:
 
-	public class Position {
+	public class Position extends Component {
 		public float x;
 		public float y;
 	
@@ -110,6 +108,7 @@ Event handling with EventListeners
 	
 		public EventListener<DamageEvent> damageListener;
 	
+		@SuppressWarnings("unchecked")
 		public HealthSystem() {
 			super(Health.class);
 		}
