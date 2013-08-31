@@ -74,7 +74,7 @@ public class Entity {
 	 */
 	public Component[] getComponents() {
 		if(data == null)
-			return EntityWorld.getScheduledAdds(this);
+			throw new RuntimeException("Entity must be added to a world before accessing its components");
 
 		int[] componentIds = getComponentIds();
 		Component[] components = new Component[componentIds.length];
