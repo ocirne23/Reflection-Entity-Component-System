@@ -7,8 +7,7 @@ package recs;
  * @author Enrico van Oosten
  */
 public abstract class EntityTaskSystem extends EntitySystem implements Runnable {
-	private static final float NANO_TO_SEC = 1 / 1000000000f;
-	private float lastTime = 0;
+	private float delta = 0;
 
 	private boolean useInterval = false;
 	private float timePassed = 0;
@@ -33,6 +32,7 @@ public abstract class EntityTaskSystem extends EntitySystem implements Runnable 
 				EntityWorld.postRunnable(this);
 			}
 		} else {
+			delta = deltaInSec;
 			EntityWorld.postRunnable(this);
 		}
 	}
@@ -42,11 +42,26 @@ public abstract class EntityTaskSystem extends EntitySystem implements Runnable 
 		if(useInterval) {
 			processSystem(intervalInSec);
 		} else {
+			processSystem(delta);
+		}
+	}
+
+
+	/*
+	private static final float NANO_TO_SEC = 1 / 1000000000f;
+	private float lastTime = 0;
+
+	@Override
+	public void run() {
+		if(useInterval) {
+			processSystem(intervalInSec);
+		} else {
 			float currTime = System.nanoTime() * NANO_TO_SEC;
 			float deltaInSec = lastTime != 0f ? currTime - lastTime : 0;
-
 			processSystem(deltaInSec);
 			lastTime = System.nanoTime() * NANO_TO_SEC;
 		}
 	}
+	*/
+
 }

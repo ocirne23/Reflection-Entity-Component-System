@@ -145,7 +145,7 @@ public class UnitTests {
 		Position position = world.getComponent(playerWithAttackId, Position.class);
 		assertTrue(position != null);
 	}
-/* TODO: fixme
+
 	@Test
 	public void testThreadedSystem() {
 		addEntities();
@@ -153,19 +153,24 @@ public class UnitTests {
 		tms.setEnabled(true);
 		Position position = world.getComponent(player.getId(), Position.class);
 		Velocity velocity = world.getComponent(player.getId(), Velocity.class);
+
+		assertTrue(tms.hasEntity(player.getId()));
+
 		float startX = position.x;
 		float startY = position.y;
+
 		try {
-			world.process(100);
-			Thread.sleep(100);
+			world.process(50);
+			Thread.sleep(500);	//so threads can finish up.
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		position = world.getComponent(player.getId(), Position.class);
 
 		assertTrue(velocity.x != 0 || velocity.y != 0);
 		assertTrue(startX != position.x || startY != position.y);
 	}
-*/
+
 	@Test
 	public void testThreadPool() {
 		addEntities();
