@@ -117,7 +117,7 @@ public final class EntitySystemManager {
 	void process(float deltaInSec) {
 		for (EntitySystem system : systems) {
 			if (system.isEnabled()) {
-				system.processSystem(deltaInSec);
+				system.process(deltaInSec);
 			}
 		}
 	}

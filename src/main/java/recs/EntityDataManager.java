@@ -3,6 +3,7 @@ package recs;
 import java.lang.reflect.Field;
 
 import recs.utils.RECSBits;
+
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -29,14 +30,17 @@ public final class EntityDataManager {
 	}
 
 	/**
-	 * Retrieve an EntityData object matching the set of components
+	 * Retrieve an EntityData object matching the set of components. Creating a new instance
+	 * if none is found.
 	 */
 	EntityData getEntityData(RECSBits componentBits) {
-		return entityDataMap.get(componentBits);
-	}
-
-	EntityData putEntityData(EntityData data) {
-		return entityDataMap.put(data.componentBits, data);
+		EntityData data = entityDataMap.get(componentBits);
+		if (data == null) {
+			RECSBits systemBits = world.getSystemBits(componentBits);
+			data = new EntityData(world, componentBits, systemBits);
+			entityDataMap.put(componentBits, data);
+		}
+		return data;
 	}
 
 	void removeSystem(int id) {
@@ -75,9 +79,7 @@ public final class EntityDataManager {
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
 		}
 
-		RECSBits systemBits = world.getSystemBits(componentBits);
-		EntityData data = new EntityData(world, componentBits, systemBits);
-		putEntityData(data);
+		EntityData data = getEntityData(componentBits);
 
 		EntityReflection reflection = new EntityReflection(fieldMap, data);
 		reflectionMap.put(mainClass, reflection);

@@ -377,22 +377,9 @@ public final class EntityWorld {
 	}
 
 	/**
-	 * Retrieve the EntityData matching the given componentbits, creating a new instance
-	 * if no match is found.
+	 *  Returns {@link EntityDataManager#getEntityData(RECSBits) EntityDataManager.getEntityData(RECSBits componentBits)}
 	 */
 	EntityData getEntityData(RECSBits componentBits) {
-		EntityData data = entitydataManager.getEntityData(componentBits);
-
-		//If no match for bits is found, create a new instance.
-		if (data == null) {
-			//Get the systembits matching the componentbits
-			RECSBits systemBits = systemManager.getSystemBits(componentBits);
-			//Create a new EntityData for the component/system bits.
-			data = new EntityData(this, componentBits, systemBits);
-			//Add the new EntityData to the datamanager
-			entitydataManager.putEntityData(data);
-		}
-
-		return data;
+		return entitydataManager.getEntityData(componentBits);
 	}
 }
