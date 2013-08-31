@@ -1,6 +1,6 @@
 package recs.utils;
 
-import recs.utils.libgdx.RECSMathUtils;
+import com.badlogic.gdx.math.MathUtils;
 
 /**
  * Modified IntMap from Nathan Sweet to only contain an int table accessable through hashes.
@@ -51,7 +51,7 @@ public class RECSIntSet {
 			throw new IllegalArgumentException("initialCapacity must be >= 0: " + initialCapacity);
 		if (capacity > 1 << 30)
 			throw new IllegalArgumentException("initialCapacity is too large: " + initialCapacity);
-		capacity = RECSMathUtils.nextPowerOfTwo(initialCapacity);
+		capacity = MathUtils.nextPowerOfTwo(initialCapacity);
 
 		if (loadFactor <= 0)
 			throw new IllegalArgumentException("loadFactor must be > 0: " + loadFactor);
@@ -152,7 +152,7 @@ public class RECSIntSet {
 		int i = 0, pushIterations = this.pushIterations;
 		do {
 			// Replace the item and value for one of the hashes.
-			switch (RECSMathUtils.random(2)) {
+			switch (MathUtils.random(2)) {
 			case 0:
 				evictedItem = item1;
 				itemTable[index1] = insertItem;
@@ -290,7 +290,7 @@ public class RECSIntSet {
 	public void ensureCapacity(int additionalCapacity) {
 		int sizeNeeded = size + additionalCapacity;
 		if (sizeNeeded >= threshold)
-			resize(RECSMathUtils.nextPowerOfTwo((int) (sizeNeeded / loadFactor)));
+			resize(MathUtils.nextPowerOfTwo((int) (sizeNeeded / loadFactor)));
 	}
 
 	private void resize(int newSize) {
