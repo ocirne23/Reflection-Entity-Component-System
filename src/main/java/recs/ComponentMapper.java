@@ -2,6 +2,7 @@ package recs;
 
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntMap.Keys;
+import com.badlogic.gdx.utils.IntMap.Values;
 
 /**
  * Used to easily retrieve components from entities.
@@ -29,8 +30,12 @@ public final class ComponentMapper<T extends Component> {
 		return components.get(id);
 	}
 
-	public Keys entities() {
+	public Keys getIds() {
 		return components.keys();
+	}
+
+	public Values<T> getComponents() {
+		return components.values();
 	}
 
 	@SuppressWarnings("unchecked")
