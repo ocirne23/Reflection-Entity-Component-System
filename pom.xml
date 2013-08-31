@@ -8,6 +8,11 @@
     <packaging>jar</packaging>
     <name>Reflection-Entity-Component-System</name>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.number>UNKNOWN</project.build.number>
+    </properties>
+
     <scm>
         <connection>scm:git:git://github.com/ocirne23/Reflection-Entity-Component-System.git</connection>
         <url>https://github.com/ocirne23/Reflection-Entity-Component-System</url>
@@ -26,7 +31,7 @@
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx</artifactId>
             <version>0.9.9-SNAPSHOT</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -61,6 +66,51 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.badlogicgames.gdx:gdx</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>com.badlogicgames.gdx:gdx</artifact>
+                                    <includes>
+                                        <include>com/badlogic/gdx/utils/IntMap.class</include>
+                                        <include>com/badlogic/gdx/utils/ObjectIntMap.class</include>
+                                        <include>com/badlogic/gdx/utils/ObjectMap.class</include>
+                                        <include>com/badlogic/gdx/utils/Array.class</include>
+                                        <include>com/badlogic/gdx/utils/IntArray.class</include>
+                                        <include>com/badlogic/gdx/math/MathUtils.class</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/repositories/thirdparty/</url>
+        </repository>
+        <snapshotRepository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/repositories/thirdparty-dev/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

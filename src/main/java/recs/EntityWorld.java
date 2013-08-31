@@ -6,9 +6,9 @@ import java.util.LinkedList;
 import recs.utils.BlockingThreadPoolExecutor;
 import recs.utils.RECSBits;
 import recs.utils.RECSIntSet.Items;
-import recs.utils.libgdx.RECSIntMap;
-import recs.utils.libgdx.RECSObjectMap;
-import recs.utils.libgdx.RECSIntMap.Keys;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.IntMap.Keys;
 
 
 /**
@@ -26,13 +26,13 @@ public final class EntityWorld {
 	 * Maps used to temporarily store added/removed components from entities
 	 * that are not yet added to the EntityWorld.
 	 */
-	private static RECSObjectMap<Entity, LinkedList<Component>> scheduledAdds = new RECSObjectMap<Entity, LinkedList<Component>>();
-	private static RECSObjectMap<Entity, LinkedList<Component>> scheduledRemoves = new RECSObjectMap<Entity, LinkedList<Component>>();
+	private static ObjectMap<Entity, LinkedList<Component>> scheduledAdds = new ObjectMap<Entity, LinkedList<Component>>();
+	private static ObjectMap<Entity, LinkedList<Component>> scheduledRemoves = new ObjectMap<Entity, LinkedList<Component>>();
 
 	/**
 	 * Contains all the entities so they can be retrieved with getEntity
 	 */
-	private final RECSIntMap<Entity> addedEntities;
+	private final IntMap<Entity> addedEntities;
 
 	/**
 	 * Managers sepparate logic.
@@ -59,7 +59,7 @@ public final class EntityWorld {
 		entitydataManager = new EntityDataManager(this);
 		eventManager = new EventManager();
 
-		addedEntities = new RECSIntMap<Entity>();
+		addedEntities = new IntMap<Entity>();
 		entityIds = new RECSBits();
 	}
 

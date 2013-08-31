@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import java.util.LinkedList;
 
 import recs.utils.RECSBits;
-import recs.utils.libgdx.RECSIntMap;
+import com.badlogic.gdx.utils.IntMap;
 
 
 /**
@@ -19,7 +19,7 @@ public final class EntitySystemManager {
 	 * Linked list of EntitySystems for easy iteration.
 	 */
 	private LinkedList<EntitySystem> systems = new LinkedList<EntitySystem>();
-	private RECSIntMap<EntitySystem> systemMap = new RECSIntMap<EntitySystem>();
+	private IntMap<EntitySystem> systemMap = new IntMap<EntitySystem>();
 	private EntityWorld world;
 	private RECSBits freeSystemBits = new RECSBits();
 

@@ -1,7 +1,6 @@
 package recs;
 
-import recs.EntityWorld;
-import recs.utils.libgdx.RECSMathUtils;
+import com.badlogic.gdx.math.MathUtils;
 import recs.entities.Player;
 import recs.entities.PlayerWithAttack;
 import recs.entities.Zombie;
@@ -32,7 +31,7 @@ public class UsageExample {
 			long start = System.nanoTime();
 			long deltaNano = start - currentTime;
 			currentTime = start;
-			float deltaSec = deltaNano * RECSMathUtils.nanoToSec;
+			float deltaSec = deltaNano * MathUtils.nanoToSec;
 
 			accumulator += deltaSec;
 			while(accumulator > timeStep) {
