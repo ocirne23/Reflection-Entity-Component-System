@@ -2,13 +2,13 @@ package recs.systems;
 
 import recs.IntervalEntitySystem;
 import com.badlogic.gdx.math.MathUtils;
-import recs.components.Attack;
+import recs.components.Attack_0;
 import recs.events.DamageEvent;
 
 public class AttackSystem extends IntervalEntitySystem {
 	@SuppressWarnings("unchecked")
 	public AttackSystem() {
-		super(1f, Attack.class);
+		super(1f, Attack_0.class);
 	}
 
 	@Override

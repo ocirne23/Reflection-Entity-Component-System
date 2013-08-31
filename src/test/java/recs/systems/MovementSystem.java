@@ -2,22 +2,22 @@ package recs.systems;
 
 import recs.ComponentMapper;
 import recs.EntitySystem;
-import recs.components.Position;
-import recs.components.Velocity;
+import recs.components.Position_0;
+import recs.components.Velocity_0;
 
 public class MovementSystem extends EntitySystem {
-	private ComponentMapper<Position> positionMapper;
-	private ComponentMapper<Velocity> velocityMapper;
+	private ComponentMapper<Position_0> positionMapper;
+	private ComponentMapper<Velocity_0> velocityMapper;
 
 	@SuppressWarnings("unchecked")
 	public MovementSystem() {
-		super(Position.class, Velocity.class);
+		super(Position_0.class, Velocity_0.class);
 	}
 
 	@Override
 	public void processEntity(int entityId, float deltaInSec) {
-		Position position = positionMapper.get(entityId);
-		Velocity velocity = velocityMapper.get(entityId);
+		Position_0 position = positionMapper.get(entityId);
+		Velocity_0 velocity = velocityMapper.get(entityId);
 		position.x += velocity.x * deltaInSec;
 		position.y += velocity.y * deltaInSec;
 	}

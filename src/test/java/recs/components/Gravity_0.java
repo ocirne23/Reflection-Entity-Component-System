@@ -2,10 +2,10 @@ package recs.components;
 
 import recs.Component;
 
-public class Gravity extends Component {
+public class Gravity_0 extends Component {
 	public float gravity = 1f;
 
-	public Gravity(float gravity) {
+	public Gravity_0(float gravity) {
 		this.gravity = gravity;
 	}
 }

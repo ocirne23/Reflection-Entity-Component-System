@@ -1,14 +1,14 @@
 package recs.entities;
 
 import recs.Entity;
-import recs.components.Position;
-import recs.components.Velocity;
+import recs.components.Position_0;
+import recs.components.Velocity_0;
 
 public class Zombie extends Entity {
-	Position position;
-	Velocity velocity;
+	Position_0 position;
+	Velocity_0 velocity;
 	public Zombie(float x, float y) {
-		position = new Position(x, y);
-		velocity = new Velocity(1, 2);
+		position = new Position_0(x, y);
+		velocity = new Velocity_0(1, 2);
 	}
 }

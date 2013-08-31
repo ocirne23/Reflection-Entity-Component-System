@@ -9,11 +9,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import recs.components.Attack;
-import recs.components.Gravity;
-import recs.components.Health;
-import recs.components.Position;
-import recs.components.Velocity;
+import recs.components.Attack_0;
+import recs.components.Gravity_0;
+import recs.components.Health_0;
+import recs.components.Position_0;
+import recs.components.Velocity_0;
 import recs.entities.Player;
 import recs.entities.PlayerWithAttack;
 import recs.entities.Zombie;
@@ -83,9 +83,9 @@ public class UnitTests {
 	public void testGetComponent() {
 		addEntities();
 		int playerId = player.getId();
-		Position position = world.getComponent(playerId, Position.class);
-		Velocity velocity = world.getComponent(playerId, Velocity.class);
-		Health health = world.getComponent(playerId, Health.class);
+		Position_0 position = world.getComponent(playerId, Position_0.class);
+		Velocity_0 velocity = world.getComponent(playerId, Velocity_0.class);
+		Health_0 health = world.getComponent(playerId, Health_0.class);
 
 		assertTrue(position.x == 4f && position.y == 6f);
 		assertTrue(velocity.x == 2f && velocity.y == 1f);
@@ -93,12 +93,12 @@ public class UnitTests {
 
 		// player2
 		int player2Id = player2.getId();
-		Position position2 = world.getComponent(player2Id, Position.class);
+		Position_0 position2 = world.getComponent(player2Id, Position_0.class);
 		assertTrue(position2.x == 12 && position2.y == 9);
 
 		// zombie
 		int zombieId = zombie.getId();
-		Health healthNull = world.getComponent(zombieId, Health.class);
+		Health_0 healthNull = world.getComponent(zombieId, Health_0.class);
 		assertTrue(healthNull == null);
 	}
 
@@ -109,8 +109,8 @@ public class UnitTests {
 		final float deltaInSec1 = 2f;
 		final float deltaInSec2 = 1.5f;
 		// player
-		Position position = world.getComponent(playerId, Position.class);
-		Velocity velocity = world.getComponent(playerId, Velocity.class);
+		Position_0 position = world.getComponent(playerId, Position_0.class);
+		Velocity_0 velocity = world.getComponent(playerId, Velocity_0.class);
 
 		assertTrue(position != null);
 		assertTrue(velocity != null);
@@ -139,10 +139,10 @@ public class UnitTests {
 	public void testInheritance() {
 		addEntities();
 		int playerWithAttackId = playerWithAttack.getId();
-		Attack attack = world.getComponent(playerWithAttackId, Attack.class);
+		Attack_0 attack = world.getComponent(playerWithAttackId, Attack_0.class);
 		assertTrue(attack != null);
 
-		Position position = world.getComponent(playerWithAttackId, Position.class);
+		Position_0 position = world.getComponent(playerWithAttackId, Position_0.class);
 		assertTrue(position != null);
 	}
 
@@ -151,8 +151,8 @@ public class UnitTests {
 		addEntities();
 		ms.setEnabled(false);
 		tms.setEnabled(true);
-		Position position = world.getComponent(player.getId(), Position.class);
-		Velocity velocity = world.getComponent(player.getId(), Velocity.class);
+		Position_0 position = world.getComponent(player.getId(), Position_0.class);
+		Velocity_0 velocity = world.getComponent(player.getId(), Velocity_0.class);
 
 		assertTrue(tms.hasEntity(player.getId()));
 
@@ -165,7 +165,7 @@ public class UnitTests {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		position = world.getComponent(player.getId(), Position.class);
+		position = world.getComponent(player.getId(), Position_0.class);
 
 		assertTrue(velocity.x != 0 || velocity.y != 0);
 		assertTrue(startX != position.x || startY != position.y);
@@ -193,7 +193,7 @@ public class UnitTests {
 	public void testEvents() {
 		addEntities();
 
-		Health health = world.getComponent(player.getId(), Health.class);
+		Health_0 health = world.getComponent(player.getId(), Health_0.class);
 		int currentHealth = health.amount;
 
 		world.sendEvent(new DamageEvent(player.getId(), 2));
@@ -206,31 +206,31 @@ public class UnitTests {
 	public void testDyamicComponentAdd() {
 		addEntities();
 		int player2Id = player2.getId();
-		Attack attack = world.getComponent(player2Id, Attack.class);
+		Attack_0 attack = world.getComponent(player2Id, Attack_0.class);
 		assertTrue(attack == null);
 		assertFalse(as.hasEntity(player2Id));
 
-		player2.addComponent(new Attack(2), new Gravity(1));
-		Attack attack2 = world.getComponent(player2Id, Attack.class);
+		player2.addComponent(new Attack_0(2), new Gravity_0(1));
+		Attack_0 attack2 = world.getComponent(player2Id, Attack_0.class);
 		assertTrue(attack2 != null);
 		assertTrue(as.hasEntity(player2Id));
 
-		Gravity gravity = world.getComponent(player2Id, Gravity.class);
+		Gravity_0 gravity = world.getComponent(player2Id, Gravity_0.class);
 		assertTrue(gravity != null);
 
-		player.addComponent(new Gravity(2), new Attack(3));
+		player.addComponent(new Gravity_0(2), new Attack_0(3));
 	}
 
 	@Test
 	public void testComponentOverwrite() {
 		addEntities();
-		player.addComponent(new Attack(2));
-		Attack a1 = world.getComponent(player.getId(), Attack.class);
+		player.addComponent(new Attack_0(2));
+		Attack_0 a1 = world.getComponent(player.getId(), Attack_0.class);
 		assertTrue(a1 != null);
 		assertTrue(a1.attack == 2);
 
-		player.addComponent(new Attack(3));
-		Attack a2 = world.getComponent(player.getId(), Attack.class);
+		player.addComponent(new Attack_0(3));
+		Attack_0 a2 = world.getComponent(player.getId(), Attack_0.class);
 		assertTrue(a2 != null);
 		assertTrue(a2.attack == 3);
 	}
@@ -239,12 +239,12 @@ public class UnitTests {
 	public void testDynamicComponentRemove() {
 		addEntities();
 		int player2Id = player2.getId();
-		Position position = world.getComponent(player2Id, Position.class);
+		Position_0 position = world.getComponent(player2Id, Position_0.class);
 		assertTrue(position != null);
 		assertTrue(ms.hasEntity(player2Id));
 
 		player2.removeComponent(position);
-		Position position2 = world.getComponent(player2Id, Position.class);
+		Position_0 position2 = world.getComponent(player2Id, Position_0.class);
 		assertTrue(position2 == null);
 		assertFalse(ms.hasEntity(player2Id));
 	}
@@ -254,17 +254,17 @@ public class UnitTests {
 		addEntities();
 		int player2Id = player2.getId();
 
-		Attack attack = world.getComponent(player2Id, Attack.class);
+		Attack_0 attack = world.getComponent(player2Id, Attack_0.class);
 		assertTrue(attack == null);
 		assertFalse(as.hasEntity(player2Id));
 
-		player2.addComponent(new Attack(2), new Gravity(1));
-		Attack attack2 = world.getComponent(player2Id, Attack.class);
+		player2.addComponent(new Attack_0(2), new Gravity_0(1));
+		Attack_0 attack2 = world.getComponent(player2Id, Attack_0.class);
 		assertTrue(attack2 != null);
 		assertTrue(as.hasEntity(player2Id));
 
 		player2.removeComponent(attack2);
-		Attack attack3 = world.getComponent(player2Id, Attack.class);
+		Attack_0 attack3 = world.getComponent(player2Id, Attack_0.class);
 		assertTrue(attack3 == null);
 		assertFalse(as.hasEntity(player2Id));
 	}
@@ -273,12 +273,12 @@ public class UnitTests {
 	public void testRemove() {
 		addEntities();
 		int playerId = player.getId();
-		Position position = world.getComponent(playerId, Position.class);
+		Position_0 position = world.getComponent(playerId, Position_0.class);
 		assertTrue(position != null);
 
 		world.removeEntity(playerId);
 
-		Position position2 = world.getComponent(playerId, Position.class);
+		Position_0 position2 = world.getComponent(playerId, Position_0.class);
 		assertTrue(position2 == null);
 	}
 
@@ -287,19 +287,19 @@ public class UnitTests {
 		addEntities();
 		int playerId = player.getId();
 
-		player.addComponent(new Attack(2));
-		Attack attack = world.getComponent(playerId, Attack.class);
+		player.addComponent(new Attack_0(2));
+		Attack_0 attack = world.getComponent(playerId, Attack_0.class);
 		assertTrue(attack != null);
 		assertTrue(as.hasEntity(playerId));
 
 		world.removeEntity(playerId);
 
-		Attack attack2 = world.getComponent(playerId, Attack.class);
+		Attack_0 attack2 = world.getComponent(playerId, Attack_0.class);
 		assertTrue(attack2 == null);
 		assertFalse(as.hasEntity(playerId));
 	}
 
-	private class MyDestructionListener extends ComponentDestructionListener<Position> {
+	private class MyDestructionListener extends ComponentDestructionListener<Position_0> {
 
 		public MyDestructionListener(EntityWorld world) {
 			super(world);
@@ -308,7 +308,7 @@ public class UnitTests {
 		private boolean destroyed = false;
 
 		@Override
-		public void destroyed(Position component) {
+		public void destroyed(Position_0 component) {
 			destroyed = true;
 		}
 	}
@@ -317,7 +317,7 @@ public class UnitTests {
 	public void testDestructionListener() {
 		addEntities();
 		int playerId = player.getId();
-		Position position = world.getComponent(playerId, Position.class);
+		Position_0 position = world.getComponent(playerId, Position_0.class);
 		assertTrue(position != null);
 
 		MyDestructionListener dl = new MyDestructionListener(world);
@@ -326,7 +326,7 @@ public class UnitTests {
 
 		assertTrue(dl.destroyed == true);
 
-		Position position2 = world.getComponent(playerId, Position.class);
+		Position_0 position2 = world.getComponent(playerId, Position_0.class);
 		assertTrue(position2 == null);
 	}
 
@@ -334,19 +334,19 @@ public class UnitTests {
 	public void testDynamicEntity() {
 		// addEntities();
 		Entity e = new Entity();
-		e.addComponent(new Position(1, 2), new Velocity(4, 0), new Health(10, 15));
+		e.addComponent(new Position_0(1, 2), new Velocity_0(4, 0), new Health_0(10, 15));
 		world.addEntity(e);
 
-		Position position = world.getComponent(e.getId(), Position.class);
+		Position_0 position = world.getComponent(e.getId(), Position_0.class);
 		assertTrue(position != null);
 
 		assertTrue(ms.hasEntity(e.getId()));
 		assertTrue(hs.hasEntity(e.getId()));
 
-		Health health = world.getComponent(e.getId(), Health.class);
+		Health_0 health = world.getComponent(e.getId(), Health_0.class);
 		e.removeComponent(health);
 
-		Health health2 = world.getComponent(e.getId(), Health.class);
+		Health_0 health2 = world.getComponent(e.getId(), Health_0.class);
 		assertTrue(health2 == null);
 		assertFalse(hs.hasEntity(e.getId()));
 	}
@@ -355,11 +355,11 @@ public class UnitTests {
 	public void testDynamicEntity2() {
 		// addEntities();
 		Entity e = new Entity();
-		e.addComponent(new Position(1, 2));
-		e.addComponent(new Velocity(1, 2));
+		e.addComponent(new Position_0(1, 2));
+		e.addComponent(new Velocity_0(1, 2));
 		world.addEntity(e);
 
-		Position position = world.getComponent(e.getId(), Position.class);
+		Position_0 position = world.getComponent(e.getId(), Position_0.class);
 		assertTrue(position != null);
 		assertTrue(ms.hasEntity(e.getId()));
 	}
@@ -419,7 +419,7 @@ public class UnitTests {
 	@Test
 	public void testLotsOfSystems() {
 		for (int i = 0; i < 40; i++) {
-			world.addSystem(new EntitySystem(Health.class) {
+			world.addSystem(new EntitySystem(Health_0.class) {
 
 			});
 		}
