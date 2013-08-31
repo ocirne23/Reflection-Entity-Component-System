@@ -143,6 +143,10 @@ public final class EntityWorld {
 		return addedEntities.get(entityId);
 	}
 
+	public IntMap<Entity> getAddedEntities() {
+		return addedEntities;
+	}
+
 	/**
 	 * Add an EntitySystem(s) to the world.
 	 */

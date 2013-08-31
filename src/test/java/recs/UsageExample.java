@@ -1,18 +1,16 @@
 package recs;
 
-import com.badlogic.gdx.math.MathUtils;
 import recs.entities.Player;
 import recs.entities.PlayerWithAttack;
 import recs.entities.Zombie;
 import recs.systems.HealthSystem;
 import recs.systems.MovementSystem;
 
-public class UsageExample {
-	//Register all component classes here.
+import com.badlogic.gdx.math.MathUtils;
 
+public class UsageExample {
 	public static void main(String[] args) {
 		EntityWorld world = new EntityWorld();
-		//world.registerComponents(COMPONENTS);
 
 		world.addSystem(new HealthSystem());
 		world.addSystem(new MovementSystem());
