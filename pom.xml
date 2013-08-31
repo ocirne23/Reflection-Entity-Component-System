@@ -8,6 +8,11 @@
     <packaging>jar</packaging>
     <name>Reflection-Entity-Component-System</name>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.number>UNKNOWN</project.build.number>
+    </properties>
+
     <scm>
         <connection>scm:git:git://github.com/ocirne23/Reflection-Entity-Component-System.git</connection>
         <url>https://github.com/ocirne23/Reflection-Entity-Component-System</url>
@@ -97,4 +102,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/repositories/thirdparty/</url>
+        </repository>
+        <snapshotRepository>
+            <id>OnARandomBox</id>
+            <url>http://repo.onarandombox.com/content/repositories/thirdparty-dev/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
