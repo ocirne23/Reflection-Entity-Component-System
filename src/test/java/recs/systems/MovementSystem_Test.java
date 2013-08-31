@@ -5,12 +5,12 @@ import recs.EntitySystem;
 import recs.components.Position_0;
 import recs.components.Velocity_0;
 
-public class MovementSystem extends EntitySystem {
+public class MovementSystem_Test extends EntitySystem {
 	private ComponentMapper<Position_0> positionMapper;
 	private ComponentMapper<Velocity_0> velocityMapper;
 
 	@SuppressWarnings("unchecked")
-	public MovementSystem() {
+	public MovementSystem_Test() {
 		super(Position_0.class, Velocity_0.class);
 	}
 

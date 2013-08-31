@@ -4,21 +4,21 @@ import recs.ComponentMapper;
 import recs.EntitySystem;
 import recs.EventListener;
 import recs.components.Health_0;
-import recs.events.DamageEvent;
+import recs.events.DamageEvent_Test;
 
-public class HealthSystem extends EntitySystem {
+public class HealthSystem_Test extends EntitySystem {
 	public ComponentMapper<Health_0> healthManager;
 
-	public EventListener<DamageEvent> damageListener;
+	public EventListener<DamageEvent_Test> damageListener;
 
 	@SuppressWarnings("unchecked")
-	public HealthSystem() {
+	public HealthSystem_Test() {
 		super(Health_0.class);
 	}
 
 	@Override
 	protected void processSystem(float deltaInSec) {
-		for(DamageEvent damageEvent: damageListener.pollEvents()) {
+		for(DamageEvent_Test damageEvent: damageListener.pollEvents()) {
 			Health_0 health = healthManager.get(damageEvent.entityId);
 			health.amount -= damageEvent.damage;
 		}

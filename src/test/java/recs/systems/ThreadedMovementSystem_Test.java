@@ -5,12 +5,12 @@ import recs.EntityTaskSystem;
 import recs.components.Position_0;
 import recs.components.Velocity_0;
 
-public class ThreadedMovementSystem extends EntityTaskSystem {
+public class ThreadedMovementSystem_Test extends EntityTaskSystem {
 	private ComponentMapper<Position_0> positionManager;
 	private ComponentMapper<Velocity_0> velocityManager;
 
 	@SuppressWarnings("unchecked")
-	public ThreadedMovementSystem() {
+	public ThreadedMovementSystem_Test() {
 		super(Position_0.class, Velocity_0.class);
 	}
 

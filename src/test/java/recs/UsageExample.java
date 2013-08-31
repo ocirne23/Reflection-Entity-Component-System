@@ -1,10 +1,10 @@
 package recs;
 
-import recs.entities.Player;
-import recs.entities.PlayerWithAttack;
-import recs.entities.Zombie;
-import recs.systems.HealthSystem;
-import recs.systems.MovementSystem;
+import recs.entities.Player_Test;
+import recs.entities.PlayerWithAttack_Test;
+import recs.entities.Zombie_Test;
+import recs.systems.HealthSystem_Test;
+import recs.systems.MovementSystem_Test;
 
 import com.badlogic.gdx.math.MathUtils;
 
@@ -12,13 +12,13 @@ public class UsageExample {
 	public static void main(String[] args) {
 		EntityWorld world = new EntityWorld();
 
-		world.addSystem(new HealthSystem());
-		world.addSystem(new MovementSystem());
+		world.addSystem(new HealthSystem_Test());
+		world.addSystem(new MovementSystem_Test());
 
-		world.addEntity(new Player(4, 6));
-		world.addEntity(new PlayerWithAttack(12, 9));
-		world.addEntity(new Zombie(1, 2));
-		world.addEntity(new Player(1,2));
+		world.addEntity(new Player_Test(4, 6));
+		world.addEntity(new PlayerWithAttack_Test(12, 9));
+		world.addEntity(new Zombie_Test(1, 2));
+		world.addEntity(new Player_Test(1,2));
 
 		float totalTime = 0f;
 		//game loop

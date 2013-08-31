@@ -14,27 +14,27 @@ import recs.components.Gravity_0;
 import recs.components.Health_0;
 import recs.components.Position_0;
 import recs.components.Velocity_0;
-import recs.entities.Player;
-import recs.entities.PlayerWithAttack;
-import recs.entities.Zombie;
-import recs.events.DamageEvent;
-import recs.systems.AttackSystem;
-import recs.systems.HealthSystem;
-import recs.systems.MovementSystem;
-import recs.systems.ThreadedMovementSystem;
+import recs.entities.Player_Test;
+import recs.entities.PlayerWithAttack_Test;
+import recs.entities.Zombie_Test;
+import recs.events.DamageEvent_Test;
+import recs.systems.AttackSystem_Test;
+import recs.systems.HealthSystem_Test;
+import recs.systems.MovementSystem_Test;
+import recs.systems.ThreadedMovementSystem_Test;
 import recs.utils.Saver;
 
 public class UnitTests {
 
-	private Player player;
-	private Player player2;
-	private PlayerWithAttack playerWithAttack;
-	private Zombie zombie;
+	private Player_Test player;
+	private Player_Test player2;
+	private PlayerWithAttack_Test playerWithAttack;
+	private Zombie_Test zombie;
 
-	private MovementSystem ms;
-	private ThreadedMovementSystem tms;
-	private HealthSystem hs;
-	private AttackSystem as;
+	private MovementSystem_Test ms;
+	private ThreadedMovementSystem_Test tms;
+	private HealthSystem_Test hs;
+	private AttackSystem_Test as;
 
 	private EntityWorld world;
 
@@ -44,26 +44,26 @@ public class UnitTests {
 		System.out.println("starting test");
 		//world.registerComponents(COMPONENTS);
 
-		ms = new MovementSystem();
+		ms = new MovementSystem_Test();
 		world.addSystem(ms);
 
-		tms = new ThreadedMovementSystem();
+		tms = new ThreadedMovementSystem_Test();
 		tms.setEnabled(false);
 		world.addSystem(tms);
 
-		hs = new HealthSystem();
+		hs = new HealthSystem_Test();
 		world.addSystem(hs);
 
-		as = new AttackSystem();
+		as = new AttackSystem_Test();
 		world.addSystem(as);
 		as.setEnabled(false);
 	}
 
 	private void addEntities() {
-		player = new Player(4, 6);
-		player2 = new Player(12, 9);
-		playerWithAttack = new PlayerWithAttack(6, 11);
-		zombie = new Zombie(1, 2);
+		player = new Player_Test(4, 6);
+		player2 = new Player_Test(12, 9);
+		playerWithAttack = new PlayerWithAttack_Test(6, 11);
+		zombie = new Zombie_Test(1, 2);
 		world.addEntity(player);
 		world.addEntity(player2);
 		world.addEntity(playerWithAttack);
@@ -196,7 +196,7 @@ public class UnitTests {
 		Health_0 health = world.getComponent(player.getId(), Health_0.class);
 		int currentHealth = health.amount;
 
-		world.sendEvent(new DamageEvent(player.getId(), 2));
+		world.sendEvent(new DamageEvent_Test(player.getId(), 2));
 		world.process(1f);
 
 		assertTrue(health.amount == currentHealth - 2);
@@ -429,14 +429,14 @@ public class UnitTests {
 
 	@Test
 	public void testSaveEntity() {
-		Player player = new Player(3, 5);
+		Player_Test player = new Player_Test(3, 5);
 		float x = player.position.x;
 		float y = player.position.y;
 		int health = player.health.amount -= 5;
 
 		File playerFile = Saver.saveObject(player, new File("player"));
 
-		Player player2 = Saver.readObject(new Player(), playerFile);
+		Player_Test player2 = Saver.readObject(new Player_Test(), playerFile);
 
 		assertTrue(player2.health.amount == health);
 		assertTrue(player2.position.x == x);
@@ -446,27 +446,27 @@ public class UnitTests {
 	@Test
 	public void testSaveLotsEntities() {
 		final int amount = 500;
-		Player[] entities = new Player[amount];
+		Player_Test[] entities = new Player_Test[amount];
 		for (int i = 0; i < amount; i++) {
-			entities[i] = new Player(i, i / 2f);
+			entities[i] = new Player_Test(i, i / 2f);
 		}
 
 		entities[0] = null;
-		entities[2] = new Player(40, 50);
+		entities[2] = new Player_Test(40, 50);
 		entities[5] = null;
-		entities[6] = new Player(60, 70);
+		entities[6] = new Player_Test(60, 70);
 		entities[12] = null;
 
 		File entitiesFile = Saver.saveObject(new PlayerWrapper(entities), new File("entities"));
-		Player[] entities2 = Saver.readObject(new PlayerWrapper(null), entitiesFile).entities;
+		Player_Test[] entities2 = Saver.readObject(new PlayerWrapper(null), entitiesFile).entities;
 
 		assertTrue(entities2[2].position.x == 40);
 		assertTrue(entities2[6].position.x == 60);
 	}
 
 	private static class PlayerWrapper {
-		Player[] entities;
-		public PlayerWrapper(Player[] entities) {
+		Player_Test[] entities;
+		public PlayerWrapper(Player_Test[] entities) {
 			this.entities = entities;
 		}
 	}
