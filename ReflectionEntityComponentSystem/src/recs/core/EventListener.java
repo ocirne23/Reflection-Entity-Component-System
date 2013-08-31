@@ -51,11 +51,9 @@ public class EventListener<T extends Event> {
 
 	/**
 	 * Used by EntityWorld to add events to this listener.
-	 *
-	 * @param message
 	 */
 	@SuppressWarnings("unchecked")
-	protected void sendMessage(Object message) {
+	void sendMessage(Event message) {
 		receivedEvents.add((T) message);
 	}
 }

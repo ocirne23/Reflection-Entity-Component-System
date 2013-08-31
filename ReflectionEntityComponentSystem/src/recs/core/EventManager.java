@@ -11,36 +11,36 @@ import recs.core.utils.libgdx.RECSObjectMap;
  * @author Enrico van Oosten
  */
 public final class EventManager {
-	private final RECSObjectMap<Class<?>, LinkedList<EventListener<?>>> listeners;
+	private final RECSObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>> listeners;
 
 	EventManager() {
-		listeners = new RECSObjectMap<Class<?>, LinkedList<EventListener<?>>>();
+		listeners = new RECSObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>>();
 	}
 
 	void sendEvent(Event message) {
-		LinkedList<EventListener<?>> listenerList = listeners.get(message.getClass());
+		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(message.getClass());
 		if (listenerList != null) {
-			for (EventListener<?> listener : listenerList) {
+			for (EventListener<? extends Event> listener : listenerList) {
 				listener.sendMessage(message);
 			}
 		}
 	}
 
 	void registerListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
-		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
+		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			if (!listenerList.contains(listener)) {
 				listenerList.add(listener);
 			}
 		} else {
-			listenerList = new LinkedList<EventListener<?>>();
+			listenerList = new LinkedList<EventListener<? extends Event>>();
 			listenerList.add(listener);
 			listeners.put(eventClass, listenerList);
 		}
 	}
 
 	void unregisterListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
-		LinkedList<EventListener<?>> listenerList = listeners.get(eventClass);
+		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
 			listenerList.remove(listener);
 		}
