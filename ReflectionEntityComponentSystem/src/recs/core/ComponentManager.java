@@ -38,7 +38,7 @@ public final class ComponentManager {
 	/**
 	 * Get a component with the componentId from the entity with entityId.
 	 */
-	Object getComponent(int entityId, int componentId) {
+	Component getComponent(int entityId, int componentId) {
 		return componentMappers.get(componentId).get(entityId);
 	}
 

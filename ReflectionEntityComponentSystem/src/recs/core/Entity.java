@@ -32,16 +32,21 @@ public class Entity {
 		return id;
 	}
 
-
 	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
+		if (data == null)
+			throw new RuntimeException("Entity must be added to a world before accessing its components");
 		return data.componentBits.get(data.world.getComponentId(componentClass));
 	}
 
 	public <T extends Component> T getComponent(Class<T> componentClass) {
+		if (data == null)
+			throw new RuntimeException("Entity must be added to a world before accessing its components");
 		return data.world.getComponent(id, componentClass);
 	}
 
 	public Object getComponent(int componentId) {
+		if (data == null)
+			throw new RuntimeException("Entity must be added to a world before accessing its components");
 		return data.world.getComponent(id, componentId);
 	}
 
@@ -50,6 +55,8 @@ public class Entity {
 	 * @return
 	 */
 	public int[] getComponentIds() {
+		if (data == null)
+			throw new RuntimeException("Entity must be added to a world before accessing its components");
 		RECSBits componentBits = data.componentBits;
 		int[] components = new int[data.componentBits.cardinality()];
 
@@ -61,12 +68,16 @@ public class Entity {
 		return components;
 	}
 
-	public Object[] getComponents() {
+	/**
+	 * Get all the components this entity has, if its not added to a world yet, it returns the scheduled
+	 * components. (Not including class fields).
+	 */
+	public Component[] getComponents() {
 		if(data == null)
 			return EntityWorld.getScheduledAdds(this);
 
 		int[] componentIds = getComponentIds();
-		Object[] components = new Object[componentIds.length];
+		Component[] components = new Component[componentIds.length];
 
 		for (int i = 0; i < componentIds.length; i++) {
 			components[i] = data.world.getComponent(id, componentIds[i]);

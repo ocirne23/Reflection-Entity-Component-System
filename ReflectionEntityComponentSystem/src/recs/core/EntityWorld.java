@@ -204,7 +204,7 @@ public final class EntityWorld {
 	/**
 	 * Get a component with the componentId from the entity with entityId.
 	 */
-	public Object getComponent(int entityId, int componentId) {
+	public Component getComponent(int entityId, int componentId) {
 		return componentManager.getComponent(entityId, componentId);
 	}
 
@@ -247,8 +247,8 @@ public final class EntityWorld {
 		System.gc();
 	}
 
-	static Object[] getScheduledAdds(Entity e) {
-		return scheduledAdds.get(e).toArray();
+	static Component[] getScheduledAdds(Entity e) {
+		return scheduledAdds.get(e).toArray(new Component[0]);
 	}
 
 	/**
