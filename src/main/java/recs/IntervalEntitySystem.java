@@ -17,4 +17,8 @@ public class IntervalEntitySystem extends EntitySystem {
 			processSystem(intervalInSec);
 		}
 	}
+
+	public void setInterval(float intervalInSec) {
+		this.intervalInSec = intervalInSec;
+	}
 }
