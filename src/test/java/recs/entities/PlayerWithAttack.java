@@ -1,6 +1,6 @@
-package test.java.recs.entities;
+package recs.entities;
 
-import test.java.recs.components.Attack;
+import recs.components.Attack;
 
 
 public class PlayerWithAttack extends Player {

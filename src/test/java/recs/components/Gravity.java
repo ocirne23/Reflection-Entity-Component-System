@@ -1,6 +1,6 @@
-package test.java.recs.components;
+package recs.components;
 
-import main.java.recs.Component;
+import recs.Component;
 
 public class Gravity extends Component {
 	public float gravity = 1f;

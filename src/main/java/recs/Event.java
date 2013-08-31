@@ -1,4 +1,4 @@
-package main.java.recs;
+package recs;
 
 public abstract class Event {
 

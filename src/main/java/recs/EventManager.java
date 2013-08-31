@@ -1,8 +1,8 @@
-package main.java.recs;
+package recs;
 
 import java.util.LinkedList;
 
-import main.java.recs.utils.libgdx.RECSObjectMap;
+import recs.utils.libgdx.RECSObjectMap;
 
 
 

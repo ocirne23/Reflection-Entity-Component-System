@@ -1,12 +1,12 @@
-package test.java.recs;
+package recs;
 
-import main.java.recs.EntityWorld;
-import main.java.recs.utils.libgdx.RECSMathUtils;
-import test.java.recs.entities.Player;
-import test.java.recs.entities.PlayerWithAttack;
-import test.java.recs.entities.Zombie;
-import test.java.recs.systems.HealthSystem;
-import test.java.recs.systems.MovementSystem;
+import recs.EntityWorld;
+import recs.utils.libgdx.RECSMathUtils;
+import recs.entities.Player;
+import recs.entities.PlayerWithAttack;
+import recs.entities.Zombie;
+import recs.systems.HealthSystem;
+import recs.systems.MovementSystem;
 
 public class UsageExample {
 	//Register all component classes here.

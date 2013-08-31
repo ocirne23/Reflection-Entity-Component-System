@@ -1,6 +1,6 @@
-package main.java.recs;
+package recs;
 
-import main.java.recs.utils.RECSBits;
+import recs.utils.RECSBits;
 
 /**
  * Class used to store which components an entity has, and what systems it belongs to.

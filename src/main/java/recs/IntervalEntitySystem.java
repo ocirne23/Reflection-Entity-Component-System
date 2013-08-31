@@ -1,4 +1,4 @@
-package main.java.recs;
+package recs;
 
 public class IntervalEntitySystem extends EntitySystem {
 	private float timePassed = 0;

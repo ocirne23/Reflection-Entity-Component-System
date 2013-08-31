@@ -1,9 +1,9 @@
-package test.java.recs.systems;
+package recs.systems;
 
-import main.java.recs.ComponentMapper;
-import main.java.recs.EntitySystem;
-import test.java.recs.components.Position;
-import test.java.recs.components.Velocity;
+import recs.ComponentMapper;
+import recs.EntitySystem;
+import recs.components.Position;
+import recs.components.Velocity;
 
 public class MovementSystem extends EntitySystem {
 	private ComponentMapper<Position> positionMapper;

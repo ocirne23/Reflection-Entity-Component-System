@@ -1,9 +1,9 @@
-package test.java.recs.systems;
+package recs.systems;
 
-import main.java.recs.ComponentMapper;
-import main.java.recs.EntityTaskSystem;
-import test.java.recs.components.Position;
-import test.java.recs.components.Velocity;
+import recs.ComponentMapper;
+import recs.EntityTaskSystem;
+import recs.components.Position;
+import recs.components.Velocity;
 
 public class ThreadedMovementSystem extends EntityTaskSystem {
 	private ComponentMapper<Position> positionManager;

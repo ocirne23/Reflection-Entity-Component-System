@@ -1,9 +1,9 @@
-package test.java.recs.systems;
+package recs.systems;
 
-import main.java.recs.IntervalEntitySystem;
-import main.java.recs.utils.libgdx.RECSMathUtils;
-import test.java.recs.components.Attack;
-import test.java.recs.events.DamageEvent;
+import recs.IntervalEntitySystem;
+import recs.utils.libgdx.RECSMathUtils;
+import recs.components.Attack;
+import recs.events.DamageEvent;
 
 public class AttackSystem extends IntervalEntitySystem {
 	@SuppressWarnings("unchecked")

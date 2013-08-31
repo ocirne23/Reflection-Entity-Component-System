@@ -1,4 +1,4 @@
-package main.java.recs;
+package recs;
 
 /**
  * A threaded EntitySystem, only use when there is no possible way concurrency

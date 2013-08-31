@@ -1,10 +1,10 @@
-package test.java.recs.systems;
+package recs.systems;
 
-import main.java.recs.ComponentMapper;
-import main.java.recs.EntitySystem;
-import main.java.recs.EventListener;
-import test.java.recs.components.Health;
-import test.java.recs.events.DamageEvent;
+import recs.ComponentMapper;
+import recs.EntitySystem;
+import recs.EventListener;
+import recs.components.Health;
+import recs.events.DamageEvent;
 
 public class HealthSystem extends EntitySystem {
 	public ComponentMapper<Health> healthManager;

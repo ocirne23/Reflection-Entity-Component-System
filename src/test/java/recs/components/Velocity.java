@@ -1,6 +1,6 @@
-package test.java.recs.components;
+package recs.components;
 
-import main.java.recs.Component;
+import recs.Component;
 
 public class Velocity extends Component {
 	public float x;

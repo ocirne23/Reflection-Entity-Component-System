@@ -1,12 +1,12 @@
-package main.java.recs;
+package recs;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 
-import main.java.recs.utils.RECSBits;
-import main.java.recs.utils.libgdx.RECSIntMap;
+import recs.utils.RECSBits;
+import recs.utils.libgdx.RECSIntMap;
 
 
 /**

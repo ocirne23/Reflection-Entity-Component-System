@@ -1,6 +1,6 @@
-package test.java.recs.components.extras;
+package recs.components.extras;
 
-import main.java.recs.Component;
+import recs.Component;
 
 public class CopyOfHealth extends Component {
 	public int amount;

@@ -1,7 +1,7 @@
-package main.java.recs;
+package recs;
 
-import main.java.recs.utils.libgdx.RECSIntMap;
-import main.java.recs.utils.libgdx.RECSIntMap.Keys;
+import recs.utils.libgdx.RECSIntMap;
+import recs.utils.libgdx.RECSIntMap.Keys;
 
 /**
  * Used to easily retrieve components from entities.

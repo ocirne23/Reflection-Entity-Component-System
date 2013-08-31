@@ -1,8 +1,8 @@
-package main.java.recs;
+package recs;
 
-import main.java.recs.utils.RECSBits;
-import main.java.recs.utils.RECSIntSet;
-import main.java.recs.utils.RECSIntSet.Items;
+import recs.utils.RECSBits;
+import recs.utils.RECSIntSet;
+import recs.utils.RECSIntSet.Items;
 
 /**
  * Extend this class and add it to the EntityWorld to create a new EntitySystem.

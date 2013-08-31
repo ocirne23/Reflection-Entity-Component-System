@@ -1,8 +1,8 @@
-package test.java.recs.entities;
+package recs.entities;
 
-import main.java.recs.Entity;
-import test.java.recs.components.Position;
-import test.java.recs.components.Velocity;
+import recs.Entity;
+import recs.components.Position;
+import recs.components.Velocity;
 
 public class Zombie extends Entity {
 	Position position;

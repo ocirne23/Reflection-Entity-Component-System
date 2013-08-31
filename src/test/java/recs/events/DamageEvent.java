@@ -1,6 +1,6 @@
-package test.java.recs.events;
+package recs.events;
 
-import main.java.recs.Event;
+import recs.Event;
 
 public class DamageEvent extends Event {
 	public int entityId;

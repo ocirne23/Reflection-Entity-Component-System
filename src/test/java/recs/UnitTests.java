@@ -1,33 +1,33 @@
-package test.java.recs;
+package recs;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import main.java.recs.ComponentDestructionListener;
-import main.java.recs.Entity;
-import main.java.recs.EntitySystem;
-import main.java.recs.EntityWorld;
-import main.java.recs.utils.Saver;
+import recs.ComponentDestructionListener;
+import recs.Entity;
+import recs.EntitySystem;
+import recs.EntityWorld;
+import recs.utils.Saver;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import test.java.recs.components.Attack;
-import test.java.recs.components.Gravity;
-import test.java.recs.components.Health;
-import test.java.recs.components.Position;
-import test.java.recs.components.Velocity;
-import test.java.recs.entities.Player;
-import test.java.recs.entities.PlayerWithAttack;
-import test.java.recs.entities.Zombie;
-import test.java.recs.events.DamageEvent;
-import test.java.recs.systems.AttackSystem;
-import test.java.recs.systems.HealthSystem;
-import test.java.recs.systems.MovementSystem;
-import test.java.recs.systems.ThreadedMovementSystem;
+import recs.components.Attack;
+import recs.components.Gravity;
+import recs.components.Health;
+import recs.components.Position;
+import recs.components.Velocity;
+import recs.entities.Player;
+import recs.entities.PlayerWithAttack;
+import recs.entities.Zombie;
+import recs.events.DamageEvent;
+import recs.systems.AttackSystem;
+import recs.systems.HealthSystem;
+import recs.systems.MovementSystem;
+import recs.systems.ThreadedMovementSystem;
 
 public class UnitTests {
 

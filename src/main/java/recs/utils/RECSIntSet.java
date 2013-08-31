@@ -1,6 +1,6 @@
-package main.java.recs.utils;
+package recs.utils;
 
-import main.java.recs.utils.libgdx.RECSMathUtils;
+import recs.utils.libgdx.RECSMathUtils;
 
 /**
  * Modified IntMap from Nathan Sweet to only contain an int table accessable through hashes.

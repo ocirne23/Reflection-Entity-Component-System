@@ -1,4 +1,4 @@
-package main.java.recs;
+package recs;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.LinkedList;

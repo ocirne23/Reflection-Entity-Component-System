@@ -1,8 +1,8 @@
-package main.java.recs;
+package recs;
 
 import java.lang.reflect.Field;
 
-import main.java.recs.utils.libgdx.RECSIntMap;
+import recs.utils.libgdx.RECSIntMap;
 
 
 /**

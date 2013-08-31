@@ -1,4 +1,4 @@
-package main.java.recs.utils.libgdx;
+package recs.utils.libgdx;
 
 import java.util.Arrays;
 

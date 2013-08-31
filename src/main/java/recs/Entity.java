@@ -1,6 +1,6 @@
-package main.java.recs;
+package recs;
 
-import main.java.recs.utils.RECSBits;
+import recs.utils.RECSBits;
 
 /**
  * Base class for all entities, either extend this class and add Components as fields to the parent,

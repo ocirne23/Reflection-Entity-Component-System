@@ -1,4 +1,4 @@
-package main.java.recs.utils;
+package recs.utils;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;

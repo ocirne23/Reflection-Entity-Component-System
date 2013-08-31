@@ -1,9 +1,9 @@
-package test.java.recs.entities;
+package recs.entities;
 
-import main.java.recs.Entity;
-import test.java.recs.components.Health;
-import test.java.recs.components.Position;
-import test.java.recs.components.Velocity;
+import recs.Entity;
+import recs.components.Health;
+import recs.components.Position;
+import recs.components.Velocity;
 
 public class Player extends Entity {
 	public Position position;

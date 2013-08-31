@@ -1,10 +1,10 @@
-package main.java.recs;
+package recs;
 
 import java.lang.reflect.Field;
 
-import main.java.recs.utils.RECSBits;
-import main.java.recs.utils.libgdx.RECSIntMap;
-import main.java.recs.utils.libgdx.RECSObjectMap;
+import recs.utils.RECSBits;
+import recs.utils.libgdx.RECSIntMap;
+import recs.utils.libgdx.RECSObjectMap;
 
 
 public final class EntityDataManager {
