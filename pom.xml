@@ -26,7 +26,7 @@
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx</artifactId>
             <version>0.9.9-SNAPSHOT</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -58,6 +58,40 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.badlogicgames.gdx:gdx</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>com.badlogicgames.gdx:gdx</artifact>
+                                    <includes>
+                                        <include>com/badlogic/gdx/utils/IntMap.class</include>
+                                        <include>com/badlogic/gdx/utils/ObjectIntMap.class</include>
+                                        <include>com/badlogic/gdx/utils/ObjectMap.class</include>
+                                        <include>com/badlogic/gdx/utils/Array.class</include>
+                                        <include>com/badlogic/gdx/utils/IntArray.class</include>
+                                        <include>com/badlogic/gdx/math/MathUtils.class</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
