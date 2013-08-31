@@ -6,9 +6,10 @@ import java.util.LinkedList;
 import recs.utils.BlockingThreadPoolExecutor;
 import recs.utils.RECSBits;
 import recs.utils.RECSIntSet.Items;
+
 import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.IntMap.Keys;
+import com.badlogic.gdx.utils.ObjectMap;
 
 
 /**

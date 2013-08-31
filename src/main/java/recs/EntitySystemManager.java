@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.util.LinkedList;
 
 import recs.utils.RECSBits;
+
 import com.badlogic.gdx.utils.IntMap;
 
 
@@ -107,6 +108,7 @@ public final class EntitySystemManager {
 		} while (class1 != EntitySystem.class);
 		systems.add(system);
 		systemMap.put(system.id, system);
+		system.world = world;
 	}
 
 	/**
