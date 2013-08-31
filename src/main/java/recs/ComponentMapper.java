@@ -35,8 +35,6 @@ public final class ComponentMapper<T extends Component> {
 
 	@SuppressWarnings("unchecked")
 	void add(int entityId, Component o) {
-		if (!components.containsKey(entityId)) {
-			components.put(entityId, (T) o);
-		}
+		components.put(entityId, (T) o);
 	}
 }
