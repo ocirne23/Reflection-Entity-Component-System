@@ -38,6 +38,9 @@ public class Entity {
 		return data.componentBits.get(data.world.getComponentId(componentClass));
 	}
 
+	/**
+	 * Get the component with the given class, returns null if not found.
+	 */
 	public <T extends Component> T getComponent(Class<T> componentClass) {
 		if (data == null)
 			throw new RuntimeException("Entity must be added to a world before accessing its components");
