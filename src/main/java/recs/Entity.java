@@ -36,8 +36,14 @@ public class Entity {
 	}
 
 	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
-		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if (data == null) {
+			for (Component component : getComponents()) {
+				if (componentClass.isInstance(component)) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return data.componentBits.get(data.world.getComponentId(componentClass));
 	}
 
@@ -45,8 +51,14 @@ public class Entity {
 	 * Get the component with the given class, returns null if not found.
 	 */
 	public <T extends Component> T getComponent(Class<T> componentClass) {
-		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if (data == null) {
+			for (Component component : getComponents()) {
+				if (componentClass.isInstance(component)) {
+					return componentClass.cast(component);
+				}
+			}
+			return null;
+		}
 		return data.world.getComponent(id, componentClass);
 	}
 
