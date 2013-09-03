@@ -18,7 +18,7 @@
         <url>https://github.com/ocirne23/Reflection-Entity-Component-System</url>
         <developerConnection>scm:git:git@github.com:ocirne23/Reflection-Entity-Component-System.git</developerConnection>
     </scm>
-    
+
     <repositories>
         <repository>
             <id>gdx-nightlies</id>
@@ -51,6 +51,18 @@
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -97,6 +109,33 @@
                                 </filter>
                             </filters>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- responsible for being able to compile for Android -->
+            <plugin>
+                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <sdk>
+                        <platform>10</platform>
+                    </sdk>
+                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                    <dex>
+                        <jvmArguments>
+                            <jvmArgument>-Xmx1024m</jvmArgument>
+                        </jvmArguments>
+                    </dex>
+                </configuration>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>deploy-on-install</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>apklib</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
