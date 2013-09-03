@@ -64,7 +64,7 @@ public class Entity {
 
 	public Object getComponent(int componentId) {
 		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
 		return data.world.getComponent(id, componentId);
 	}
 
@@ -74,7 +74,7 @@ public class Entity {
 	 */
 	public int[] getComponentIds() {
 		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
 		RECSBits componentBits = data.componentBits;
 		int[] components = new int[data.componentBits.cardinality()];
 
