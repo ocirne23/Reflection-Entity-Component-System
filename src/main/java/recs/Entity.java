@@ -2,6 +2,7 @@ package recs;
 
 import recs.utils.RECSBits;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -91,8 +92,8 @@ public class Entity {
 	 */
 	public Component[] getComponents() {
 		if(data == null) {
-			List<Component> results = EntityWorld.getScheduledAddsCopy(this);
-			results.removeAll(EntityWorld.getScheduledRemovesCopy(this));
+			List<Component> results = new ArrayList<Component>(EntityWorld.getScheduledAdds(this));
+			results.removeAll(EntityWorld.getScheduledRemoves(this));
 			return results.toArray(new Component[results.size()]);
 		}
 

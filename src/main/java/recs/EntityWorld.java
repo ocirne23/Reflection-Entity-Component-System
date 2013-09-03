@@ -2,6 +2,7 @@ package recs;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -255,12 +256,22 @@ public final class EntityWorld {
 		System.gc();
 	}
 
-	static List<Component> getScheduledAddsCopy(Entity e) {
-		return new ArrayList<Component>(scheduledAdds.get(e));
+	static List<Component> getScheduledAdds(Entity e) {
+		List<Component> scheduledAdds = EntityWorld.scheduledAdds.get(e);
+		if (scheduledAdds == null) {
+			return Collections.unmodifiableList(new ArrayList<Component>());
+		} else {
+			return Collections.unmodifiableList(scheduledAdds);
+		}
 	}
 
-	static List<Component> getScheduledRemovesCopy(Entity e) {
-		return new ArrayList<Component>(scheduledRemoves.get(e));
+	static List<Component> getScheduledRemoves(Entity e) {
+		List<Component> scheduledRemoves = EntityWorld.scheduledRemoves.get(e);
+		if (scheduledRemoves == null) {
+			return Collections.unmodifiableList(new ArrayList<Component>());
+		} else {
+			return Collections.unmodifiableList(scheduledRemoves);
+		}
 	}
 
 	/**
