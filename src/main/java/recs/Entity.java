@@ -2,7 +2,6 @@ package recs;
 
 import recs.utils.RECSBits;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
