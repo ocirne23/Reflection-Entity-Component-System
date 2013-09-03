@@ -119,6 +119,7 @@
                 <version>3.6.0</version>
                 <configuration>
                     <sdk>
+                        <path>${env.ANDROID_HOME}</path>
                         <platform>10</platform>
                     </sdk>
                     <undeployBeforeDeploy>true</undeployBeforeDeploy>
