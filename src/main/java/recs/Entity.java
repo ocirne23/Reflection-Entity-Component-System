@@ -2,6 +2,9 @@ package recs;
 
 import recs.utils.RECSBits;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Base class for all entities, either extend this class and add Components as fields to the parent,
  * or use addComponent to add components to the entity.
@@ -33,8 +36,14 @@ public class Entity {
 	}
 
 	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
-		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if (data == null) {
+			for (Component component : getComponents()) {
+				if (componentClass.equals(component.getClass())) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return data.componentBits.get(data.world.getComponentId(componentClass));
 	}
 
@@ -42,14 +51,20 @@ public class Entity {
 	 * Get the component with the given class, returns null if not found.
 	 */
 	public <T extends Component> T getComponent(Class<T> componentClass) {
-		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if (data == null) {
+			for (Component component : getComponents()) {
+				if (componentClass.equals(component.getClass())) {
+					return componentClass.cast(component);
+				}
+			}
+			return null;
+		}
 		return data.world.getComponent(id, componentClass);
 	}
 
-	public Object getComponent(int componentId) {
+	public Component getComponent(int componentId) {
 		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
 		return data.world.getComponent(id, componentId);
 	}
 
@@ -59,7 +74,7 @@ public class Entity {
 	 */
 	public int[] getComponentIds() {
 		if (data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
 		RECSBits componentBits = data.componentBits;
 		int[] components = new int[data.componentBits.cardinality()];
 
@@ -76,8 +91,11 @@ public class Entity {
 	 * components. (Not including class fields).
 	 */
 	public Component[] getComponents() {
-		if(data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if(data == null) {
+			List<Component> results = new ArrayList<Component>(EntityWorld.getScheduledAdds(this));
+			results.removeAll(EntityWorld.getScheduledRemoves(this));
+			return results.toArray(new Component[results.size()]);
+		}
 
 		int[] componentIds = getComponentIds();
 		Component[] components = new Component[componentIds.length];

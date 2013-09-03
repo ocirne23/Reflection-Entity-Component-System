@@ -12,6 +12,7 @@
 
 # maven
 /target
+/dependency-reduced-pom.xml
 
 # vim
 .*.sw[a-p]
@@ -44,5 +45,5 @@ debug.log
 debug.txt
 
 # test files
-./player
-./entities
+/player
+/entities

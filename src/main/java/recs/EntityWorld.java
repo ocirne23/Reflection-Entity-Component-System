@@ -1,7 +1,10 @@
 package recs;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import recs.utils.BlockingThreadPoolExecutor;
 import recs.utils.RECSBits;
@@ -27,8 +30,8 @@ public final class EntityWorld {
 	 * Maps used to temporarily store added/removed components from entities
 	 * that are not yet added to the EntityWorld.
 	 */
-	private static ObjectMap<Entity, LinkedList<Component>> scheduledAdds = new ObjectMap<Entity, LinkedList<Component>>();
-	private static ObjectMap<Entity, LinkedList<Component>> scheduledRemoves = new ObjectMap<Entity, LinkedList<Component>>();
+	private static ObjectMap<Entity, List<Component>> scheduledAdds = new ObjectMap<Entity, List<Component>>();
+	private static ObjectMap<Entity, List<Component>> scheduledRemoves = new ObjectMap<Entity, List<Component>>();
 
 	/**
 	 * Contains all the entities so they can be retrieved with getEntity
@@ -106,13 +109,13 @@ public final class EntityWorld {
 		}
 		// Add all the components that were added to the entity before the
 		// entity was added to the world.
-		LinkedList<Component> scheduleAddList = scheduledAdds.remove(entity);
+		List<Component> scheduleAddList = scheduledAdds.remove(entity);
 		if (scheduleAddList != null) {
 			componentManager.addComponent(entity, scheduleAddList.toArray(new Component[0]));
 		}
 		// Remove all the components that were removed from the entity before
 		// the entity was added to the world.
-		LinkedList<Component> scheduledRemovesList = scheduledRemoves.remove(entity);
+		List<Component> scheduledRemovesList = scheduledRemoves.remove(entity);
 		if (scheduledRemovesList != null) {
 			componentManager.removeComponent(entity, scheduledRemovesList.toArray(new Component[0]));
 		}
@@ -253,8 +256,22 @@ public final class EntityWorld {
 		System.gc();
 	}
 
-	static Component[] getScheduledAdds(Entity e) {
-		return scheduledAdds.get(e).toArray(new Component[0]);
+	static List<Component> getScheduledAdds(Entity e) {
+		List<Component> scheduledAdds = EntityWorld.scheduledAdds.get(e);
+		if (scheduledAdds == null) {
+			return Collections.unmodifiableList(new ArrayList<Component>());
+		} else {
+			return Collections.unmodifiableList(scheduledAdds);
+		}
+	}
+
+	static List<Component> getScheduledRemoves(Entity e) {
+		List<Component> scheduledRemoves = EntityWorld.scheduledRemoves.get(e);
+		if (scheduledRemoves == null) {
+			return Collections.unmodifiableList(new ArrayList<Component>());
+		} else {
+			return Collections.unmodifiableList(scheduledRemoves);
+		}
 	}
 
 	/**
@@ -266,7 +283,7 @@ public final class EntityWorld {
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
 			//Schedule the component for adding so its added once the entity is added to a world.
-			LinkedList<Component> scheduled = scheduledAdds.get(e);
+			List<Component> scheduled = scheduledAdds.get(e);
 			if (scheduled == null) {
 				scheduled = new LinkedList<Component>();
 				scheduledAdds.put(e, scheduled);
@@ -297,7 +314,7 @@ public final class EntityWorld {
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
 			//Schedule the component for removal so its removed once the entity is added to a world.
-			LinkedList<Component> scheduled = scheduledRemoves.get(e);
+			List<Component> scheduled = scheduledRemoves.get(e);
 			if (scheduled == null) {
 				scheduled = new LinkedList<Component>();
 				scheduledRemoves.put(e, scheduled);
