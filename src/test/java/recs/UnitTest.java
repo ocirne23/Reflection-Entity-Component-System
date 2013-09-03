@@ -24,7 +24,7 @@ import recs.systems.MovementSystem_Test;
 import recs.systems.ThreadedMovementSystem_Test;
 import recs.utils.Saver;
 
-public class UnitTests {
+public class UnitTest {
 
 	private Player_Test player;
 	private Player_Test player2;
