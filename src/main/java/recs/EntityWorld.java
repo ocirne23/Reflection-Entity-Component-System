@@ -1,6 +1,7 @@
 package recs;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -254,8 +255,12 @@ public final class EntityWorld {
 		System.gc();
 	}
 
-	static Component[] getScheduledAdds(Entity e) {
-		return scheduledAdds.get(e).toArray(new Component[0]);
+	static List<Component> getScheduledAddsCopy(Entity e) {
+		return new ArrayList<Component>(scheduledAdds.get(e));
+	}
+
+	static List<Component> getScheduledRemovesCopy(Entity e) {
+		return new ArrayList<Component>(scheduledRemoves.get(e));
 	}
 
 	/**

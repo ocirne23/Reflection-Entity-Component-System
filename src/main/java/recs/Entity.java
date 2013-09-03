@@ -2,6 +2,9 @@ package recs;
 
 import recs.utils.RECSBits;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Base class for all entities, either extend this class and add Components as fields to the parent,
  * or use addComponent to add components to the entity.
@@ -76,8 +79,11 @@ public class Entity {
 	 * components. (Not including class fields).
 	 */
 	public Component[] getComponents() {
-		if(data == null)
-			throw new RuntimeException("Entity must be added to a world before accessing its components");
+		if(data == null) {
+			List<Component> results = EntityWorld.getScheduledAddsCopy(this);
+			results.removeAll(EntityWorld.getScheduledRemovesCopy(this));
+			return results.toArray(new Component[results.size()]);
+		}
 
 		int[] componentIds = getComponentIds();
 		Component[] components = new Component[componentIds.length];
