@@ -62,7 +62,7 @@ public class Entity {
 		return data.world.getComponent(id, componentClass);
 	}
 
-	public Object getComponent(int componentId) {
+	public Component getComponent(int componentId) {
 		if (data == null)
 			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
 		return data.world.getComponent(id, componentId);
