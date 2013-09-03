@@ -37,7 +37,7 @@ public class Entity {
 	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
 		if (data == null) {
 			for (Component component : getComponents()) {
-				if (componentClass.isInstance(component)) {
+				if (componentClass.equals(component.getClass())) {
 					return true;
 				}
 			}
@@ -52,7 +52,7 @@ public class Entity {
 	public <T extends Component> T getComponent(Class<T> componentClass) {
 		if (data == null) {
 			for (Component component : getComponents()) {
-				if (componentClass.isInstance(component)) {
+				if (componentClass.equals(component.getClass())) {
 					return componentClass.cast(component);
 				}
 			}
