@@ -14,8 +14,8 @@ import recs.components.Gravity_0;
 import recs.components.Health_0;
 import recs.components.Position_0;
 import recs.components.Velocity_0;
-import recs.entities.Player_Test;
 import recs.entities.PlayerWithAttack_Test;
+import recs.entities.Player_Test;
 import recs.entities.Zombie_Test;
 import recs.events.DamageEvent_Test;
 import recs.systems.AttackSystem_Test;
@@ -434,9 +434,9 @@ public class UnitTest {
 		float y = player.position.y;
 		int health = player.health.amount -= 5;
 
-		File playerFile = Saver.saveObject(player, new File("player"));
+		File playerFile = Saver.saveObject(new File("player"), player);
 
-		Player_Test player2 = Saver.readObject(new Player_Test(), playerFile);
+		Player_Test player2 = Saver.readObject(playerFile, new Player_Test());
 
 		assertTrue(player2.health.amount == health);
 		assertTrue(player2.position.x == x);
@@ -457,8 +457,8 @@ public class UnitTest {
 		entities[6] = new Player_Test(60, 70);
 		entities[12] = null;
 
-		File entitiesFile = Saver.saveObject(new PlayerWrapper(entities), new File("entities"));
-		Player_Test[] entities2 = Saver.readObject(new PlayerWrapper(null), entitiesFile).entities;
+		File entitiesFile = Saver.saveObject(new File("entities"), new PlayerWrapper(entities));
+		Player_Test[] entities2 = Saver.readObject(entitiesFile, new PlayerWrapper(null)).entities;
 
 		assertTrue(entities2[2].position.x == 40);
 		assertTrue(entities2[6].position.x == 60);

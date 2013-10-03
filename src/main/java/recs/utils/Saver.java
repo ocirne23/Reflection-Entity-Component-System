@@ -11,6 +11,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.DoubleBuffer;
@@ -18,7 +21,10 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.badlogic.gdx.utils.ObjectIntMap;
 
 /**
  * Can write/read almost any object to/from a file. Classes with generic
@@ -27,17 +33,107 @@ import java.util.LinkedList;
  * @author Enrico van Oosten
  */
 public class Saver {
-	public static boolean ignoreTransient = false;
+	public static boolean ignoreTransient = true;
+
+	private static final int NULL = 0;
+	private static final int NEW = 1;
+	private static final int REFERENCE = 2;
 
 	private Saver() {
+
 	}
+
+	private static class Derp {
+		public int da;
+		public float wa;
+
+		public Derp(int da, float wa) {
+			this.da = da;
+			this.wa = wa;
+		}
+	}
+
+
+
+	public static void main(String[] args) {
+		//HashMap test
+
+		HashMap<String, Derp> derpMap = new HashMap<String, Derp>(4);
+
+		for (int i = 0; i < 2; ++i) {
+			derpMap.put(""+i, new Derp(i, i * 0.5f));
+		}
+		//derpMap.put(""+3, derpMap.get(""+1));
+		File derpMapFile = new File("derpmap");
+
+		System.out.println("saving");
+		Saver.saveObject(derpMapFile, derpMap);
+		System.out.println("done");
+
+		System.out.println("reading");
+		HashMap<String, Derp> loadedMap = Saver.readObject(derpMapFile, new HashMap<String, Derp>(), String.class, Derp.class);
+
+		for (int i = 0; i < 2; ++i) {
+			Derp derp = loadedMap.get(""+i);
+			if(derp != null)
+			System.out.println(derp.da +":"+ derp.wa);
+		}
+		System.out.println("done");
+
+
+		//ArrayList test
+/*
+		ArrayList<Derp> derpList = new ArrayList<Derp>();
+		for (int i = 0; i < 20; ++i) {
+			derpList.add(new Derp(i, i * 0.5f));
+		}
+		File derpListFile = new File("derplist");
+
+		System.out.println("saving");
+		Saver.saveObject(derpListFile, derpList);
+		System.out.println("done");
+
+		System.out.println("reading");
+		ArrayList<Derp> loadedList = Saver.readObject(derpListFile, new ArrayList<Derp>(), Derp.class);
+
+		for (int i = 0; i < 20; ++i) {
+			Derp derp = loadedList.get(i);
+			System.out.println(derp.da +":"+ derp.wa);
+		}
+		System.out.println("done");
+
+		//Queue test
+*/
+/*
+		Queue<Derp> derpQueue = new LinkedList<Derp>();
+		for (int i = 0; i < 2; ++i) {
+			derpQueue.offer(new Derp(i, i * 0.5f));
+		}
+		File derpQueueFile = new File("derpqueue");
+
+		System.out.println("saving");
+		Saver.saveObject(derpQueueFile, derpQueue);
+		System.out.println("done");
+
+		System.out.println("reading");
+		Queue<Derp> loadedQueue = Saver.readObject(derpQueueFile, new LinkedList<Derp>(), Derp.class);
+
+		for (int i = 0; i < 2; ++i) {
+			Derp derp = loadedQueue.poll();
+			System.out.println(derp.da +":"+ derp.wa);
+		}
+		System.out.println("done");
+*/
+	}
+
 
 	/**
 	 * Stores any object in the given file.
 	 */
-	public static File saveObject(Object o, File file) {
+	public static File saveObject(File file, Object o) {
 		try {
 			Class<?> c = o.getClass();
+
 			if (c.isArray())
 				throw new RuntimeException("Array should be wrapped in an object class");
 			else if (c.isPrimitive())
@@ -45,8 +141,10 @@ public class Saver {
 
 			FileOutputStream fileOStream = new FileOutputStream(file);
 			DataOutputStream ostream = new DataOutputStream(fileOStream);
-			LinkedList<Object> antiRecurstionList = new LinkedList<Object>();
-			writeObject(o, ostream, antiRecurstionList);
+
+			ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
+			writeObject(o, ostream, referenceMap);
+
 			ostream.flush();
 			fileOStream.flush();
 			ostream.close();
@@ -65,16 +163,30 @@ public class Saver {
 	 * Sets the values of the given object equal to the stored object in the
 	 * file.
 	 */
-	public static <T> T readObject(T o, File file) {
+	public static <T> T readObject(File file, T o, Class<?>... genericTypeArgs) {
 		FileInputStream fileIStream;
 		try {
+			Class<?> c = o.getClass();
+
+			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
+			TypeVariable<?>[] parameterTypes = c.getTypeParameters();
+			for (int i = 0; i < parameterTypes.length; ++i) {
+				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
+			}
+
+		//	System.out.println("genericTypeClassMap: " + genericTypeClassMap.toString());
+
 			fileIStream = new FileInputStream(file);
 			DataInputStream istream = new DataInputStream(fileIStream);
 			byte[] bytes = new byte[(int) file.length()];
 			istream.readFully(bytes);
 			ByteBuffer b = ByteBuffer.wrap(bytes);
 
-			readObject(o, b);
+			ArrayList<Object> referenceList = new ArrayList<Object>();
+
+			b.get();
+			referenceList.add(o);
+			readFields(o, b, genericTypeClassMap, referenceList);
 
 			istream.close();
 			fileIStream.close();
@@ -92,36 +204,60 @@ public class Saver {
 		return o;
 	}
 
-	private static void writeObject(Object o, DataOutputStream ostream, LinkedList<Object> antiRecurstionList) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writeObject(Object o, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		if (o == null) {
-			ostream.write(0);
+			ostream.write(NULL);
+	//		System.out.println("writing null");
 			return;
-		} else
-			ostream.write(1);
-
-		if (antiRecurstionList.contains(o))
-			return;
-		else
-			antiRecurstionList.add(o);
+		} else {
+			int referenceIdx = referenceMap.get(o, -1);
+			// if this object has already been written, write a reference to it instead of a new instance.
+			if (referenceIdx != -1) {
+				ostream.write(REFERENCE);
+				ostream.writeInt(referenceIdx);
+				System.out.println("writing reference: " + o.getClass().getName() +", idx: " + referenceIdx);
+				return;
+			// if this is a new object, add it to the references together with the index in the ostream.
+			} else {
+				ostream.write(NEW);
+				int objIdx = referenceMap.size;
+				referenceMap.put(o, objIdx);
+				System.out.println("writing new: " + o.getClass().getName() +", idx: " + objIdx);
+			}
+		}
 
 		Class<?> c = o.getClass();
 		do {
+	//		System.out.println("writing object: " + c.getName());
 			for (Field f : c.getDeclaredFields()) {
 				Class<?> type = f.getType();
+
 				int modifiers = f.getModifiers();
 				if (!ignoreTransient && Modifier.isTransient(modifiers))
 					continue;
 				if (Modifier.isStatic(modifiers))
 					continue;
 
+				System.out.println("writing field " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
+
 				if (type.isPrimitive()) {
 					writePrimitive(o, f, ostream);
 				} else if (type.isArray()) {
-					writeArray(o, f, ostream, antiRecurstionList);
+					writeArray(o, f, ostream, referenceMap);
 				} else {
 					f.setAccessible(true);
 					Object obj = f.get(o);
-					writeObject(obj, ostream, antiRecurstionList);
+
+					Type genericFieldType = f.getGenericType();
+
+					if(genericFieldType instanceof ParameterizedType){
+					    ParameterizedType aType = (ParameterizedType) genericFieldType;
+					    Type fieldArgTypes = aType.getOwnerType();
+
+					        System.out.println("fieldArgClass = " + fieldArgTypes.toString());
+
+					}
+					writeObject(obj, ostream, referenceMap);
 				}
 			}
 			c = c.getSuperclass();
@@ -150,7 +286,7 @@ public class Saver {
 		}
 	}
 
-	private static void writeArray(Object o, Field f, DataOutputStream ostream, LinkedList<Object> antiRecursionList) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writeArray(Object o, Field f, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		Class<?> type = f.getType();
 		f.setAccessible(true);
 		int length = Array.getLength(f.get(o));
@@ -192,49 +328,93 @@ public class Saver {
 		if (buffer != null) {
 			ostream.write(buffer.array());
 		} else {
-			if (type.getComponentType() == Object.class) {
-				throw new RuntimeException("Cannot parse generic Object[] array");
-			}
 			ostream.writeInt(length);
+
+			if (type.getComponentType() == Object.class) {
+				Class<?> elementClass = ((Object[]) f.get(o))[0].getClass();
+
+				String elementType = elementClass.getName();
+				ostream.writeInt(elementType.length());
+				ostream.writeChars(elementType);
+		//		System.out.println("writing generic type: " + elementType +":"+ elementType.length());
+			}
+
 			for (Object obj : (Object[]) f.get(o)) {
-				writeObject(obj, ostream, antiRecursionList);
+				writeObject(obj, ostream, referenceMap);
 			}
 		}
 	}
 
-	private static boolean readObject(Object o, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
-		if (b.get() == 0)
-			return false;
+	/**
+	 * @return false if object is null
+	 */
+	private static Object readObject(Class<?> type, ByteBuffer b, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+		int objectStatus = b.get();
+
+		//object is null
+		if (objectStatus == NULL) {
+			//System.out.println("reading null: " + type.getName());
+			return null;
+		}
+
+		Object obj = null;
+		if (objectStatus == REFERENCE) {
+			int refIdx = b.getInt();
+			obj = referenceList.get(refIdx);
+			System.out.println("reading reference: " + type.getName() + ", result: " + obj.getClass() +", idx: " + refIdx);
+		} else if (objectStatus == NEW) {
+			obj = createNewInstance(type);
+			referenceList.add(obj);
+			System.out.println("reading new: " + type.getName() + ", idx: " + (referenceList.size() - 1));
+			if (obj !=  null)
+				readFields(obj, b, genericTypeClassMap, referenceList);
+		}
+
+		return obj;
+	}
+
+	private static void readFields(Object o, ByteBuffer b, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		Class<?> c = o.getClass();
+
 		do {
+			//System.out.println("reading object: " + c.getName());
 			for (Field f : c.getDeclaredFields()) {
 				Class<?> type = f.getType();
+				Class<?> genericType = genericTypeClassMap.get(f.getGenericType().toString());
+
+				if (genericType != null) {
+				//	System.out.println("setting generic type to: " + genericType +" from: " + type);
+					type = genericType;
+				}
+
 				int modifiers = f.getModifiers();
 				if (!ignoreTransient && Modifier.isTransient(modifiers))
 					continue;
 				if (Modifier.isStatic(modifiers))
 					continue;
 
+				System.out.println("reading field " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
+
 				if (type.isPrimitive()) {
 					readPrimitive(o, f, b);
 				} else if (type.isArray()) {
-					readArray(o, f, b);
+					readArray(o, f, b, genericTypeClassMap, referenceList);
+				//is object
 				} else {
 					f.setAccessible(true);
-					Object obj = f.get(o);
-					if (obj == null) {
-						obj = createNewInstance(f.getType());
+
+					Object obj = readObject(type, b, genericTypeClassMap, referenceList);
+
+					if (obj != null) {
 						f.set(o, obj);
 					}
-					readObject(obj, b);
 				}
 			}
 			c = c.getSuperclass();
 		} while (c != Object.class);
-		return true;
 	}
 
-	private static void readArray(Object o, Field f, ByteBuffer b) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+	private static void readArray(Object o, Field f, ByteBuffer b, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		Class<?> type = f.getType();
 		int length = b.getInt();
 
@@ -292,13 +472,36 @@ public class Saver {
 			f.set(o, array);
 		} else {
 			Class<?> componentType = type.getComponentType();
+			//System.out.println("reading componentType: " + componentType);
+
+			if (componentType == Object.class) {
+				int typeStrLen = b.getInt();
+				System.out.println(typeStrLen);
+				char[] chars = new char[typeStrLen];
+				for (int i = 0; i < typeStrLen; ++i) {
+					chars[i] = b.getChar();
+				}
+
+				String typeStr = new String(chars);
+
+				try {
+					componentType = Class.forName(typeStr);
+			//		System.out.println("setting componentType: " + componentType);
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+
 			if(componentType.isArray())
 				throw new RuntimeException("array arrays are not supported([][])");
+
 			f.set(o, Array.newInstance(componentType, length));
 			for (int i = 0; i < length; i++) {
-				Object element = createNewInstance(componentType);
-				if(readObject(componentType.cast(element), b))
+				Object element = readObject(componentType, b, genericTypeClassMap, referenceList);
+
+				if(element != null) {
 					((Object[]) f.get(o))[i] = element;
+				}
 			}
 		}
 	}
@@ -310,12 +513,17 @@ public class Saver {
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		// if its an interface or abstract class
+		if(type.getDeclaredConstructors().length == 0)
+			return null;
+
 		for (Constructor<?> c : type.getDeclaredConstructors()) {
 			if (c.getParameterTypes().length == 0) {
 				c.setAccessible(true);
 				return (T) c.newInstance();
 			}
 		}
+
 		Constructor<?> c = type.getDeclaredConstructors()[0];
 		Class<?>[] parameters = c.getParameterTypes();
 		Object[] params = new Object[parameters.length];
@@ -332,6 +540,7 @@ public class Saver {
 				params[i] = null;
 			}
 		}
+
 		c.setAccessible(true);
 		return (T) c.newInstance(params);
 	}
