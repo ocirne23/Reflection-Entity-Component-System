@@ -11,10 +11,14 @@ public class IntervalEntitySystem extends EntitySystem {
 
 	@Override
 	void process(float deltaInSec) {
-		timePassed += deltaInSec;
-		while(timePassed > intervalInSec) {
-			timePassed -= intervalInSec;
-			processSystem(intervalInSec);
+		if (intervalInSec == 0f) {
+			processSystem(deltaInSec);
+		} else {
+			timePassed += deltaInSec;
+			while(timePassed > intervalInSec) {
+				timePassed -= intervalInSec;
+				processSystem(intervalInSec);
+			}
 		}
 	}
 

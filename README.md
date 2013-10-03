@@ -60,7 +60,7 @@ An entity is a class which extends Entity and has components as fields:
 A system is a class which extends EntitySystem:
 
 	public class MovementSystem extends EntitySystem {
-		//Declare component managers so you can retrieve components easily.
+		//Declare component mappers so you can retrieve components easily.
 		private ComponentMapper<Position> positionMapper;
 		private ComponentMapper<Velocity> velocityMapper;
 		
@@ -71,7 +71,7 @@ A system is a class which extends EntitySystem:
 	
 		@Override
 		private void processEntity(int id, float deltaSec) {
-			//Retrieve components from entities using the component managers.
+			//Retrieve components from entities using the component mappers.
 			Position position = positionMapper.get(id);
 			Velocity velocity = velocityMapper.get(id);
 			//Do something with the components.
@@ -126,7 +126,7 @@ Event handling with EventListeners
 		protected void process(int entityId, float deltaInSec) {
 			Health health = healthMapper.get(entityId);
 			if (health.health <= 0) {
-				EntityWorld.removeEntity(entityId);
+				world.removeEntity(entityId);
 			}
 		}
 	}
