@@ -32,7 +32,7 @@ public class BinarySerializerSimpleTest {
 	public void testHashMap() {
 		System.out.println("HashMap test, num items: " + HASHMAP_NUM_ITEMS);
 
-		HashMap<String, SimpleObject> map = new HashMap<String, SimpleObject>();
+		HashMap<String, SimpleObject> map = new HashMap<String, SimpleObject>(HASHMAP_NUM_ITEMS);
 		for (int i = 0; i < HASHMAP_NUM_ITEMS; ++i) {
 			map.put("" + i, new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
@@ -66,7 +66,7 @@ public class BinarySerializerSimpleTest {
 	public void testArrayList() {
 		System.out.println("ArrayList test, num items: " + ARRAYLIST_NUM_ITEMS);
 
-		ArrayList<SimpleObject> list = new ArrayList<SimpleObject>(20);
+		ArrayList<SimpleObject> list = new ArrayList<SimpleObject>(ARRAYLIST_NUM_ITEMS);
 		for (int i = 0; i < ARRAYLIST_NUM_ITEMS; ++i) {
 			list.add(new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
@@ -132,7 +132,7 @@ public class BinarySerializerSimpleTest {
 	public void testObjectMap() {
 		System.out.println("ObjectMap test, num items: " + OBJECTMAP_NUM_ITEMS);
 
-		ObjectMap<Integer, SimpleObject> map = new ObjectMap<Integer, SimpleObject>();
+		ObjectMap<Integer, SimpleObject> map = new ObjectMap<Integer, SimpleObject>(OBJECTMAP_NUM_ITEMS);
 		for (int i = 0; i < OBJECTMAP_NUM_ITEMS; ++i) {
 			map.put(i, new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
@@ -166,7 +166,7 @@ public class BinarySerializerSimpleTest {
 	public void testIntMap() {
 		System.out.println("IntMap test, num items: " + INTMAP_NUM_ITEMS);
 
-		IntMap<SimpleObject> map = new IntMap<SimpleObject>();
+		IntMap<SimpleObject> map = new IntMap<SimpleObject>(INTMAP_NUM_ITEMS);
 		for (int i = 0; i < INTMAP_NUM_ITEMS; ++i) {
 			map.put(i, new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}

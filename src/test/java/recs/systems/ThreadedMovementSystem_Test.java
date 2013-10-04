@@ -21,6 +21,5 @@ public class ThreadedMovementSystem_Test extends EntityTaskSystem {
 
 		position.x += velocity.x * deltaInSec;
 		position.y += velocity.y * deltaInSec;
-		System.out.println("pos: " + position.x +":"+ position.y);
 	}
 }
