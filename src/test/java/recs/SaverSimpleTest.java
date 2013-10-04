@@ -31,6 +31,7 @@ public class SaverSimpleTest {
 		for (int i = 0; i < 20; ++i) {
 			map.put("" + i, new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
+		//put a reference to the element in [1] in [3]
 		map.put("" + 3, map.get("" + 1));
 
 		Saver.saveObject(testFile, map);
@@ -54,6 +55,7 @@ public class SaverSimpleTest {
 		for (int i = 0; i < 20; ++i) {
 			list.add(new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
+		//put a reference to the element in [1] in [3]
 		list.set(3, list.get(1));
 
 		Saver.saveObject(testFile, list);
