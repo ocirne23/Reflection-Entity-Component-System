@@ -48,7 +48,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
  *
  * @author Enrico van Oosten
  */
-public class Saver {
+public class BinarySerializer {
 	/**
 	 * std collections have its elements as transient, this class can properly parse them.
 	 */
@@ -254,9 +254,27 @@ public class Saver {
 			ostream.writeInt(length);
 
 			if (type.getComponentType() == Object.class) {
-				Class<?> elementClass = ((Object[]) field.get(object))[0].getClass();
+				Object[] array = ((Object[]) field.get(object));
 
-				String elementType = elementClass.getName();
+				// HACKY:
+				// use the type of the first non null element in the array as the type of the array.
+				// if all is null, type is Object.
+				Class<?> elementClass = null;
+				for (int i = 0; i < array.length; ++i) {
+					if (array[i] != null) {
+						elementClass = array[i].getClass();
+						continue;
+					}
+				}
+
+				String elementType = null;
+
+				if (elementClass != null) {
+					elementType = elementClass.getName();
+				} else {
+					elementType = "java.lang.Object";
+				}
+
 				ostream.writeInt(elementType.length());
 				ostream.writeChars(elementType);
 			}
@@ -478,7 +496,7 @@ public class Saver {
 		return (T) c.newInstance(params);
 	}
 
-	private Saver() {
+	private BinarySerializer() {
 
 	}
 

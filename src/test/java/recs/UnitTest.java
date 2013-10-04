@@ -22,7 +22,7 @@ import recs.systems.AttackSystem_Test;
 import recs.systems.HealthSystem_Test;
 import recs.systems.MovementSystem_Test;
 import recs.systems.ThreadedMovementSystem_Test;
-import recs.utils.Saver;
+import recs.utils.BinarySerializer;
 
 public class UnitTest {
 
@@ -434,9 +434,9 @@ public class UnitTest {
 		float y = player.position.y;
 		int health = player.health.amount -= 5;
 
-		File playerFile = Saver.saveObject(new File("player"), player);
+		File playerFile = BinarySerializer.saveObject(new File("player"), player);
 
-		Player_Test player2 = Saver.readObject(playerFile, new Player_Test());
+		Player_Test player2 = BinarySerializer.readObject(playerFile, new Player_Test());
 
 		assertTrue(player2.health.amount == health);
 		assertTrue(player2.position.x == x);
@@ -457,8 +457,8 @@ public class UnitTest {
 		entities[6] = new Player_Test(60, 70);
 		entities[12] = null;
 
-		File entitiesFile = Saver.saveObject(new File("entities"), new PlayerWrapper(entities));
-		Player_Test[] entities2 = Saver.readObject(entitiesFile, new PlayerWrapper(null)).entities;
+		File entitiesFile = BinarySerializer.saveObject(new File("entities"), new PlayerWrapper(entities));
+		Player_Test[] entities2 = BinarySerializer.readObject(entitiesFile, new PlayerWrapper(null)).entities;
 
 		assertTrue(entities2[2].position.x == 40);
 		assertTrue(entities2[6].position.x == 60);
