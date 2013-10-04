@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import org.junit.After;
 import org.junit.Before;
@@ -95,14 +94,14 @@ public class BinarySerializerSimpleTest {
 	}
 
 	//lower number because stackoverflow
-	private static final int QUEUE_NUM_ITEMS = 1000;
+	private static final int LINKEDLIST_NUM_ITEMS = 1000;
 
 	@Test
-	public void testQueue() {
-		System.out.println("Queue test, num items: " + QUEUE_NUM_ITEMS);
+	public void testLinkedList() {
+		System.out.println("LinkedList test, num items: " + LINKEDLIST_NUM_ITEMS);
 
-		Queue<SimpleObject> queue = new LinkedList<SimpleObject>();
-		for (int i = 0; i < QUEUE_NUM_ITEMS; ++i) {
+		LinkedList<SimpleObject> queue = new LinkedList<SimpleObject>();
+		for (int i = 0; i < LINKEDLIST_NUM_ITEMS; ++i) {
 			queue.offer(new SimpleObject(i, (i % 2) == 0, i * 0.5f));
 		}
 
@@ -111,13 +110,13 @@ public class BinarySerializerSimpleTest {
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		Queue<SimpleObject> loadedQueue = BinarySerializer.readObject(testFile, new LinkedList<SimpleObject>(), SimpleObject.class);
+		LinkedList<SimpleObject> loadedQueue = BinarySerializer.readObject(testFile, new LinkedList<SimpleObject>(), SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
-		System.out.println("Queue save time: " + (saveEndTime - saveStartTime) + " ms");
-		System.out.println("Queue load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("LinkedList save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("LinkedList load time: " + (loadEndTime - loadStartTime) + " ms");
 
-		for (int i = 0; i < QUEUE_NUM_ITEMS; ++i) {
+		for (int i = 0; i < LINKEDLIST_NUM_ITEMS; ++i) {
 			SimpleObject loadedObject = loadedQueue.poll();
 			SimpleObject object = queue.poll();
 
