@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2013 Enrico van Oosten
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+
 package recs.utils;
 
 import java.io.DataInputStream;
@@ -11,8 +27,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -23,12 +37,14 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
 
 /**
- * Can write/read almost any object to/from a file. Classes with generic
- * Object[] or likewise are not supported.
+ * Can write/read almost any object to/from a file, including classes with
+ * generics like HashMap, ArrayList etc.
  *
  * @author Enrico van Oosten
  */
@@ -53,77 +69,57 @@ public class Saver {
 		}
 	}
 
-
-
 	public static void main(String[] args) {
 		//HashMap test
-
 		HashMap<String, Derp> derpMap = new HashMap<String, Derp>(4);
-
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < 20; ++i) {
 			derpMap.put(""+i, new Derp(i, i * 0.5f));
 		}
-		//derpMap.put(""+3, derpMap.get(""+1));
+		derpMap.put(""+3, derpMap.get(""+1));
 		File derpMapFile = new File("derpmap");
-
-		System.out.println("saving");
 		Saver.saveObject(derpMapFile, derpMap);
-		System.out.println("done");
 
-		System.out.println("reading");
+		System.out.println("HashMap test:");
 		HashMap<String, Derp> loadedMap = Saver.readObject(derpMapFile, new HashMap<String, Derp>(), String.class, Derp.class);
-
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < 20; ++i) {
 			Derp derp = loadedMap.get(""+i);
-			if(derp != null)
 			System.out.println(derp.da +":"+ derp.wa);
 		}
 		System.out.println("done");
 
 
 		//ArrayList test
-/*
 		ArrayList<Derp> derpList = new ArrayList<Derp>();
 		for (int i = 0; i < 20; ++i) {
 			derpList.add(new Derp(i, i * 0.5f));
 		}
 		File derpListFile = new File("derplist");
-
-		System.out.println("saving");
 		Saver.saveObject(derpListFile, derpList);
-		System.out.println("done");
 
-		System.out.println("reading");
+		System.out.println("ArrayList test:");
 		ArrayList<Derp> loadedList = Saver.readObject(derpListFile, new ArrayList<Derp>(), Derp.class);
-
 		for (int i = 0; i < 20; ++i) {
 			Derp derp = loadedList.get(i);
 			System.out.println(derp.da +":"+ derp.wa);
 		}
 		System.out.println("done");
 
+
 		//Queue test
-*/
-/*
 		Queue<Derp> derpQueue = new LinkedList<Derp>();
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < 20; ++i) {
 			derpQueue.offer(new Derp(i, i * 0.5f));
 		}
 		File derpQueueFile = new File("derpqueue");
-
-		System.out.println("saving");
 		Saver.saveObject(derpQueueFile, derpQueue);
-		System.out.println("done");
 
-		System.out.println("reading");
+		System.out.println("Queue test:");
 		Queue<Derp> loadedQueue = Saver.readObject(derpQueueFile, new LinkedList<Derp>(), Derp.class);
-
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < 20; ++i) {
 			Derp derp = loadedQueue.poll();
 			System.out.println(derp.da +":"+ derp.wa);
 		}
 		System.out.println("done");
-*/
 	}
 
 
@@ -162,6 +158,9 @@ public class Saver {
 	/**
 	 * Sets the values of the given object equal to the stored object in the
 	 * file.
+	 *
+	 * The classes of the generic types used in the object need to be supplied, e.g:
+	 * Saver.readObject(file, new HashMap<String, Integer>(), String.class, Integer.class);
 	 */
 	public static <T> T readObject(File file, T o, Class<?>... genericTypeArgs) {
 		FileInputStream fileIStream;
@@ -205,9 +204,9 @@ public class Saver {
 	}
 
 	private static void writeObject(Object o, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
-		if (o == null) {
+		if (o == null || o.getClass().isInterface()) {
 			ostream.write(NULL);
-	//		System.out.println("writing null");
+			//System.out.println(ostream.size() + "\twriting null");
 			return;
 		} else {
 			int referenceIdx = referenceMap.get(o, -1);
@@ -215,20 +214,20 @@ public class Saver {
 			if (referenceIdx != -1) {
 				ostream.write(REFERENCE);
 				ostream.writeInt(referenceIdx);
-				System.out.println("writing reference: " + o.getClass().getName() +", idx: " + referenceIdx);
+			//	System.out.println(ostream.size() + "\twriting reference: " + o.getClass().getName() +", idx: " + referenceIdx);
 				return;
 			// if this is a new object, add it to the references together with the index in the ostream.
 			} else {
 				ostream.write(NEW);
 				int objIdx = referenceMap.size;
 				referenceMap.put(o, objIdx);
-				System.out.println("writing new: " + o.getClass().getName() +", idx: " + objIdx);
+			//	System.out.println(ostream.size() + "\twriting new: " + o.getClass().getName() +", idx: " + objIdx);
 			}
 		}
 
 		Class<?> c = o.getClass();
 		do {
-	//		System.out.println("writing object: " + c.getName());
+			//System.out.println("writing object: " + c.getName());
 			for (Field f : c.getDeclaredFields()) {
 				Class<?> type = f.getType();
 
@@ -238,25 +237,16 @@ public class Saver {
 				if (Modifier.isStatic(modifiers))
 					continue;
 
-				System.out.println("writing field " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
-
 				if (type.isPrimitive()) {
+					//System.out.println(ostream.size() + "\twriting primitive " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					writePrimitive(o, f, ostream);
 				} else if (type.isArray()) {
+					//System.out.println(ostream.size() + "\twriting array " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					writeArray(o, f, ostream, referenceMap);
 				} else {
+					//System.out.println(ostream.size() + "\twriting object " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					f.setAccessible(true);
 					Object obj = f.get(o);
-
-					Type genericFieldType = f.getGenericType();
-
-					if(genericFieldType instanceof ParameterizedType){
-					    ParameterizedType aType = (ParameterizedType) genericFieldType;
-					    Type fieldArgTypes = aType.getOwnerType();
-
-					        System.out.println("fieldArgClass = " + fieldArgTypes.toString());
-
-					}
 					writeObject(obj, ostream, referenceMap);
 				}
 			}
@@ -336,7 +326,7 @@ public class Saver {
 				String elementType = elementClass.getName();
 				ostream.writeInt(elementType.length());
 				ostream.writeChars(elementType);
-		//		System.out.println("writing generic type: " + elementType +":"+ elementType.length());
+				//System.out.println("writing generic type: " + elementType +":"+ elementType.length());
 			}
 
 			for (Object obj : (Object[]) f.get(o)) {
@@ -352,8 +342,8 @@ public class Saver {
 		int objectStatus = b.get();
 
 		//object is null
-		if (objectStatus == NULL) {
-			//System.out.println("reading null: " + type.getName());
+		if (objectStatus == NULL || type.isInterface()) {
+			//System.out.println(b.position() + "\treading null: " + type.getName());
 			return null;
 		}
 
@@ -361,11 +351,11 @@ public class Saver {
 		if (objectStatus == REFERENCE) {
 			int refIdx = b.getInt();
 			obj = referenceList.get(refIdx);
-			System.out.println("reading reference: " + type.getName() + ", result: " + obj.getClass() +", idx: " + refIdx);
+			//System.out.println(b.position() + "\treading reference: " + type.getName() + ", result: " + obj.getClass() +", idx: " + refIdx);
 		} else if (objectStatus == NEW) {
 			obj = createNewInstance(type);
 			referenceList.add(obj);
-			System.out.println("reading new: " + type.getName() + ", idx: " + (referenceList.size() - 1));
+			//System.out.println(b.position() + "\treading new: " + type.getName() + ", idx: " + (referenceList.size() - 1));
 			if (obj !=  null)
 				readFields(obj, b, genericTypeClassMap, referenceList);
 		}
@@ -383,7 +373,7 @@ public class Saver {
 				Class<?> genericType = genericTypeClassMap.get(f.getGenericType().toString());
 
 				if (genericType != null) {
-				//	System.out.println("setting generic type to: " + genericType +" from: " + type);
+					//System.out.println("setting generic type to: " + genericType +" from: " + type);
 					type = genericType;
 				}
 
@@ -393,19 +383,18 @@ public class Saver {
 				if (Modifier.isStatic(modifiers))
 					continue;
 
-				System.out.println("reading field " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
-
 				if (type.isPrimitive()) {
+					//System.out.println(b.position() + "\treading primitive " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					readPrimitive(o, f, b);
 				} else if (type.isArray()) {
+					//System.out.println(b.position() + "\treading array " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					readArray(o, f, b, genericTypeClassMap, referenceList);
 				//is object
 				} else {
-					f.setAccessible(true);
-
+					//System.out.println(b.position() + "\treading object " + f.getName() +": "+ type.getName() +":"+ f.getGenericType());
 					Object obj = readObject(type, b, genericTypeClassMap, referenceList);
-
 					if (obj != null) {
+						f.setAccessible(true);
 						f.set(o, obj);
 					}
 				}
@@ -476,7 +465,7 @@ public class Saver {
 
 			if (componentType == Object.class) {
 				int typeStrLen = b.getInt();
-				System.out.println(typeStrLen);
+
 				char[] chars = new char[typeStrLen];
 				for (int i = 0; i < typeStrLen; ++i) {
 					chars[i] = b.getChar();
@@ -486,7 +475,7 @@ public class Saver {
 
 				try {
 					componentType = Class.forName(typeStr);
-			//		System.out.println("setting componentType: " + componentType);
+					//System.out.println("setting componentType: " + componentType);
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
