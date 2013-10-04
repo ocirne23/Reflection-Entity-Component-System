@@ -40,6 +40,8 @@ import java.util.HashMap;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
 
+//TODO: documentation, comments.
+
 /**
  * Can write/read almost any object to/from a file, including classes with
  * generics like HashMap, ArrayList etc.
@@ -103,7 +105,7 @@ public class Saver {
 				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
 			}
 
-		//	System.out.println("genericTypeClassMap: " + genericTypeClassMap.toString());
+			//System.out.println("genericTypeClassMap: " + genericTypeClassMap.toString());
 
 			fileIStream = new FileInputStream(file);
 			DataInputStream istream = new DataInputStream(fileIStream);
@@ -140,18 +142,18 @@ public class Saver {
 			return;
 		} else {
 			int referenceIdx = referenceMap.get(object, -1);
-			// if this object has already been written, write a reference to it instead of a new instance.
+			//if this object has already been written, write a reference to it instead of a new instance.
 			if (referenceIdx != -1) {
 				ostream.write(REFERENCE);
 				ostream.writeInt(referenceIdx);
-			//	System.out.println(ostream.size() + "\twriting reference: " + o.getClass().getName() +", idx: " + referenceIdx);
+				//System.out.println(ostream.size() + "\twriting reference: " + o.getClass().getName() +", idx: " + referenceIdx);
 				return;
-			// if this is a new object, add it to the references together with the index in the ostream.
+			//if this is a new object, add it to the references together with the index in the ostream.
 			} else {
 				ostream.write(NEW);
 				int objIdx = referenceMap.size;
 				referenceMap.put(object, objIdx);
-			//	System.out.println(ostream.size() + "\twriting new: " + o.getClass().getName() +", idx: " + objIdx);
+				//System.out.println(ostream.size() + "\twriting new: " + o.getClass().getName() +", idx: " + objIdx);
 			}
 		}
 
