@@ -259,6 +259,12 @@ public class BinarySerializer {
 		} else {
 			ostream.writeInt(length);
 
+			if (type.getComponentType().isArray()) {
+				for (Object obj : (Object[]) object) {
+					writeArray(obj, type.getComponentType(), ostream, referenceMap);
+				}
+			}
+
 			if (type.getComponentType() == Object.class) {
 				Object[] array = ((Object[]) object);
 
@@ -426,10 +432,17 @@ public class BinarySerializer {
 				}
 			}
 
-			if(componentType.isArray())
-				throw new RuntimeException("array arrays are not supported([][])");
-
 			Object[] array = (Object[]) Array.newInstance(componentType, length);
+
+			if(componentType.isArray()) {
+				for (int i = 0; i < length; i++) {
+					Object element = readArray(componentType, byteBuffer, genericTypeClassMap, referenceList);
+					if(element != null) {
+						array[i] = element;
+					}
+				}
+				return array;
+			}
 
 			for (int i = 0; i < length; i++) {
 				Object element = readObject(componentType, byteBuffer, genericTypeClassMap, referenceList);

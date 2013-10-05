@@ -275,6 +275,43 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
+	private static final int ARRAYARRAY_NUM_ITEMS = 100;
+
+	@Test
+	public void testArrayArray() {
+		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_ITEMS);
+
+		SimpleObject[][] array = new SimpleObject[ARRAYARRAY_NUM_ITEMS][ARRAYARRAY_NUM_ITEMS];
+
+		for (int i = 0; i < ARRAYARRAY_NUM_ITEMS; ++i) {
+			for (int j = 0; j < ARRAYARRAY_NUM_ITEMS; j++) {
+				array[i][j] = new SimpleObject(i, (i % 2) == 0, i * 0.5f);
+			}
+		}
+
+		long saveStartTime = System.currentTimeMillis();
+		BinarySerializer.saveObject(testFile, array);
+		long saveEndTime = System.currentTimeMillis();
+
+		long loadStartTime = System.currentTimeMillis();
+		SimpleObject[][] loadedArray = BinarySerializer.readObject(testFile, new SimpleObject[0][0], SimpleObject.class);
+		long loadEndTime = System.currentTimeMillis();
+
+		System.out.println("ArrayArray save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("ArrayArray load time: " + (loadEndTime - loadStartTime) + " ms");
+
+		for (int i = 0; i < ARRAYARRAY_NUM_ITEMS; ++i) {
+			for (int j = 0; j < ARRAYARRAY_NUM_ITEMS; j++) {
+				SimpleObject loadedObject = loadedArray[i][j];
+				SimpleObject object = array[i][j];
+
+				assertEqualsSimpleObjects(loadedObject, object);
+			}
+		}
+
+		System.out.println("File size: " + testFile.length() + " bytes");
+	}
+
 	private void assertEqualsSimpleObjects(SimpleObject o1, SimpleObject o2) {
 		assertEquals(o1.someInt, o2.someInt);
 		assertEquals(o1.someBoolean, o2.someBoolean);
