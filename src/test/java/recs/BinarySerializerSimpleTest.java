@@ -193,6 +193,60 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
+	private static final int ARRAY_NUM_ITEMS = 10000;
+
+	@Test
+	public void testArray() {
+		System.out.println("Array test, num items: " + ARRAY_NUM_ITEMS);
+
+		SimpleObject[] array = new SimpleObject[ARRAY_NUM_ITEMS];
+
+		for (int i = 0; i < ARRAY_NUM_ITEMS; ++i) {
+			array[i] = new SimpleObject(i, (i % 2) == 0, i * 0.5f);
+		}
+
+		long saveStartTime = System.currentTimeMillis();
+		BinarySerializer.saveObject(testFile, array);
+		long saveEndTime = System.currentTimeMillis();
+
+		long loadStartTime = System.currentTimeMillis();
+		SimpleObject[] loadedArray = BinarySerializer.readObject(testFile, new SimpleObject[0], SimpleObject.class);
+		long loadEndTime = System.currentTimeMillis();
+
+		System.out.println("Array save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("Array load time: " + (loadEndTime - loadStartTime) + " ms");
+
+		for (int i = 0; i < INTMAP_NUM_ITEMS; ++i) {
+			SimpleObject loadedObject = loadedArray[i];
+			SimpleObject object = array[i];
+
+			assertEqualsSimpleObjects(loadedObject, object);
+		}
+		System.out.println("File size: " + testFile.length() + " bytes");
+	}
+
+	@Test
+	public void testPrimitive() {
+		System.out.println("Primitive test");
+
+		double primitive = 5;
+
+		long saveStartTime = System.currentTimeMillis();
+		BinarySerializer.saveObject(testFile, primitive);
+		long saveEndTime = System.currentTimeMillis();
+
+		long loadStartTime = System.currentTimeMillis();
+		double loadedPrimitive = BinarySerializer.readObject(testFile, new Double(0), SimpleObject.class);
+		long loadEndTime = System.currentTimeMillis();
+
+		System.out.println("Primitive save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("Primitive load time: " + (loadEndTime - loadStartTime) + " ms");
+
+		assertEquals(primitive, loadedPrimitive, 0.0001f);
+
+		System.out.println("File size: " + testFile.length() + " bytes");
+	}
+
 	private void assertEqualsSimpleObjects(SimpleObject o1, SimpleObject o2) {
 		assertEquals(o1.someInt, o2.someInt);
 		assertEquals(o1.someBoolean, o2.someBoolean);

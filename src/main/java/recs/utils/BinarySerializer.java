@@ -36,6 +36,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -43,7 +44,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 //TODO: documentation, comments.
 
 /**
- * Can write/read almost any object to/from a file, including classes with
+ * Can write/read almost any object/array to/from a file, including classes with
  * generics like HashMap, ArrayList etc.
  *
  * @author Enrico van Oosten
@@ -68,16 +69,21 @@ public class BinarySerializer {
 		try {
 			Class<?> clazz = object.getClass();
 
-			if (clazz.isArray())
-				throw new RuntimeException("Array should be wrapped in an object class");
-			else if (clazz.isPrimitive())
-				throw new RuntimeException("Primitive should be wrapped in an object class");
-
 			FileOutputStream fileOStream = new FileOutputStream(file);
 			DataOutputStream ostream = new DataOutputStream(fileOStream);
 
 			ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
-			writeObject(object, ostream, referenceMap);
+
+			if (clazz.isArray()) {
+				Object[] arr = (Object[]) object;
+				System.out.println(arr.length);
+				ostream.writeInt(arr.length);
+				for (Object o : arr) {
+					writeObject(o, ostream, referenceMap);
+				}
+			} else {
+				writeObject(object, ostream, referenceMap);
+			}
 
 			ostream.flush();
 			fileOStream.flush();
@@ -103,6 +109,7 @@ public class BinarySerializer {
 	 * @return
 	 * 		the given object.
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T readObject(File file, T object, Class<?>... genericTypeArgs) {
 		FileInputStream fileIStream;
 		try {
@@ -123,9 +130,22 @@ public class BinarySerializer {
 			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
 			ArrayList<Object> referenceList = new ArrayList<Object>();
 
-			byteBuffer.get();
-			referenceList.add(object);
-			readFields(object, byteBuffer, genericTypeClassMap, referenceList);
+			if (object.getClass().isArray()) {
+				int length = byteBuffer.getInt();
+				Object[] arr = Arrays.copyOf((Object[]) object, length);
+
+				for (int i = 0; i < length; i++) {
+					Object element = readObject(object.getClass().getComponentType(), byteBuffer, genericTypeClassMap, referenceList);
+					if(element != null) {
+						arr[i] = element;
+					}
+				}
+				object = (T) arr;
+			} else {
+				byteBuffer.get();
+				referenceList.add(object);
+				readFields(object, byteBuffer, genericTypeClassMap, referenceList);
+			}
 
 			istream.close();
 			fileIStream.close();
@@ -163,6 +183,7 @@ public class BinarySerializer {
 		}
 
 		Class<?> clazz = object.getClass();
+
 		do {
 			for (Field field : clazz.getDeclaredFields()) {
 				Class<?> type = field.getType();
