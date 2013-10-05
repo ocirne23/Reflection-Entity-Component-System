@@ -279,7 +279,7 @@ public class BinarySerializerSimpleTest {
 
 	@Test
 	public void testArrayArray() {
-		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_PER_ARRAY);
+		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_PER_ARRAY * ARRAYARRAY_NUM_PER_ARRAY);
 
 		SimpleObject[][] array = new SimpleObject[ARRAYARRAY_NUM_PER_ARRAY][ARRAYARRAY_NUM_PER_ARRAY];
 
