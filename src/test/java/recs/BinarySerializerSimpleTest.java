@@ -247,6 +247,34 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
+	@Test
+	public void testPrimiviveArray() {
+		System.out.println("Primitive Array test, type: double, num items: " + ARRAY_NUM_ITEMS);
+
+		double[] array = new double[ARRAY_NUM_ITEMS];
+
+		for (int i = 0; i < ARRAY_NUM_ITEMS; ++i) {
+			array[i] = i * 0.5f;
+		}
+
+		long saveStartTime = System.currentTimeMillis();
+		BinarySerializer.saveObject(testFile, array);
+		long saveEndTime = System.currentTimeMillis();
+
+		long loadStartTime = System.currentTimeMillis();
+		double[] loadedArray = BinarySerializer.readObject(testFile, new double[0], SimpleObject.class);
+		long loadEndTime = System.currentTimeMillis();
+
+		System.out.println("Primitive Array save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("Primitive Array load time: " + (loadEndTime - loadStartTime) + " ms");
+
+		for (int i = 0; i < INTMAP_NUM_ITEMS; ++i) {
+			assertEquals(array[i], loadedArray[i], 0.00001f);
+		}
+
+		System.out.println("File size: " + testFile.length() + " bytes");
+	}
+
 	private void assertEqualsSimpleObjects(SimpleObject o1, SimpleObject o2) {
 		assertEquals(o1.someInt, o2.someInt);
 		assertEquals(o1.someBoolean, o2.someBoolean);

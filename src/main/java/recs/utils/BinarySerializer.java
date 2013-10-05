@@ -36,7 +36,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -75,12 +74,8 @@ public class BinarySerializer {
 			ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
 
 			if (clazz.isArray()) {
-				Object[] arr = (Object[]) object;
-				System.out.println(arr.length);
-				ostream.writeInt(arr.length);
-				for (Object o : arr) {
-					writeObject(o, ostream, referenceMap);
-				}
+				writeArray(object, object.getClass(), ostream, referenceMap);
+
 			} else {
 				writeObject(object, ostream, referenceMap);
 			}
@@ -131,16 +126,7 @@ public class BinarySerializer {
 			ArrayList<Object> referenceList = new ArrayList<Object>();
 
 			if (object.getClass().isArray()) {
-				int length = byteBuffer.getInt();
-				Object[] arr = Arrays.copyOf((Object[]) object, length);
-
-				for (int i = 0; i < length; i++) {
-					Object element = readObject(object.getClass().getComponentType(), byteBuffer, genericTypeClassMap, referenceList);
-					if(element != null) {
-						arr[i] = element;
-					}
-				}
-				object = (T) arr;
+				object = (T) readArray(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
 			} else {
 				byteBuffer.get();
 				referenceList.add(object);
@@ -197,7 +183,8 @@ public class BinarySerializer {
 				if (type.isPrimitive()) {
 					writePrimitive(object, field, ostream);
 				} else if (type.isArray()) {
-					writeArray(object, field, ostream, referenceMap);
+					field.setAccessible(true);
+					writeArray(field.get(object), field.getType(), ostream, referenceMap);
 				} else {
 					field.setAccessible(true);
 					Object obj = field.get(object);
@@ -230,44 +217,42 @@ public class BinarySerializer {
 		}
 	}
 
-	private static void writeArray(Object object, Field field, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
-		Class<?> type = field.getType();
-		field.setAccessible(true);
-		int length = Array.getLength(field.get(object));
+	private static void writeArray(Object object, Class<?> type, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
+		int length = Array.getLength(object);
 
 		ByteBuffer buffer = null;
 		if (type == int[].class) {
 			buffer = ByteBuffer.allocate(length * 4 + 4);
 			buffer.putInt(length);
-			buffer.asIntBuffer().put((int[]) field.get(object));
+			buffer.asIntBuffer().put((int[]) object);
 		} else if (type == float[].class) {
 			buffer = ByteBuffer.allocate(length * 4 + 4);
 			buffer.putInt(length);
-			buffer.asFloatBuffer().put((float[]) field.get(object));
+			buffer.asFloatBuffer().put((float[]) object);
 		} else if (type == boolean[].class) {
 			buffer = ByteBuffer.allocate(length / 8 + 1 + 4);
 			buffer.putInt(length);
-			buffer.put(BitUtils.createByteArr((boolean[]) field.get(object)));
+			buffer.put(BitUtils.createByteArr((boolean[]) object));
 		} else if (type == double[].class) {
 			buffer = ByteBuffer.allocate(length * 8 + 4);
 			buffer.putInt(length);
-			buffer.asDoubleBuffer().put((double[]) field.get(object));
+			buffer.asDoubleBuffer().put((double[]) object);
 		} else if (type == short[].class) {
 			buffer = ByteBuffer.allocate(length * 2 + 4);
 			buffer.putInt(length);
-			buffer.asShortBuffer().put((short[]) field.get(object));
+			buffer.asShortBuffer().put((short[]) object);
 		} else if (type == byte[].class) {
 			buffer = ByteBuffer.allocate(length + 4);
 			buffer.putInt(length);
-			buffer.put((byte[]) field.get(object));
+			buffer.put((byte[]) object);
 		} else if (type == char[].class) {
 			buffer = ByteBuffer.allocate(length * 2 + 4); // wattafak java.
 			buffer.putInt(length);
-			buffer.asCharBuffer().put((char[]) field.get(object));
+			buffer.asCharBuffer().put((char[]) object);
 		} else if (type == long[].class) {
 			buffer = ByteBuffer.allocate(length * 8 + 4);
 			buffer.putInt(length);
-			buffer.asLongBuffer().put((long[]) field.get(object));
+			buffer.asLongBuffer().put((long[]) object);
 		}
 		if (buffer != null) {
 			ostream.write(buffer.array());
@@ -275,7 +260,7 @@ public class BinarySerializer {
 			ostream.writeInt(length);
 
 			if (type.getComponentType() == Object.class) {
-				Object[] array = ((Object[]) field.get(object));
+				Object[] array = ((Object[]) object);
 
 				// HACKY:
 				// use the type of the first non null element in the array as the type of the array.
@@ -300,7 +285,7 @@ public class BinarySerializer {
 				ostream.writeChars(elementType);
 			}
 
-			for (Object obj : (Object[]) field.get(object)) {
+			for (Object obj : (Object[]) object) {
 				writeObject(obj, ostream, referenceMap);
 			}
 		}
@@ -351,7 +336,9 @@ public class BinarySerializer {
 				if (type.isPrimitive()) {
 					readPrimitive(object, field, byteBuffer);
 				} else if (type.isArray()) {
-					readArray(object, field, byteBuffer, genericTypeClassMap, referenceList);
+					field.setAccessible(true);
+					Object array = readArray(field.getType(), byteBuffer, genericTypeClassMap, referenceList);
+					field.set(object, array);
 				//is object
 				} else {
 					Object obj = readObject(type, byteBuffer, genericTypeClassMap, referenceList);
@@ -365,62 +352,60 @@ public class BinarySerializer {
 		} while (c != Object.class);
 	}
 
-	private static void readArray(Object object, Field field, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
-		Class<?> type = field.getType();
+	private static Object readArray(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		int length = byteBuffer.getInt();
 
-		field.setAccessible(true);
 		if (type == int[].class) {
 			byte[] data = new byte[length * 4];
 			byteBuffer.get(data, 0, length * 4);
 			IntBuffer buf = ByteBuffer.wrap(data).asIntBuffer();
 			int[] array = new int[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else if (type == float[].class) {
 			byte[] data = new byte[length * 4];
 			byteBuffer.get(data, 0, length * 4);
 			FloatBuffer buf = ByteBuffer.wrap(data).asFloatBuffer();
 			float[] array = new float[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else if (type == boolean[].class) {
 			byte[] data = new byte[length / 8 + 1];
 			byteBuffer.get(data, 0, length / 8 + 1);
 			boolean[] array = BitUtils.getBooleans(data, length);
-			field.set(object, array);
+			return array;
 		} else if (type == double[].class) {
 			byte[] data = new byte[length * 8];
 			byteBuffer.get(data, 0, length * 8);
 			DoubleBuffer buf = ByteBuffer.wrap(data).asDoubleBuffer();
 			double[] array = new double[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else if (type == short[].class) {
 			byte[] data = new byte[length * 2];
 			byteBuffer.get(data, 0, length * 2);
 			ShortBuffer buf = ByteBuffer.wrap(data).asShortBuffer();
 			short[] array = new short[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else if (type == byte[].class) {
 			byte[] data = new byte[length];
 			byteBuffer.get(data, 0, length);
-			field.set(object, data);
+			return data;
 		} else if (type == char[].class) {
 			byte[] data = new byte[length * 2];
 			byteBuffer.get(data, 0, length * 2);
 			CharBuffer buf = ByteBuffer.wrap(data).asCharBuffer();
 			char[] array = new char[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else if (type == long[].class) {
 			byte[] data = new byte[length * 8];
 			byteBuffer.get(data, 0, length * 8);
 			LongBuffer buf = ByteBuffer.wrap(data).asLongBuffer();
 			long[] array = new long[buf.remaining()];
 			buf.get(array);
-			field.set(object, array);
+			return array;
 		} else {
 			Class<?> componentType = type.getComponentType();
 
@@ -444,14 +429,16 @@ public class BinarySerializer {
 			if(componentType.isArray())
 				throw new RuntimeException("array arrays are not supported([][])");
 
-			field.set(object, Array.newInstance(componentType, length));
+			Object[] array = (Object[]) Array.newInstance(componentType, length);
+
 			for (int i = 0; i < length; i++) {
 				Object element = readObject(componentType, byteBuffer, genericTypeClassMap, referenceList);
 
 				if(element != null) {
-					((Object[]) field.get(object))[i] = element;
+					array[i] = element;
 				}
 			}
+			return array;
 		}
 	}
 
