@@ -275,16 +275,16 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int ARRAYARRAY_NUM_ITEMS = 100;
+	private static final int ARRAYARRAY_NUM_PER_ARRAY = 100;
 
 	@Test
 	public void testArrayArray() {
-		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_ITEMS);
+		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_PER_ARRAY);
 
-		SimpleObject[][] array = new SimpleObject[ARRAYARRAY_NUM_ITEMS][ARRAYARRAY_NUM_ITEMS];
+		SimpleObject[][] array = new SimpleObject[ARRAYARRAY_NUM_PER_ARRAY][ARRAYARRAY_NUM_PER_ARRAY];
 
-		for (int i = 0; i < ARRAYARRAY_NUM_ITEMS; ++i) {
-			for (int j = 0; j < ARRAYARRAY_NUM_ITEMS; j++) {
+		for (int i = 0; i < ARRAYARRAY_NUM_PER_ARRAY; ++i) {
+			for (int j = 0; j < ARRAYARRAY_NUM_PER_ARRAY; j++) {
 				array[i][j] = new SimpleObject(i, (i % 2) == 0, i * 0.5f);
 			}
 		}
@@ -300,8 +300,8 @@ public class BinarySerializerSimpleTest {
 		System.out.println("ArrayArray save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("ArrayArray load time: " + (loadEndTime - loadStartTime) + " ms");
 
-		for (int i = 0; i < ARRAYARRAY_NUM_ITEMS; ++i) {
-			for (int j = 0; j < ARRAYARRAY_NUM_ITEMS; j++) {
+		for (int i = 0; i < ARRAYARRAY_NUM_PER_ARRAY; ++i) {
+			for (int j = 0; j < ARRAYARRAY_NUM_PER_ARRAY; j++) {
 				SimpleObject loadedObject = loadedArray[i][j];
 				SimpleObject object = array[i][j];
 

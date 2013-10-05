@@ -434,9 +434,10 @@ public class BinarySerializer {
 
 			Object[] array = (Object[]) Array.newInstance(componentType, length);
 
-			if(componentType.isArray()) {
+			if (componentType.isArray()) {
 				for (int i = 0; i < length; i++) {
 					Object element = readArray(componentType, byteBuffer, genericTypeClassMap, referenceList);
+
 					if(element != null) {
 						array[i] = element;
 					}
