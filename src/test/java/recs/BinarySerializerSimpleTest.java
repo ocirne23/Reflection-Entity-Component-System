@@ -227,7 +227,7 @@ public class BinarySerializerSimpleTest {
 
 	@Test
 	public void testPrimitive() {
-		System.out.println("Primitive test");
+		System.out.println("Primitive test, testing double");
 
 		double primitive = 5;
 
