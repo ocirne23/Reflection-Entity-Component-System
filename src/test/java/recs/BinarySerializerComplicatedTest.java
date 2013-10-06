@@ -118,6 +118,25 @@ public class BinarySerializerComplicatedTest {
 	private static final int ARRAYARRAY_NUM_PER_ARRAY = 10;
 
 	@Test
+	public void testBasic() {
+		ComplicatedObject object = new ComplicatedObject(42);
+
+		long saveStartTime = System.currentTimeMillis();
+		BinarySerializer.saveObject(testFile, object);
+		long saveEndTime = System.currentTimeMillis();
+
+		long loadStartTime = System.currentTimeMillis();
+		ComplicatedObject loadedObject = BinarySerializer.readObject(testFile, new ComplicatedObject(0));
+		long loadEndTime = System.currentTimeMillis();
+
+		System.out.println("Basic save time: " + (saveEndTime - saveStartTime) + " ms");
+		System.out.println("Basic load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
+
+		assertEqualsComplicatedObjects(loadedObject, object);
+	}
+
+	@Test
 	public void testHashMap() {
 		System.out.println("HashMap test, num items: " + HASHMAP_NUM_ITEMS);
 
@@ -138,7 +157,6 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("HashMap save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("HashMap load time: " + (loadEndTime - loadStartTime) + " ms");
-
 		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < HASHMAP_NUM_ITEMS; ++i) {
@@ -170,6 +188,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("Arraylist save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("Arraylist load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < ARRAYLIST_NUM_ITEMS; ++i) {
 			ComplicatedObject loadedObject = loadedList.get(i);
@@ -177,10 +196,7 @@ public class BinarySerializerComplicatedTest {
 
 			assertEqualsComplicatedObjects(loadedObject, object);
 		}
-
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
-
 
 	@Test
 	public void testLinkedList() {
@@ -201,6 +217,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("LinkedList save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("LinkedList load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < LINKEDLIST_NUM_ITEMS; ++i) {
 			ComplicatedObject loadedObject = loadedQueue.poll();
@@ -208,7 +225,6 @@ public class BinarySerializerComplicatedTest {
 
 			assertEqualsComplicatedObjects(loadedObject, object);
 		}
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
 
@@ -233,6 +249,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("ObjectMap save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("ObjectMap load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < OBJECTMAP_NUM_ITEMS; ++i) {
 			ComplicatedObject loadedObject = loadedMap.get(i);
@@ -240,8 +257,6 @@ public class BinarySerializerComplicatedTest {
 
 			assertEqualsComplicatedObjects(loadedObject, object);
 		}
-
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
 
@@ -266,6 +281,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("IntMap save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("IntMap load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < INTMAP_NUM_ITEMS; ++i) {
 			ComplicatedObject loadedObject = loadedMap.get(i);
@@ -273,8 +289,6 @@ public class BinarySerializerComplicatedTest {
 
 			assertEqualsComplicatedObjects(loadedObject, object);
 		}
-
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
 	@Test
@@ -297,6 +311,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("Array save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("Array load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < INTMAP_NUM_ITEMS; ++i) {
 			ComplicatedObject loadedObject = loadedArray[i];
@@ -304,7 +319,6 @@ public class BinarySerializerComplicatedTest {
 
 			assertEqualsComplicatedObjects(loadedObject, object);
 		}
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
 	@Test
@@ -329,6 +343,7 @@ public class BinarySerializerComplicatedTest {
 
 		System.out.println("ArrayArray save time: " + (saveEndTime - saveStartTime) + " ms");
 		System.out.println("ArrayArray load time: " + (loadEndTime - loadStartTime) + " ms");
+		System.out.println("File size: " + testFile.length() + " bytes");
 
 		for (int i = 0; i < ARRAYARRAY_NUM_PER_ARRAY; ++i) {
 			for (int j = 0; j < ARRAYARRAY_NUM_PER_ARRAY; j++) {
@@ -338,7 +353,5 @@ public class BinarySerializerComplicatedTest {
 				assertEqualsComplicatedObjects(loadedObject, object);
 			}
 		}
-
-		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 }
