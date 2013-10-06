@@ -27,6 +27,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -64,20 +66,27 @@ public class BinarySerializer {
 	 * @return
 	 * 		the given file.
 	 */
-	public static File saveObject(File file, Object object) {
+	public static <T> File saveObject(File file, T object, Class<?>... genericTypeArgs) {
 		try {
 			Class<?> clazz = object.getClass();
 
+			System.out.println("Saving object: " + clazz);
+
+			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
+			TypeVariable<?>[] parameterTypes = clazz.getTypeParameters();
+
+			for (int i = 0; i < Math.min(parameterTypes.length, genericTypeArgs.length); ++i) {
+				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
+			}
+
 			FileOutputStream fileOStream = new FileOutputStream(file);
 			DataOutputStream ostream = new DataOutputStream(fileOStream);
-
 			ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
 
 			if (clazz.isArray()) {
-				writeArray(object, object.getClass(), ostream, referenceMap);
-
+				writeArray(object, object.getClass(), ostream, genericTypeClassMap, referenceMap);
 			} else {
-				writeObject(object, ostream, referenceMap);
+				writeObject(object, ostream, genericTypeClassMap, referenceMap);
 			}
 
 			ostream.flush();
@@ -94,62 +103,7 @@ public class BinarySerializer {
 		return file;
 	}
 
-	/**
-	 * Sets the values of the given object equal to the stored object in the
-	 * file.
-	 *
-	 * The classes of the generic types used in the object need to be supplied, e.g:
-	 * Saver.readObject(file, new HashMap<String, Integer>(), String.class, Integer.class);
-	 *
-	 * @return
-	 * 		the given object.
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T readObject(File file, T object, Class<?>... genericTypeArgs) {
-		FileInputStream fileIStream;
-		try {
-			Class<?> clazz = object.getClass();
-
-			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
-			TypeVariable<?>[] parameterTypes = clazz.getTypeParameters();
-
-			for (int i = 0; i < parameterTypes.length; ++i) {
-				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
-			}
-
-			fileIStream = new FileInputStream(file);
-			DataInputStream istream = new DataInputStream(fileIStream);
-			byte[] bytes = new byte[(int) file.length()];
-
-			istream.readFully(bytes);
-			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-			ArrayList<Object> referenceList = new ArrayList<Object>();
-
-			if (object.getClass().isArray()) {
-				object = (T) readArray(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
-			} else {
-				byteBuffer.get();
-				referenceList.add(object);
-				readFields(object, byteBuffer, genericTypeClassMap, referenceList);
-			}
-
-			istream.close();
-			fileIStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		return object;
-	}
-
-	private static void writeObject(Object object, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writeObject(Object object, DataOutputStream ostream, HashMap<String, Class<?>> genericTypeClassMap, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		if (object == null || object.getClass().isInterface()) {
 			ostream.write(NULL);
 			return;
@@ -174,25 +128,72 @@ public class BinarySerializer {
 			for (Field field : clazz.getDeclaredFields()) {
 				Class<?> type = field.getType();
 
+				if (genericTypeClassMap != null) {
+
+					Class<?> genericType = genericTypeClassMap.get(field.getGenericType().toString());
+					if (genericType != null) {
+						System.out.println("setting generic type: " + genericType);
+						type = genericType;
+					}
+				}
+
 				int modifiers = field.getModifiers();
 				if (!ignoreTransient && Modifier.isTransient(modifiers))
 					continue;
 				if (Modifier.isStatic(modifiers))
 					continue;
-
 				if (type.isPrimitive()) {
+					System.out.println(ostream.size() + "\twriting primitive: " + field.getName() +":"+ type +":"+ field.getGenericType());
 					writePrimitive(object, field, ostream);
-				} else if (type.isArray()) {
-					field.setAccessible(true);
-					writeArray(field.get(object), field.getType(), ostream, referenceMap);
+					//System.out.println("writing primitive: " + field.getName() +":"+ field.getType());
+					continue;
+				}
+
+				field.setAccessible(true);
+				Object obj = field.get(object);
+				if (obj == null) {
+					System.out.println(ostream.size() + "\twriting null: " + field.getName() +":"+ type +":"+ field.getGenericType());
+					writeObject(obj, ostream, null,referenceMap);
+					continue;
+				}
+
+				//System.out.println("writing field: " + field.getName() +":"+ type +":"+ genericType);
+
+				if (field.getGenericType() instanceof ParameterizedType) {
+					TypeVariable<?>[] typeVars = type.getTypeParameters();
+					Type[] typeArgs = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+
+					if (typeVars.length > 0) {
+						genericTypeClassMap = new HashMap<String, Class<?>>();
+
+						for (int i = 0; i < typeVars.length; ++i) {
+							if (typeArgs[i] instanceof Class<?>) {
+								genericTypeClassMap.put(typeVars[i].getName(), ((Class<?>) typeArgs[i]));
+								System.out.println(ostream.size() + "\ttypeVars: " + field.getGenericType() +" : " + typeVars[i].getName() +" : "+ ((Class<?>) typeArgs[i]).getName());
+							}
+						}
+					}
+				}
+
+				if (type.isArray()) {
+					System.out.println(ostream.size() + "\twriting array: " + field.getName() +":"+ type +":"+ field.getGenericType());
+					writeArray(obj, field.getType(), ostream, genericTypeClassMap, referenceMap);
 				} else {
-					field.setAccessible(true);
-					Object obj = field.get(object);
-					writeObject(obj, ostream, referenceMap);
+					System.out.println(ostream.size() + "\twriting object: " + field.getName() +":"+ obj.getClass() +":"+ field.getGenericType());
+
+					//cant read interface field because type is unknown.
+					//perhaps write class type string?
+					if (field.getType().isInterface()) {
+						writeObject(null, ostream, genericTypeClassMap, referenceMap);
+					} else {
+						writeObject(obj, ostream, genericTypeClassMap, referenceMap);
+					}
 				}
 			}
 			clazz = clazz.getSuperclass();
 		} while (clazz != Object.class);
+
+		System.out.println(ostream.size() + "\tfinished writing: " + object.getClass());
 	}
 
 	private static void writePrimitive(Object object, Field field, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
@@ -217,7 +218,7 @@ public class BinarySerializer {
 		}
 	}
 
-	private static void writeArray(Object object, Class<?> type, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writeArray(Object object, Class<?> type, DataOutputStream ostream, HashMap<String, Class<?>> genericTypeClassMap, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		int length = Array.getLength(object);
 
 		ByteBuffer buffer = null;
@@ -261,7 +262,7 @@ public class BinarySerializer {
 
 			if (type.getComponentType().isArray()) {
 				for (Object obj : (Object[]) object) {
-					writeArray(obj, type.getComponentType(), ostream, referenceMap);
+					writeArray(obj, type.getComponentType(), ostream, genericTypeClassMap, referenceMap);
 				}
 			}
 
@@ -279,28 +280,113 @@ public class BinarySerializer {
 					}
 				}
 
-				String elementType = null;
-
-				if (elementClass != null) {
-					elementType = elementClass.getName();
-				} else {
-					elementType = "java.lang.Object";
-				}
-
-				ostream.writeInt(elementType.length());
-				ostream.writeChars(elementType);
+				writeGenericType(ostream, elementClass);
 			}
 
 			for (Object obj : (Object[]) object) {
-				writeObject(obj, ostream, referenceMap);
+				if (obj != null)
+					System.out.println(ostream.size() + "\twriting object from array: " + type.getComponentType() +":"+ obj.getClass());
+				writeObject(obj, ostream, null, referenceMap);
 			}
 		}
+
+		System.out.println(ostream.size() + "\tfinished writing array: " + type);
+	}
+
+	private static Class<?> readGenericType(ByteBuffer byteBuffer) {
+		int typeStrLen = byteBuffer.getInt();
+
+		char[] chars = new char[typeStrLen];
+		for (int i = 0; i < typeStrLen; ++i) {
+			chars[i] = byteBuffer.getChar();
+		}
+
+		String typeStr = new String(chars);
+
+		Class<?> componentType = null;
+
+		try {
+			componentType = Class.forName(typeStr);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return componentType;
+	}
+
+	private static void writeGenericType(DataOutputStream ostream, Class<?> clazz) throws IOException {
+		String type = null;
+
+		if (clazz != null) {
+			type = clazz.getName();
+		} else {
+			type = "java.lang.Object";
+		}
+
+		ostream.writeInt(type.length());
+		ostream.writeChars(type);
+	}
+
+
+
+	/**
+	 * Sets the values of the given object equal to the stored object in the
+	 * file.
+	 *
+	 * The classes of the generic types used in the object need to be supplied, e.g:
+	 * Saver.readObject(file, new HashMap<String, Integer>(), String.class, Integer.class);
+	 *
+	 * @return
+	 * 		the given object.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T readObject(File file, T object, Class<?>... genericTypeArgs) {
+		FileInputStream fileIStream;
+		try {
+			Class<?> clazz = object.getClass();
+
+			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
+			TypeVariable<?>[] parameterTypes = clazz.getTypeParameters();
+
+			for (int i = 0; i < parameterTypes.length; ++i) {
+				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
+			}
+
+			fileIStream = new FileInputStream(file);
+			DataInputStream istream = new DataInputStream(fileIStream);
+			byte[] bytes = new byte[(int) file.length()];
+
+			istream.readFully(bytes);
+			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+			ArrayList<Object> referenceList = new ArrayList<Object>();
+
+			if (object.getClass().isArray()) {
+				object = (T) readArray(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
+			} else {
+				object = (T) readObject(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
+			}
+
+			istream.close();
+			fileIStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return object;
 	}
 
 	/**
 	 * @return false if object is null
 	 */
-	private static Object readObject(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+	@SuppressWarnings("unchecked")
+	private static <T> T readObject(Class<T> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		int objectStatus = byteBuffer.get();
 
 		if (objectStatus == NULL || type.isInterface()) {
@@ -318,7 +404,7 @@ public class BinarySerializer {
 				readFields(obj, byteBuffer, genericTypeClassMap, referenceList);
 		}
 
-		return obj;
+		return (T) obj;
 	}
 
 	private static void readFields(Object object, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
@@ -327,11 +413,17 @@ public class BinarySerializer {
 		do {
 			for (Field field : c.getDeclaredFields()) {
 				Class<?> type = field.getType();
-				Class<?> genericType = genericTypeClassMap.get(field.getGenericType().toString());
 
-				if (genericType != null) {
-					type = genericType;
+				if (genericTypeClassMap != null) {
+					Class<?> genericType = genericTypeClassMap.get(field.getGenericType().toString());
+
+					if (genericType != null) {
+						type = genericType;
+					}
 				}
+
+				//if (type.getTypeParameters().length > 0)
+				//	System.out.println("type parameters: " + Arrays.toString(type.getTypeParameters()));
 
 				int modifiers = field.getModifiers();
 				if (!ignoreTransient && Modifier.isTransient(modifiers))
@@ -339,14 +431,37 @@ public class BinarySerializer {
 				if (Modifier.isStatic(modifiers))
 					continue;
 
+				if (field.getGenericType() instanceof ParameterizedType) {
+					TypeVariable<?>[] typeVars = type.getTypeParameters();
+					Type[] typeArgs = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+
+					if (typeVars.length > 0) {
+						boolean updatedTypes = false;
+
+						for (int i = 0; i < typeVars.length; ++i) {
+							if (typeArgs[i] instanceof Class<?>) {
+								if (!updatedTypes) {
+									genericTypeClassMap = new HashMap<String, Class<?>>();
+									updatedTypes = true;
+								}
+								genericTypeClassMap.put(typeVars[i].getName(), ((Class<?>) typeArgs[i]));
+								System.out.println(byteBuffer.position() + "\ttypeVars: " + field.getGenericType() +" : " + typeVars[i].getName() +" : "+ ((Class<?>) typeArgs[i]).getName());
+							}
+						}
+					}
+				}
+
 				if (type.isPrimitive()) {
+					System.out.println(byteBuffer.position() + "\treading primitive: " + field.getName() +":"+ type +":"+ field.getGenericType());
 					readPrimitive(object, field, byteBuffer);
 				} else if (type.isArray()) {
+					System.out.println(byteBuffer.position() + "\treading array: " + field.getName() +":"+ type +":"+ field.getGenericType());
 					field.setAccessible(true);
 					Object array = readArray(field.getType(), byteBuffer, genericTypeClassMap, referenceList);
 					field.set(object, array);
 				//is object
 				} else {
+					System.out.println(byteBuffer.position() + "\treading object: " + field.getName() +":"+ type +":"+ field.getGenericType());
 					Object obj = readObject(type, byteBuffer, genericTypeClassMap, referenceList);
 					if (obj != null) {
 						field.setAccessible(true);
@@ -356,6 +471,8 @@ public class BinarySerializer {
 			}
 			c = c.getSuperclass();
 		} while (c != Object.class);
+
+		System.out.println(byteBuffer.position() + "\tfinished reading: " + object.getClass());
 	}
 
 	private static Object readArray(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
@@ -416,20 +533,7 @@ public class BinarySerializer {
 			Class<?> componentType = type.getComponentType();
 
 			if (componentType == Object.class) {
-				int typeStrLen = byteBuffer.getInt();
-
-				char[] chars = new char[typeStrLen];
-				for (int i = 0; i < typeStrLen; ++i) {
-					chars[i] = byteBuffer.getChar();
-				}
-
-				String typeStr = new String(chars);
-
-				try {
-					componentType = Class.forName(typeStr);
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				}
+				componentType = readGenericType(byteBuffer);
 			}
 
 			Object[] array = (Object[]) Array.newInstance(componentType, length);
@@ -446,6 +550,8 @@ public class BinarySerializer {
 			}
 
 			for (int i = 0; i < length; i++) {
+				System.out.println(byteBuffer.position() + "\treading object from array: " + type.getComponentType());
+
 				Object element = readObject(componentType, byteBuffer, genericTypeClassMap, referenceList);
 
 				if(element != null) {
@@ -507,6 +613,10 @@ public class BinarySerializer {
 					params[i] = '0';
 				else if (parameters[i] == boolean.class)
 					params[i] = false;
+				else if (parameters[i] == short.class)
+					params[i] = (short) 0;
+				else if (parameters[i] == byte.class)
+					params[i] = (byte) 0;
 				else
 					params[i] = 0;
 			} else {

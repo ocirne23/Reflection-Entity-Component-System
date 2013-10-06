@@ -25,7 +25,7 @@ public class BinarySerializerSimpleTest {
 		testFile = new File("savertestfile");
 	}
 
-	private static final int HASHMAP_NUM_ITEMS = 10000;
+	private static final int HASHMAP_NUM_ITEMS = 10;
 
 	@Test
 	public void testHashMap() {
@@ -39,7 +39,7 @@ public class BinarySerializerSimpleTest {
 		map.put("" + 3, map.get("" + 1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveObject(testFile, map, String.class, SimpleObject.class);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
@@ -59,7 +59,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int ARRAYLIST_NUM_ITEMS = 10000;
+	private static final int ARRAYLIST_NUM_ITEMS = 10;
 
 	@Test
 	public void testArrayList() {
@@ -94,7 +94,7 @@ public class BinarySerializerSimpleTest {
 	}
 
 	//lower number because stackoverflow
-	private static final int LINKEDLIST_NUM_ITEMS = 1000;
+	private static final int LINKEDLIST_NUM_ITEMS = 10;
 
 	@Test
 	public void testLinkedList() {
@@ -106,7 +106,7 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, queue);
+		BinarySerializer.saveObject(testFile, queue, SimpleObject.class);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
@@ -125,7 +125,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int OBJECTMAP_NUM_ITEMS = 10000;
+	private static final int OBJECTMAP_NUM_ITEMS = 10;
 
 	@Test
 	public void testObjectMap() {
@@ -159,7 +159,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int INTMAP_NUM_ITEMS = 10000;
+	private static final int INTMAP_NUM_ITEMS = 10;
 
 	@Test
 	public void testIntMap() {
@@ -193,7 +193,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int ARRAY_NUM_ITEMS = 10000;
+	private static final int ARRAY_NUM_ITEMS = 10;
 
 	@Test
 	public void testArray() {
@@ -275,7 +275,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int ARRAYARRAY_NUM_PER_ARRAY = 100;
+	private static final int ARRAYARRAY_NUM_PER_ARRAY = 10;
 
 	@Test
 	public void testArrayArray() {
@@ -312,6 +312,7 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
+
 	private void assertEqualsSimpleObjects(SimpleObject o1, SimpleObject o2) {
 		assertEquals(o1.someInt, o2.someInt);
 		assertEquals(o1.someBoolean, o2.someBoolean);
@@ -335,5 +336,4 @@ public class BinarySerializerSimpleTest {
 			this.someFloat = someFloat;
 		}
 	}
-
 }
