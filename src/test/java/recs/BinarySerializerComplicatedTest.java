@@ -54,6 +54,19 @@ public class BinarySerializerComplicatedTest {
 			return i;
 		}
 	}
+	private static class AnotherInterfaceObject implements SomeInterface {
+		long l;
+
+		public AnotherInterfaceObject(long l) {
+			this.l = l;
+		}
+
+		@Override
+		public int foo() {
+			return (int) l;
+		}
+
+	}
 	private static interface SomeInterface {
 		public int foo();
 	}
