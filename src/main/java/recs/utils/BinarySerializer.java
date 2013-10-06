@@ -42,7 +42,7 @@ import java.util.HashMap;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
 
-//TODO: documentation, comments.
+//TODO: documentation, comments, remove commented println's.
 
 /**
  * Can write/read almost any object/array to/from a file, including classes with
@@ -151,9 +151,6 @@ public class BinarySerializer {
 					writeArray(obj, field.getType(), ostream, referenceMap);
 				} else {
 					//System.out.println(ostream.size() + "\twriting object: " + field.getName() +":"+ obj.getClass() +":"+ field.getGenericType());
-
-					//cant parse interface field because type is unknown.
-					//perhaps write class type string?
 					writeObject(obj, field.getType().isInterface(), ostream, referenceMap);
 				}
 			}
@@ -350,9 +347,6 @@ public class BinarySerializer {
 		return object;
 	}
 
-	/**
-	 * @return false if object is null
-	 */
 	private static Object readObject(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		int objectStatus = byteBuffer.get();
 
