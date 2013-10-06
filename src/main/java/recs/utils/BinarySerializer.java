@@ -230,7 +230,7 @@ public class BinarySerializer {
 				}
 			}
 
-			if (type.getComponentType() == Object.class) {
+			if (type.getComponentType() == Object.class || type.getComponentType().isInterface()) {
 				Object[] array = ((Object[]) object);
 
 				// HACKY:
@@ -250,8 +250,8 @@ public class BinarySerializer {
 			for (Object obj : (Object[]) object) {
 				//if (obj != null)
 				//	System.out.println(ostream.size() + "\twriting object from array: " + type.getComponentType() +":"+ obj.getClass());
-				//TODO: interf
-				writeObject(obj, type.getComponentType().isInterface(), ostream, referenceMap);
+
+				writeObject(obj, false, ostream, referenceMap);
 			}
 		}
 
@@ -514,6 +514,11 @@ public class BinarySerializer {
 					}
 				}
 				return array;
+			}
+
+			if (componentType.isInterface()) {
+				componentType = readGenericType(byteBuffer);
+				System.out.println("array is interfacearray: " + componentType);
 			}
 
 			for (int i = 0; i < length; i++) {
