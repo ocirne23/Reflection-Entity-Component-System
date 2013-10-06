@@ -18,6 +18,19 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 public class BinarySerializerSimpleTest {
 
+	private static class SimpleObject {
+		public int someInt;
+		public boolean someBoolean;
+		public float someFloat;
+
+		public SimpleObject(int someInt, boolean someBoolean, float someFloat) {
+			this.someInt = someInt;
+			this.someBoolean = someBoolean;
+			this.someFloat = someFloat;
+		}
+	}
+
+
 	public File testFile;
 
 	@Before
@@ -26,6 +39,13 @@ public class BinarySerializerSimpleTest {
 	}
 
 	private static final int HASHMAP_NUM_ITEMS = 10;
+	//lower number because stackoverflow
+	private static final int LINKEDLIST_NUM_ITEMS = 10;
+	private static final int ARRAYLIST_NUM_ITEMS = 10;
+	private static final int OBJECTMAP_NUM_ITEMS = 10;
+	private static final int INTMAP_NUM_ITEMS = 10;
+	private static final int ARRAY_NUM_ITEMS = 10;
+	private static final int ARRAYARRAY_NUM_PER_ARRAY = 10;
 
 	@Test
 	public void testHashMap() {
@@ -39,7 +59,7 @@ public class BinarySerializerSimpleTest {
 		map.put("" + 3, map.get("" + 1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map, String.class, SimpleObject.class);
+		BinarySerializer.saveObject(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
@@ -58,8 +78,6 @@ public class BinarySerializerSimpleTest {
 
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
-
-	private static final int ARRAYLIST_NUM_ITEMS = 10;
 
 	@Test
 	public void testArrayList() {
@@ -93,9 +111,6 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	//lower number because stackoverflow
-	private static final int LINKEDLIST_NUM_ITEMS = 10;
-
 	@Test
 	public void testLinkedList() {
 		System.out.println("LinkedList test, num items: " + LINKEDLIST_NUM_ITEMS);
@@ -106,7 +121,7 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, queue, SimpleObject.class);
+		BinarySerializer.saveObject(testFile, queue);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
@@ -124,8 +139,6 @@ public class BinarySerializerSimpleTest {
 		}
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
-
-	private static final int OBJECTMAP_NUM_ITEMS = 10;
 
 	@Test
 	public void testObjectMap() {
@@ -159,8 +172,6 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int INTMAP_NUM_ITEMS = 10;
-
 	@Test
 	public void testIntMap() {
 		System.out.println("IntMap test, num items: " + INTMAP_NUM_ITEMS);
@@ -192,8 +203,6 @@ public class BinarySerializerSimpleTest {
 
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
-
-	private static final int ARRAY_NUM_ITEMS = 10;
 
 	@Test
 	public void testArray() {
@@ -275,8 +284,6 @@ public class BinarySerializerSimpleTest {
 		System.out.println("File size: " + testFile.length() + " bytes");
 	}
 
-	private static final int ARRAYARRAY_NUM_PER_ARRAY = 10;
-
 	@Test
 	public void testArrayArray() {
 		System.out.println("ArrayArray test, num items: " + ARRAYARRAY_NUM_PER_ARRAY * ARRAYARRAY_NUM_PER_ARRAY);
@@ -323,17 +330,5 @@ public class BinarySerializerSimpleTest {
 	public void breakDown() {
 		testFile.delete();
 		System.out.println("done");
-	}
-
-	private static class SimpleObject {
-		public int someInt;
-		public boolean someBoolean;
-		public float someFloat;
-
-		public SimpleObject(int someInt, boolean someBoolean, float someFloat) {
-			this.someInt = someInt;
-			this.someBoolean = someBoolean;
-			this.someFloat = someFloat;
-		}
 	}
 }
