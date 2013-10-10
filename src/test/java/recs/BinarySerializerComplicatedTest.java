@@ -41,13 +41,14 @@ public class BinarySerializerComplicatedTest {
 			someHashMap = new HashMap<Short, Long>(4);
 			someInterface = new SomeInterfaceObject((int) someLong);
 			someInterfaceArray = new SomeInterface[4];
-			someObjects = new Object[4];
+			someObjects = new Object[5];
 
 			someObjects[0] = new Short((short) 1);
 			someObjects[1] = new Long(2);
-			//someObjects[2] = someObjects[0];
-			someObjects[2] = new Byte((byte) 3);
+			someObjects[2] = someObjects[0];
 			someObjects[3] = null;
+			someObjects[4] = new Byte((byte) 3);
+
 
 			someHashMap.put((short) 1, someLong);
 			someInterfaceArray[0] = new SomeInterfaceObject((int) someLong + 1);
@@ -113,8 +114,8 @@ public class BinarySerializerComplicatedTest {
 		assertTrue(o2.someObjects[0] instanceof Short);
 		assertTrue(o1.someObjects[1] instanceof Long);
 		assertTrue(o2.someObjects[1] instanceof Long);
-		assertTrue(o1.someObjects[2] instanceof Byte);
-		assertTrue(o2.someObjects[2] instanceof Byte);
+		assertTrue(o1.someObjects[4] instanceof Byte);
+		assertTrue(o2.someObjects[4] instanceof Byte);
 
 		Short s1 = (Short) o1.someObjects[0];
 		Short s2 = (Short) o2.someObjects[0];
@@ -122,8 +123,14 @@ public class BinarySerializerComplicatedTest {
 		Long l1 = (Long) o1.someObjects[1];
 		Long l2 = (Long) o2.someObjects[1];
 		assertEquals(l1, l2);
-		Byte b1 = (Byte) o1.someObjects[2];
-		Byte b2 = (Byte) o2.someObjects[2];
+
+		assertEquals(o1.someObjects[0], o1.someObjects[2]);
+		assertEquals(o2.someObjects[0], o2.someObjects[2]);
+
+		assertNull(o1.someObjects[3]);
+		assertNull(o2.someObjects[3]);
+		Byte b1 = (Byte) o1.someObjects[4];
+		Byte b2 = (Byte) o2.someObjects[4];
 		assertEquals(b1, b2);
 
 		assertNull(o1.someInterfaceArray[2]);
