@@ -19,14 +19,21 @@ import recs.utils.BinarySerializer;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
+
 public class BinarySerializerComplicatedTest {
 
 	private static class ComplicatedObject {
-		public long someLong;
-		public HashMap<Short, Long> someHashMap;
+		long someLong;
+		HashMap<Short, Long> someHashMap;
 		SomeInterface nullInterface;
 		SomeInterface someInterface;
 		SomeInterface[] someInterfaceArray;
+		Object[] someObjects;
+
+		@SuppressWarnings("unused")
+		public ComplicatedObject() {
+
+		}
 
 		public ComplicatedObject(long someLong) {
 			this.someLong = someLong;
@@ -34,11 +41,18 @@ public class BinarySerializerComplicatedTest {
 			someHashMap = new HashMap<Short, Long>(4);
 			someInterface = new SomeInterfaceObject((int) someLong);
 			someInterfaceArray = new SomeInterface[4];
+			someObjects = new Object[4];
+
+			someObjects[0] = new Short((short) 1);
+			someObjects[1] = new Long(2);
+			//someObjects[2] = someObjects[0];
+			someObjects[2] = new Byte((byte) 3);
+			someObjects[3] = null;
 
 			someHashMap.put((short) 1, someLong);
 			someInterfaceArray[0] = new SomeInterfaceObject((int) someLong + 1);
-			someInterfaceArray[1] = new SomeInterfaceObject((int) someLong + 2);
-			//2 is null
+			someInterfaceArray[1] = new AnotherInterfaceObject(someLong + 2);
+			someInterfaceArray[2] = null;
 			someInterfaceArray[3] = someInterfaceArray[0]; //3 is reference
 		}
 	}
@@ -73,39 +87,60 @@ public class BinarySerializerComplicatedTest {
 
 
 	private void assertEqualsComplicatedObjects(ComplicatedObject o1, ComplicatedObject o2) {
-		assertEquals(o1.someLong, o2.someLong);
 
+		assertEquals(o1.someLong, o2.someLong);
+		/*
 		assertTrue(o1.someHashMap.keySet().size() == o2.someHashMap.keySet().size());
 		for (Short key: o1.someHashMap.keySet()) {
 			assertTrue(o2.someHashMap.containsKey(key));
-
-			assertNull(o1.nullInterface);
-			assertNull(o2.nullInterface);
-
-			assertNotNull(o1.someInterface);
-			assertNotNull(o2.someInterface);
-
-			assertEquals(o1.someInterfaceArray.length, o2.someInterfaceArray.length);
-
-			assertNull(o1.someInterfaceArray[2]);
-			assertNull(o2.someInterfaceArray[2]);
-			for (int i = 0; i < o1.someInterfaceArray.length; ++i) {
-				if (i == 2)
-					continue; // 2 is null;
-				assertEquals(o1.someInterfaceArray[i].foo(), o2.someInterfaceArray[i].foo());
-			}
-
-			// 3 is reference to 0;
-			assertEquals(o1.someInterfaceArray[3], o1.someInterfaceArray[0]);
-			assertEquals(o2.someInterfaceArray[3], o2.someInterfaceArray[0]);
-
-			assertEquals(o1.someInterface.foo(), o2.someInterface.foo());
 
 			Long l1 = o1.someHashMap.get(key);
 			Long l2 = o2.someHashMap.get(key);
 
 			assertEquals(l1, l2);
 		}
+		 */
+
+		assertNull(o1.nullInterface);
+		assertNull(o2.nullInterface);
+
+		assertNotNull(o1.someInterface);
+		assertNotNull(o2.someInterface);
+
+		assertEquals(o1.someInterfaceArray.length, o2.someInterfaceArray.length);
+
+		assertTrue(o1.someObjects[0] instanceof Short);
+		assertTrue(o2.someObjects[0] instanceof Short);
+		assertTrue(o1.someObjects[1] instanceof Long);
+		assertTrue(o2.someObjects[1] instanceof Long);
+		assertTrue(o1.someObjects[2] instanceof Byte);
+		assertTrue(o2.someObjects[2] instanceof Byte);
+
+		Short s1 = (Short) o1.someObjects[0];
+		Short s2 = (Short) o2.someObjects[0];
+		assertEquals(s1, s2);
+		Long l1 = (Long) o1.someObjects[1];
+		Long l2 = (Long) o2.someObjects[1];
+		assertEquals(l1, l2);
+		Byte b1 = (Byte) o1.someObjects[2];
+		Byte b2 = (Byte) o2.someObjects[2];
+		assertEquals(b1, b2);
+
+		assertNull(o1.someInterfaceArray[2]);
+		assertNull(o2.someInterfaceArray[2]);
+		for (int i = 0; i < o1.someInterfaceArray.length; ++i) {
+			if (i == 2)
+				continue; // 2 is null;
+			assertEquals(o1.someInterfaceArray[i].foo(), o2.someInterfaceArray[i].foo());
+		}
+
+		// 3 is reference to 0;
+		assertEquals(o1.someInterfaceArray[3], o1.someInterfaceArray[0]);
+		assertEquals(o2.someInterfaceArray[3], o2.someInterfaceArray[0]);
+
+		assertEquals(o1.someInterface.foo(), o2.someInterface.foo());
+
+
 	}
 
 	public File testFile;
