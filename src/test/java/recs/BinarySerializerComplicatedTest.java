@@ -88,9 +88,8 @@ public class BinarySerializerComplicatedTest {
 
 
 	private void assertEqualsComplicatedObjects(ComplicatedObject o1, ComplicatedObject o2) {
-
 		assertEquals(o1.someLong, o2.someLong);
-		/*
+
 		assertTrue(o1.someHashMap.keySet().size() == o2.someHashMap.keySet().size());
 		for (Short key: o1.someHashMap.keySet()) {
 			assertTrue(o2.someHashMap.containsKey(key));
@@ -100,7 +99,6 @@ public class BinarySerializerComplicatedTest {
 
 			assertEquals(l1, l2);
 		}
-		 */
 
 		assertNull(o1.nullInterface);
 		assertNull(o2.nullInterface);
@@ -144,10 +142,7 @@ public class BinarySerializerComplicatedTest {
 		// 3 is reference to 0;
 		assertEquals(o1.someInterfaceArray[3], o1.someInterfaceArray[0]);
 		assertEquals(o2.someInterfaceArray[3], o2.someInterfaceArray[0]);
-
 		assertEquals(o1.someInterface.foo(), o2.someInterface.foo());
-
-
 	}
 
 	public File testFile;
