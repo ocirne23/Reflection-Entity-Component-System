@@ -14,5 +14,5 @@ public class Player_Test extends Entity {
 		position = new Position_0(x, y);
 	}
 
-	public Player_Test() {}
+	Player_Test() {}
 }

@@ -18,7 +18,9 @@ public class MovementSystem_Test extends EntitySystem {
 	public void processEntity(int entityId, float deltaInSec) {
 		Position_0 position = positionMapper.get(entityId);
 		Velocity_0 velocity = velocityMapper.get(entityId);
+
 		position.x += velocity.x * deltaInSec;
 		position.y += velocity.y * deltaInSec;
+
 	}
 }

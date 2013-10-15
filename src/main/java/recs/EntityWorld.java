@@ -8,10 +8,10 @@ import java.util.List;
 
 import recs.utils.BlockingThreadPoolExecutor;
 import recs.utils.RECSBits;
-import recs.utils.RECSIntSet.Items;
 
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntMap.Keys;
+import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import com.badlogic.gdx.utils.ObjectMap;
 
 
@@ -39,7 +39,7 @@ public final class EntityWorld {
 	private final IntMap<Entity> addedEntities;
 
 	/**
-	 * Managers sepparate logic.
+	 * Managers separate logic.
 	 */
 	private final EntitySystemManager systemManager;
 	private final ComponentManager componentManager;
@@ -80,12 +80,14 @@ public final class EntityWorld {
 
 	/**
 	 * Add an entitiy to the world so it can be processed by the systems.
+	 *
+	 * @return
+	 * 		returns the id assigned to the entity.
 	 */
-	public void addEntity(Entity entity) {
+	public int addEntity(Entity entity) {
 		int id = getNewEntityId();
 		entity.id = id;
 		addedEntities.put(id, entity);
-		entityIds.set(id);
 
 		Class<? extends Entity> entityClass = entity.getClass();
 		// Read reflection data and use it to add all the components that were
@@ -123,6 +125,8 @@ public final class EntityWorld {
 
 		//Add the entity to the systems.
 		systemManager.addEntityToSystems(entity, entity.data.systemBits);
+
+		return id;
 	}
 
 	public Entity removeEntity(int entityId) {
@@ -182,7 +186,7 @@ public final class EntityWorld {
 	 * Remove an EntitySystem from the world
 	 */
 	public void removeSystem(EntitySystem system) {
-		Items i = system.entityIds.items();
+		IntSetIterator i = system.entityIds.iterator();
 		while (i.hasNext)
 			system.removeEntity(i.next());
 		entitydataManager.removeSystem(system.id);
@@ -379,8 +383,11 @@ public final class EntityWorld {
 			numFreedIds = 0;
 		}
 		//Search for a free id.
-		while (entityIds.get(++lastUsedId))
-			entityIds.set(lastUsedId);
+		do {
+			lastUsedId++;
+		} while (entityIds.get(lastUsedId));
+		entityIds.set(lastUsedId);
+
 		return lastUsedId;
 	}
 

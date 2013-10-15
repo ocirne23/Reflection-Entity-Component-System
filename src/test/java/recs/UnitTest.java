@@ -1,5 +1,6 @@
 package recs;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -24,6 +25,8 @@ import recs.systems.MovementSystem_Test;
 import recs.systems.ThreadedMovementSystem_Test;
 import recs.utils.BinarySerializer;
 
+import com.badlogic.gdx.utils.IntArray;
+
 public class UnitTest {
 
 	private Player_Test player;
@@ -42,7 +45,7 @@ public class UnitTest {
 	public void setup() {
 		world = new EntityWorld();
 		System.out.println("starting test");
-		//world.registerComponents(COMPONENTS);
+		// world.registerComponents(COMPONENTS);
 
 		ms = new MovementSystem_Test();
 		world.addSystem(ms);
@@ -123,8 +126,12 @@ public class UnitTest {
 		float expectedX = startX + xSpeed * deltaInSec1;
 		float expectedY = startY + ySpeed * deltaInSec1;
 
+		// world.process(0);
 		world.process(deltaInSec1);
-		assertTrue(position.x == expectedX && position.y == expectedY);
+		System.out.println(playerId + ":" + ms.getId() + ":" + position.x);
+
+		assertEquals(position.x, expectedX, 0.00001f);
+		assertEquals(position.y, expectedY, 0.00001f);
 
 		startX = expectedX;
 		startY = expectedY;
@@ -132,7 +139,8 @@ public class UnitTest {
 		expectedY = startY + ySpeed * deltaInSec2;
 
 		world.process(deltaInSec2);
-		assertTrue(position.x == expectedX && position.y == expectedY);
+		assertEquals(position.x, expectedX, 0.00001f);
+		assertEquals(position.y, expectedY, 0.00001f);
 	}
 
 	@Test
@@ -161,7 +169,7 @@ public class UnitTest {
 
 		try {
 			world.process(50);
-			Thread.sleep(500);	//so threads can finish up.
+			Thread.sleep(500); // so threads can finish up.
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -363,58 +371,80 @@ public class UnitTest {
 		assertTrue(position != null);
 		assertTrue(ms.hasEntity(e.getId()));
 	}
-/*
-	@Test
-	public void testLotsOfComponents() {
-		addEntities();
-		world.registerComponents(COMPONENTS1);
-		world.registerComponents(COMPONENTS2);
-		world.registerComponents(COMPONENTS3);
-		world.registerComponents(COMPONENTS4);
-		world.registerComponents(COMPONENTS5);
-		world.registerComponents(COMPONENTS6);
-		world.registerComponents(COMPONENTS7);
 
-		Copy_7_of_Gravity gravity7 = new Copy_7_of_Gravity(1f);
-		Copy_5_of_Velocity velocity5 = new Copy_5_of_Velocity(4, 0);
-
-		Entity e = new Entity();
-		e.addComponent(new Position(1, 2), new Velocity(4, 0), new Health(10, 15), new Attack(2), new Gravity(1f), new CopyOfPosition(1, 2), new CopyOfVelocity(4, 0), new CopyOfHealth(10, 15), new CopyOfAttack(2), new CopyOfGravity(1f), new Copy_2_of_Position(1, 2), new Copy_2_of_Velocity(4, 0), new Copy_2_of_Health(10, 15), new Copy_2_of_Attack(2), new Copy_2_of_Gravity(1f), new Copy_3_of_Position(1, 2), new Copy_3_of_Velocity(4, 0), new Copy_3_of_Health(10, 15), new Copy_3_of_Attack(2), new Copy_3_of_Gravity(1f), new Copy_4_of_Position(1, 2), new Copy_4_of_Velocity(4, 0), new Copy_4_of_Health(10, 15), new Copy_4_of_Attack(2), new Copy_4_of_Gravity(1f), new Copy_5_of_Position(1, 2), velocity5, new Copy_5_of_Health(10, 15), new Copy_5_of_Attack(2), new Copy_5_of_Gravity(1f), new Copy_6_of_Position(1, 2), new Copy_6_of_Velocity(4, 0), new Copy_6_of_Health(10, 15), new Copy_6_of_Attack(2), new Copy_6_of_Gravity(1f), new Copy_7_of_Position(1, 2), new Copy_7_of_Velocity(4, 0), new Copy_7_of_Health(10, 15), new Copy_7_of_Attack(2), gravity7);
-		world.addEntity(e);
-
-		Copy_7_of_Gravity gravity = world.getComponent(e.getId(), Copy_7_of_Gravity.class);
-		assertTrue(gravity != null);
-
-		Copy_5_of_Velocity velocity = world.getComponent(e.getId(), Copy_5_of_Velocity.class);
-		assertTrue(velocity != null);
-	}
-
-	@Test
-	public void testLotsOfComponentAddAfterCreate() {
-		addEntities();
-		world.registerComponents(COMPONENTS1);
-		world.registerComponents(COMPONENTS2);
-		world.registerComponents(COMPONENTS3);
-		world.registerComponents(COMPONENTS4);
-		world.registerComponents(COMPONENTS5);
-		world.registerComponents(COMPONENTS6);
-		world.registerComponents(COMPONENTS7);
-
-		Copy_7_of_Gravity gravity7 = new Copy_7_of_Gravity(1f);
-		Copy_5_of_Velocity velocity5 = new Copy_5_of_Velocity(4, 0);
-
-		Entity e = new Entity();
-		world.addEntity(e);
-
-		e.addComponent(new Position(1, 2), new Velocity(4, 0), new Health(10, 15), new Attack(2), new Gravity(1f), new CopyOfPosition(1, 2), new CopyOfVelocity(4, 0), new CopyOfHealth(10, 15), new CopyOfAttack(2), new CopyOfGravity(1f), new Copy_2_of_Position(1, 2), new Copy_2_of_Velocity(4, 0), new Copy_2_of_Health(10, 15), new Copy_2_of_Attack(2), new Copy_2_of_Gravity(1f), new Copy_3_of_Position(1, 2), new Copy_3_of_Velocity(4, 0), new Copy_3_of_Health(10, 15), new Copy_3_of_Attack(2), new Copy_3_of_Gravity(1f), new Copy_4_of_Position(1, 2), new Copy_4_of_Velocity(4, 0), new Copy_4_of_Health(10, 15), new Copy_4_of_Attack(2), new Copy_4_of_Gravity(1f), new Copy_5_of_Position(1, 2), velocity5, new Copy_5_of_Health(10, 15), new Copy_5_of_Attack(2), new Copy_5_of_Gravity(1f), new Copy_6_of_Position(1, 2), new Copy_6_of_Velocity(4, 0), new Copy_6_of_Health(10, 15), new Copy_6_of_Attack(2), new Copy_6_of_Gravity(1f), new Copy_7_of_Position(1, 2), new Copy_7_of_Velocity(4, 0), new Copy_7_of_Health(10, 15), new Copy_7_of_Attack(2), gravity7);
-
-		Copy_7_of_Gravity gravity = world.getComponent(e.getId(), Copy_7_of_Gravity.class);
-		assertTrue(gravity != null);
-
-		Copy_5_of_Velocity velocity = world.getComponent(e.getId(), Copy_5_of_Velocity.class);
-		assertTrue(velocity != null);
-	}
-*/
+	/*
+	 * @Test public void testLotsOfComponents() { addEntities();
+	 * world.registerComponents(COMPONENTS1);
+	 * world.registerComponents(COMPONENTS2);
+	 * world.registerComponents(COMPONENTS3);
+	 * world.registerComponents(COMPONENTS4);
+	 * world.registerComponents(COMPONENTS5);
+	 * world.registerComponents(COMPONENTS6);
+	 * world.registerComponents(COMPONENTS7);
+	 *
+	 * Copy_7_of_Gravity gravity7 = new Copy_7_of_Gravity(1f);
+	 * Copy_5_of_Velocity velocity5 = new Copy_5_of_Velocity(4, 0);
+	 *
+	 * Entity e = new Entity(); e.addComponent(new Position(1, 2), new
+	 * Velocity(4, 0), new Health(10, 15), new Attack(2), new Gravity(1f), new
+	 * CopyOfPosition(1, 2), new CopyOfVelocity(4, 0), new CopyOfHealth(10, 15),
+	 * new CopyOfAttack(2), new CopyOfGravity(1f), new Copy_2_of_Position(1, 2),
+	 * new Copy_2_of_Velocity(4, 0), new Copy_2_of_Health(10, 15), new
+	 * Copy_2_of_Attack(2), new Copy_2_of_Gravity(1f), new Copy_3_of_Position(1,
+	 * 2), new Copy_3_of_Velocity(4, 0), new Copy_3_of_Health(10, 15), new
+	 * Copy_3_of_Attack(2), new Copy_3_of_Gravity(1f), new Copy_4_of_Position(1,
+	 * 2), new Copy_4_of_Velocity(4, 0), new Copy_4_of_Health(10, 15), new
+	 * Copy_4_of_Attack(2), new Copy_4_of_Gravity(1f), new Copy_5_of_Position(1,
+	 * 2), velocity5, new Copy_5_of_Health(10, 15), new Copy_5_of_Attack(2), new
+	 * Copy_5_of_Gravity(1f), new Copy_6_of_Position(1, 2), new
+	 * Copy_6_of_Velocity(4, 0), new Copy_6_of_Health(10, 15), new
+	 * Copy_6_of_Attack(2), new Copy_6_of_Gravity(1f), new Copy_7_of_Position(1,
+	 * 2), new Copy_7_of_Velocity(4, 0), new Copy_7_of_Health(10, 15), new
+	 * Copy_7_of_Attack(2), gravity7); world.addEntity(e);
+	 *
+	 * Copy_7_of_Gravity gravity = world.getComponent(e.getId(),
+	 * Copy_7_of_Gravity.class); assertTrue(gravity != null);
+	 *
+	 * Copy_5_of_Velocity velocity = world.getComponent(e.getId(),
+	 * Copy_5_of_Velocity.class); assertTrue(velocity != null); }
+	 *
+	 * @Test public void testLotsOfComponentAddAfterCreate() { addEntities();
+	 * world.registerComponents(COMPONENTS1);
+	 * world.registerComponents(COMPONENTS2);
+	 * world.registerComponents(COMPONENTS3);
+	 * world.registerComponents(COMPONENTS4);
+	 * world.registerComponents(COMPONENTS5);
+	 * world.registerComponents(COMPONENTS6);
+	 * world.registerComponents(COMPONENTS7);
+	 *
+	 * Copy_7_of_Gravity gravity7 = new Copy_7_of_Gravity(1f);
+	 * Copy_5_of_Velocity velocity5 = new Copy_5_of_Velocity(4, 0);
+	 *
+	 * Entity e = new Entity(); world.addEntity(e);
+	 *
+	 * e.addComponent(new Position(1, 2), new Velocity(4, 0), new Health(10,
+	 * 15), new Attack(2), new Gravity(1f), new CopyOfPosition(1, 2), new
+	 * CopyOfVelocity(4, 0), new CopyOfHealth(10, 15), new CopyOfAttack(2), new
+	 * CopyOfGravity(1f), new Copy_2_of_Position(1, 2), new
+	 * Copy_2_of_Velocity(4, 0), new Copy_2_of_Health(10, 15), new
+	 * Copy_2_of_Attack(2), new Copy_2_of_Gravity(1f), new Copy_3_of_Position(1,
+	 * 2), new Copy_3_of_Velocity(4, 0), new Copy_3_of_Health(10, 15), new
+	 * Copy_3_of_Attack(2), new Copy_3_of_Gravity(1f), new Copy_4_of_Position(1,
+	 * 2), new Copy_4_of_Velocity(4, 0), new Copy_4_of_Health(10, 15), new
+	 * Copy_4_of_Attack(2), new Copy_4_of_Gravity(1f), new Copy_5_of_Position(1,
+	 * 2), velocity5, new Copy_5_of_Health(10, 15), new Copy_5_of_Attack(2), new
+	 * Copy_5_of_Gravity(1f), new Copy_6_of_Position(1, 2), new
+	 * Copy_6_of_Velocity(4, 0), new Copy_6_of_Health(10, 15), new
+	 * Copy_6_of_Attack(2), new Copy_6_of_Gravity(1f), new Copy_7_of_Position(1,
+	 * 2), new Copy_7_of_Velocity(4, 0), new Copy_7_of_Health(10, 15), new
+	 * Copy_7_of_Attack(2), gravity7);
+	 *
+	 * Copy_7_of_Gravity gravity = world.getComponent(e.getId(),
+	 * Copy_7_of_Gravity.class); assertTrue(gravity != null);
+	 *
+	 * Copy_5_of_Velocity velocity = world.getComponent(e.getId(),
+	 * Copy_5_of_Velocity.class); assertTrue(velocity != null); }
+	 */
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testLotsOfSystems() {
@@ -436,7 +466,7 @@ public class UnitTest {
 
 		File playerFile = BinarySerializer.saveToFile(new File("player"), player);
 
-		Player_Test player2 = BinarySerializer.readFromFile(playerFile, new Player_Test());
+		Player_Test player2 = BinarySerializer.readFromFile(playerFile, new Player_Test(0, 0));
 
 		assertTrue(player2.health.amount == health);
 		assertTrue(player2.position.x == x);
@@ -464,8 +494,32 @@ public class UnitTest {
 		assertTrue(entities2[6].position.x == 60);
 	}
 
+	@Test
+	public void testEntityIdReuse() {
+		IntArray removedList = new IntArray();
+		for (int i = 0; i < 10; i++) {
+			world.addEntity(new Player_Test(0, 0));
+			int id = world.addEntity(new Player_Test(0, 0));
+			world.addEntity(new Player_Test(0, 0));
+
+			world.removeEntity(id);
+			removedList.add(id);
+		}
+
+		world.process(1f);
+
+		boolean hasAnRemovedEntityId = false;
+		for (int i : removedList.items) {
+			if (world.getEntity(i) != null)
+				hasAnRemovedEntityId = true;
+		}
+
+		assertTrue(hasAnRemovedEntityId);
+	}
+
 	private static class PlayerWrapper {
 		Player_Test[] entities;
+
 		public PlayerWrapper(Player_Test[] entities) {
 			this.entities = entities;
 		}
@@ -474,6 +528,7 @@ public class UnitTest {
 	@After
 	public void breakDown() {
 		world.reset();
+		tms.setEnabled(false);
 		System.out.println("finished test");
 	}
 }

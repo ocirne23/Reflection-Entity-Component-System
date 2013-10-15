@@ -1,8 +1,9 @@
 package recs;
 
 import recs.utils.RECSBits;
-import recs.utils.RECSIntSet;
-import recs.utils.RECSIntSet.Items;
+
+import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 
 /**
  * Extend this class and add it to the EntityWorld to create a new EntitySystem.
@@ -25,7 +26,7 @@ public abstract class EntitySystem {
 	/**
 	 * A set of the entityIds of the entities that are being processed by this system.
 	 */
-	RECSIntSet entityIds = new RECSIntSet(16);
+	IntSet entityIds;
 	/**
 	 * A bitset of the components required for an entity to be processed by this system.
 	 */
@@ -39,6 +40,7 @@ public abstract class EntitySystem {
 	 * Indicates if this system will be processed by the world or not.
 	 */
 	private boolean enabled = true;
+	private IntSetIterator iterator;
 
 	/**
 	 * Create an entitysystem that processes entities with the specified
@@ -46,6 +48,8 @@ public abstract class EntitySystem {
 	 */
 	public EntitySystem(Class<? extends Component>... components) {
 		this.components = components;
+		entityIds = new IntSet(16);
+		iterator = new IntSetIterator(entityIds);
 	}
 
 	void process(float deltaInSec) {
@@ -60,9 +64,10 @@ public abstract class EntitySystem {
 	 *            The time that has passed in seconds since last update.
 	 */
 	protected void processSystem(float deltaInSec) {
-		Items i = entityIds.items();
-		while (i.hasNext)
-			processEntity(i.next(), deltaInSec);
+		iterator.reset();
+
+		while (iterator.hasNext)
+			processEntity(iterator.next(), deltaInSec);
 	}
 
 	/**
@@ -77,7 +82,7 @@ public abstract class EntitySystem {
 	/**
 	 * Return a set of all the ids of all the entities that are being processed by this system.
 	 */
-	public RECSIntSet getAllEntities() {
+	public IntSet getAllEntities() {
 		return entityIds;
 	}
 
@@ -118,7 +123,7 @@ public abstract class EntitySystem {
 		if (!entityIds.contains(id)) {
 			entityIds.add(id);
 		} else {
-			throw new RuntimeException("Entity is being added twice, this should not happen");
+			throw new RuntimeException("Entity: " + id + " is being added twice, this should not happen");
 		}
 	}
 
