@@ -85,6 +85,7 @@ public final class EntityWorld {
 		int id = getNewEntityId();
 		entity.id = id;
 		addedEntities.put(id, entity);
+		entityIds.set(id);
 
 		Class<? extends Entity> entityClass = entity.getClass();
 		// Read reflection data and use it to add all the components that were
