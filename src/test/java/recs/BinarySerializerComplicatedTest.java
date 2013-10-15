@@ -172,11 +172,11 @@ public class BinarySerializerComplicatedTest {
 		ComplicatedObject object = new ComplicatedObject(42);
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, object);
+		BinarySerializer.saveToFile(testFile, object);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ComplicatedObject loadedObject = BinarySerializer.readObject(testFile, new ComplicatedObject(0));
+		ComplicatedObject loadedObject = BinarySerializer.readFromFile(testFile, new ComplicatedObject(0));
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Basic save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -198,11 +198,11 @@ public class BinarySerializerComplicatedTest {
 		map.put("" + 3, map.get("" + 1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		HashMap<String, ComplicatedObject> loadedMap = BinarySerializer.readObject(testFile, new HashMap<String, ComplicatedObject>(), String.class, ComplicatedObject.class);
+		HashMap<String, ComplicatedObject> loadedMap = BinarySerializer.readFromFile(testFile, new HashMap<String, ComplicatedObject>(), String.class, ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("HashMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -229,11 +229,11 @@ public class BinarySerializerComplicatedTest {
 		list.set(3, list.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, list);
+		BinarySerializer.saveToFile(testFile, list);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ArrayList<ComplicatedObject> loadedList = BinarySerializer.readObject(testFile, new ArrayList<ComplicatedObject>(), ComplicatedObject.class);
+		ArrayList<ComplicatedObject> loadedList = BinarySerializer.readFromFile(testFile, new ArrayList<ComplicatedObject>(), ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Arraylist save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -258,11 +258,11 @@ public class BinarySerializerComplicatedTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, queue);
+		BinarySerializer.saveToFile(testFile, queue);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		LinkedList<ComplicatedObject> loadedQueue = BinarySerializer.readObject(testFile, new LinkedList<ComplicatedObject>(), ComplicatedObject.class);
+		LinkedList<ComplicatedObject> loadedQueue = BinarySerializer.readFromFile(testFile, new LinkedList<ComplicatedObject>(), ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("LinkedList save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -290,11 +290,11 @@ public class BinarySerializerComplicatedTest {
 		map.put(3, map.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ObjectMap<Integer, ComplicatedObject> loadedMap = BinarySerializer.readObject(testFile, new ObjectMap<Integer, ComplicatedObject>(), Integer.class, ComplicatedObject.class);
+		ObjectMap<Integer, ComplicatedObject> loadedMap = BinarySerializer.readFromFile(testFile, new ObjectMap<Integer, ComplicatedObject>(), Integer.class, ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("ObjectMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -322,11 +322,11 @@ public class BinarySerializerComplicatedTest {
 		map.put(3, map.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		IntMap<ComplicatedObject> loadedMap = BinarySerializer.readObject(testFile, new IntMap<ComplicatedObject>(), ComplicatedObject.class);
+		IntMap<ComplicatedObject> loadedMap = BinarySerializer.readFromFile(testFile, new IntMap<ComplicatedObject>(), ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("IntMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -352,11 +352,11 @@ public class BinarySerializerComplicatedTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, array);
+		BinarySerializer.saveToFile(testFile, array);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ComplicatedObject[] loadedArray = BinarySerializer.readObject(testFile, new ComplicatedObject[0], ComplicatedObject.class);
+		ComplicatedObject[] loadedArray = BinarySerializer.readFromFile(testFile, new ComplicatedObject[0], ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Array save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -384,11 +384,11 @@ public class BinarySerializerComplicatedTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, array);
+		BinarySerializer.saveToFile(testFile, array);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ComplicatedObject[][] loadedArray = BinarySerializer.readObject(testFile, new ComplicatedObject[0][0], ComplicatedObject.class);
+		ComplicatedObject[][] loadedArray = BinarySerializer.readFromFile(testFile, new ComplicatedObject[0][0], ComplicatedObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("ArrayArray save time: " + (saveEndTime - saveStartTime) + " ms");

@@ -65,11 +65,11 @@ public class BinarySerializerSimpleTest {
 		SimpleObject object = new SimpleObject(42, true, 0.5f);
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, object);
+		BinarySerializer.saveToFile(testFile, object);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		SimpleObject loadedObject = BinarySerializer.readObject(testFile, new SimpleObject(0, false, 0));
+		SimpleObject loadedObject = BinarySerializer.readFromFile(testFile, new SimpleObject(0, false, 0));
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Basic save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -91,11 +91,11 @@ public class BinarySerializerSimpleTest {
 		map.put("" + 3, map.get("" + 1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		HashMap<String, SimpleObject> loadedMap = BinarySerializer.readObject(testFile, new HashMap<String, SimpleObject>(), String.class, SimpleObject.class);
+		HashMap<String, SimpleObject> loadedMap = BinarySerializer.readFromFile(testFile, new HashMap<String, SimpleObject>(), String.class, SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("HashMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -122,11 +122,11 @@ public class BinarySerializerSimpleTest {
 		list.set(3, list.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, list);
+		BinarySerializer.saveToFile(testFile, list);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ArrayList<SimpleObject> loadedList = BinarySerializer.readObject(testFile, new ArrayList<SimpleObject>(), SimpleObject.class);
+		ArrayList<SimpleObject> loadedList = BinarySerializer.readFromFile(testFile, new ArrayList<SimpleObject>(), SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Arraylist save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -151,11 +151,11 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, queue);
+		BinarySerializer.saveToFile(testFile, queue);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		LinkedList<SimpleObject> loadedQueue = BinarySerializer.readObject(testFile, new LinkedList<SimpleObject>(), SimpleObject.class);
+		LinkedList<SimpleObject> loadedQueue = BinarySerializer.readFromFile(testFile, new LinkedList<SimpleObject>(), SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("LinkedList save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -182,11 +182,11 @@ public class BinarySerializerSimpleTest {
 		map.put(3, map.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		ObjectMap<Integer, SimpleObject> loadedMap = BinarySerializer.readObject(testFile, new ObjectMap<Integer, SimpleObject>(), Integer.class, SimpleObject.class);
+		ObjectMap<Integer, SimpleObject> loadedMap = BinarySerializer.readFromFile(testFile, new ObjectMap<Integer, SimpleObject>(), Integer.class, SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("ObjectMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -213,11 +213,11 @@ public class BinarySerializerSimpleTest {
 		map.put(3, map.get(1));
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, map);
+		BinarySerializer.saveToFile(testFile, map);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		IntMap<SimpleObject> loadedMap = BinarySerializer.readObject(testFile, new IntMap<SimpleObject>(), SimpleObject.class);
+		IntMap<SimpleObject> loadedMap = BinarySerializer.readFromFile(testFile, new IntMap<SimpleObject>(), SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("IntMap save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -243,11 +243,11 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, array);
+		BinarySerializer.saveToFile(testFile, array);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		SimpleObject[] loadedArray = BinarySerializer.readObject(testFile, new SimpleObject[0], SimpleObject.class);
+		SimpleObject[] loadedArray = BinarySerializer.readFromFile(testFile, new SimpleObject[0], SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Array save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -269,11 +269,11 @@ public class BinarySerializerSimpleTest {
 		double primitive = 5;
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, primitive);
+		BinarySerializer.saveToFile(testFile, primitive);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		double loadedPrimitive = BinarySerializer.readObject(testFile, new Double(0), SimpleObject.class);
+		double loadedPrimitive = BinarySerializer.readFromFile(testFile, new Double(0), SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Primitive save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -284,7 +284,7 @@ public class BinarySerializerSimpleTest {
 	}
 
 	@Test
-	public void testPrimiviveArray() {
+	public void testPrimitiveArray() {
 		System.out.println("Primitive Array test, type: double, num items: " + ARRAY_NUM_ITEMS);
 
 		double[] array = new double[ARRAY_NUM_ITEMS];
@@ -294,11 +294,11 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, array);
+		BinarySerializer.saveToFile(testFile, array);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		double[] loadedArray = BinarySerializer.readObject(testFile, new double[0], SimpleObject.class);
+		double[] loadedArray = BinarySerializer.readFromFile(testFile, new double[0], SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("Primitive Array save time: " + (saveEndTime - saveStartTime) + " ms");
@@ -323,11 +323,11 @@ public class BinarySerializerSimpleTest {
 		}
 
 		long saveStartTime = System.currentTimeMillis();
-		BinarySerializer.saveObject(testFile, array);
+		BinarySerializer.saveToFile(testFile, array);
 		long saveEndTime = System.currentTimeMillis();
 
 		long loadStartTime = System.currentTimeMillis();
-		SimpleObject[][] loadedArray = BinarySerializer.readObject(testFile, new SimpleObject[0][0], SimpleObject.class);
+		SimpleObject[][] loadedArray = BinarySerializer.readFromFile(testFile, new SimpleObject[0][0], SimpleObject.class);
 		long loadEndTime = System.currentTimeMillis();
 
 		System.out.println("ArrayArray save time: " + (saveEndTime - saveStartTime) + " ms");

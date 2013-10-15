@@ -17,9 +17,6 @@
 package recs.utils;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,13 +32,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -57,138 +47,144 @@ import com.badlogic.gdx.utils.ObjectIntMap;
  */
 public class BinarySerializer {
 	/**
-	 * std collections have its elements as transient, this class can properly parse them.
+	 * std collections have its elements as transient, this class can properly
+	 * parse them.
 	 */
 	public static boolean ignoreTransient = true;
 
-	private static final int NULL = 0;
-	private static final int NEW = 1;
-	private static final int REFERENCE = 2;
-	private static final int NEWTYPE = 3;
+	private static final byte NULL = 0;
+	private static final byte NEW = 1;
+	private static final byte REFERENCE = 2;
+	private static final byte NEWTYPE = 3;
+
+	public static <T> File saveToFile(File file, T object) {
+		FileOutputStream fostream = null;
+		try {
+			fostream = new FileOutputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		saveToStream(object, fostream);
+		try {
+			fostream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return file;
+	}
+
+	public static <T> T readFromFile(File file, T object, Class<?>... genericTypeArgs) {
+		FileInputStream fistream = null;
+		try {
+			fistream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		T o = readFromStream(fistream, (int) file.length(), object, genericTypeArgs);
+		try {
+			fistream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return o;
+	}
+
+	public static <T> T readFromByteArr(byte[] data, T object, Class<?>... genericTypeArgs) {
+		ByteArrayInputStream bistream = new ByteArrayInputStream(data);
+		T o = readFromStream(bistream, data.length, object, genericTypeArgs);
+		try {
+			bistream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return o;
+	}
+
+	public static <T> T readFromStream(InputStream inputStream, T object, Class<?>... genericTypeArgs) {
+
+		return null;
+	}
+
+	public static <T> OutputStream saveToStream(T object, OutputStream outputStream) {
+		Class<?> clazz = object.getClass();
+		// //System.out.println("Saving object: " + clazz);
+		Output output = new Output(outputStream);
+
+		ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
+		try {
+			if (clazz.isArray()) {
+				writeArray(object, object.getClass(), output, referenceMap);
+			} else {
+				writeObject(object, object.getClass(), output, referenceMap);
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		output.flush();
+
+		return outputStream;
+	}
+
+	public static <T> byte[] saveToByteArr(T object) {
+		Class<?> clazz = object.getClass();
+		// //System.out.println("Saving object: " + clazz);
+		Output output = new Output(64, -1);
+
+		ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
+		try {
+			if (clazz.isArray()) {
+				writeArray(object, object.getClass(), output, referenceMap);
+			} else {
+				writeObject(object, object.getClass(), output, referenceMap);
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return output.toBytes();
+	}
 
 
-	public static <T> byte[] saveObject(T object) {
-        ByteArrayOutputStream baostream = new ByteArrayOutputStream();
-        toOStream(object, baostream);
-        return baostream.toByteArray();
-    }
-
-    public static <T> File saveObject(File file, T object) {
-        FileOutputStream fostream = null;
-        try {
-            fostream = new FileOutputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        toOStream(object, fostream);
-        try {
-            fostream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return file;
-    }
-
-    public static <T> T readObject(File file, T object, Class<?>... genericTypeArgs) {
-        FileInputStream fistream = null;
-        try {
-            fistream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        T o = readIStream(fistream, (int) file.length(), object, genericTypeArgs);
-        try {
-            fistream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return o;
-    }
-
-    public static <T> T readObject(byte[] data, T object, Class<?>... genericTypeArgs) {
-        ByteArrayInputStream bistream = new ByteArrayInputStream(data);
-        T o = readIStream(bistream, data.length, object, genericTypeArgs);
-        try {
-            bistream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return o;
-    }
-
-	/**
-	    /**
-     * Writes any object into the given OutputStream.
-     *
-     * @return the given OutputStream that now contains the object bytes.
-     */
-    private static <T> OutputStream toOStream(T object, OutputStream ostream) {
-        try {
-            Class<?> clazz = object.getClass();
-
-            // //System.out.println("Saving object: " + clazz);
-
-            DataOutputStream dostream = new DataOutputStream(ostream);
-            ObjectIntMap<Object> referenceMap = new ObjectIntMap<Object>();
-
-            if (clazz.isArray()) {
-                writeArray(object, object.getClass(), dostream, referenceMap);
-            } else {
-                writeObject(object, object.getClass(), dostream, referenceMap);
-            }
-
-            dostream.flush();
-            dostream.close();
-            ostream.flush();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ostream;
-    }
-
-
-	private static Class<?> writeObject(Object object, Class<?> oldType, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static Class<?> writeObject(Object object, Class<?> oldType, Output output, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		if (object == null) {
-			ostream.write(NULL);
+			output.write(NULL);
 			return oldType;
 		}
 		Class<?> clazz = object.getClass();
 		if (clazz.isInterface()) {
-			ostream.write(NULL);
+			output.write(NULL);
 			return oldType;
 		} else {
 			int referenceIdx = referenceMap.get(object, -1);
-			//if this object has already been written, write a reference to it instead of a new instance.
+			// if this object has already been written, write a reference to it
+			// instead of a new instance.
 			if (referenceIdx != -1) {
-				ostream.write(REFERENCE);
-				ostream.writeInt(referenceIdx);
-				return oldType;	//TODO: write type?
-			//if this is a new object, add it to the references together with the index in the ostream.
+				output.write(REFERENCE);
+				output.writeInt(referenceIdx);
+				return oldType; // TODO: write type?
+				// if this is a new object, add it to the references together
+				// with the index in the ostream.
 			} else {
 				if (clazz != oldType) {
-					ostream.write(NEWTYPE);
-					writeClassName(ostream, clazz, referenceMap);
-					//System.out.println("writing class: " + clazz);
+					output.write(NEWTYPE);
+					writeClassName(output, clazz, referenceMap);
 				} else {
-					ostream.write(NEW);
+					output.write(NEW);
 				}
-
 				int objIdx = referenceMap.size;
 				referenceMap.put(object, objIdx);
 			}
 		}
 
-	//	if (isInterface) {
-	//		writeClassName(ostream, object.getClass());
-	//	}
-
-
-
-		do {
+		while (clazz != Object.class) {
 			for (Field field : clazz.getDeclaredFields()) {
 				Class<?> type = field.getType();
 
@@ -198,112 +194,85 @@ public class BinarySerializer {
 				if (Modifier.isStatic(modifiers))
 					continue;
 				if (type.isPrimitive()) {
-					//System.out.println(ostream.size() + "\twriting primitive: " + field.getName() +":"+ type +":"+ field.getGenericType());
-					writePrimitive(object, field, ostream);
+					writePrimitive(object, field, output);
 					continue;
 				}
 
 				field.setAccessible(true);
 				Object obj = field.get(object);
 				if (obj == null) {
-					//System.out.println(ostream.size() + "\twriting null: " + field.getName() +":"+ type +":"+ field.getGenericType());
-					writeObject(obj, type, ostream,referenceMap);
+					writeObject(obj, type, output, referenceMap);
 					continue;
 				}
 
-
 				if (type.isArray()) {
-					//System.out.println(ostream.size() + "\twriting array: " + field.getName() +":"+ type +":"+ field.getGenericType());
-					writeArray(obj, field.getType(), ostream, referenceMap);
+					writeArray(obj, field.getType(), output, referenceMap);
 				} else {
-					//System.out.println(ostream.size() + "\twriting object: " + field.getName() +":"+ obj.getClass() +":"+ field.getGenericType());
-					writeObject(obj, type, ostream, referenceMap);
+					writeObject(obj, type, output, referenceMap);
 				}
 			}
 			clazz = clazz.getSuperclass();
-		} while (clazz != Object.class);
-
-		//System.out.println(ostream.size() + "\tfinished writing: " + object.getClass());
+		}
 
 		return object.getClass();
 	}
 
-	private static void writePrimitive(Object object, Field field, DataOutputStream ostream) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writePrimitive(Object object, Field field, Output output) throws IllegalArgumentException, IllegalAccessException, IOException {
 		Class<?> type = field.getType();
 		field.setAccessible(true);
 		if (type == float.class) {
-			ostream.writeFloat(field.getFloat(object));
+			output.writeFloat(field.getFloat(object));
 		} else if (type == int.class) {
-			ostream.writeInt(field.getInt(object));
+			output.writeInt(field.getInt(object));
 		} else if (type == boolean.class) {
-			ostream.writeBoolean(field.getBoolean(object));
+			output.writeBoolean(field.getBoolean(object));
 		} else if (type == double.class) {
-			ostream.writeDouble(field.getDouble(object));
+			output.writeDouble(field.getDouble(object));
 		} else if (type == short.class) {
-			ostream.writeShort(field.getShort(object));
+			output.writeShort(field.getShort(object));
 		} else if (type == byte.class) {
-			ostream.writeByte(field.getByte(object));
+			output.writeByte(field.getByte(object));
 		} else if (type == char.class) {
-			ostream.writeChar(field.getChar(object));
+			output.writeChar(field.getChar(object));
 		} else if (type == long.class) {
-			ostream.writeLong(field.getLong(object));
+			output.writeLong(field.getLong(object));
 		}
 	}
 
-	private static void writeArray(Object object, Class<?> type, DataOutputStream ostream, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
+	private static void writeArray(Object object, Class<?> type, Output output, ObjectIntMap<Object> referenceMap) throws IllegalArgumentException, IllegalAccessException, IOException {
 		int length = Array.getLength(object);
 
-		ByteBuffer buffer = null;
-		if (type == int[].class) {
-			buffer = ByteBuffer.allocate(length * 4 + 4);
-			buffer.putInt(length);
-			buffer.asIntBuffer().put((int[]) object);
-		} else if (type == float[].class) {
-			buffer = ByteBuffer.allocate(length * 4 + 4);
-			buffer.putInt(length);
-			buffer.asFloatBuffer().put((float[]) object);
-		} else if (type == boolean[].class) {
-			buffer = ByteBuffer.allocate(length / 8 + 1 + 4);
-			buffer.putInt(length);
-			buffer.put(BitUtils.createByteArr((boolean[]) object));
-		} else if (type == double[].class) {
-			buffer = ByteBuffer.allocate(length * 8 + 4);
-			buffer.putInt(length);
-			buffer.asDoubleBuffer().put((double[]) object);
-		} else if (type == short[].class) {
-			buffer = ByteBuffer.allocate(length * 2 + 4);
-			buffer.putInt(length);
-			buffer.asShortBuffer().put((short[]) object);
-		} else if (type == byte[].class) {
-			buffer = ByteBuffer.allocate(length + 4);
-			buffer.putInt(length);
-			buffer.put((byte[]) object);
-		} else if (type == char[].class) {
-			buffer = ByteBuffer.allocate(length * 2 + 4); // wattafak java.
-			buffer.putInt(length);
-			buffer.asCharBuffer().put((char[]) object);
-		} else if (type == long[].class) {
-			buffer = ByteBuffer.allocate(length * 8 + 4);
-			buffer.putInt(length);
-			buffer.asLongBuffer().put((long[]) object);
-		}
-		if (buffer != null) {
-			ostream.write(buffer.array());
-		} else {
-			ostream.writeInt(length);
+		output.writeInt(length);
 
+		if (type == int[].class) {
+			output.writeInts((int[]) object);
+		} else if (type == float[].class) {
+			output.writeFloats((float[]) object);
+		} else if (type == boolean[].class) {
+			byte[] boolByteData = BitUtils.createByteArr((boolean[]) object);
+			output.write(boolByteData);
+		} else if (type == double[].class) {
+			output.writeDoubles((double[]) object);
+		} else if (type == short[].class) {
+			output.writeShorts((short[]) object);
+		} else if (type == byte[].class) {
+			output.writeBytes((byte[]) object);
+		} else if (type == char[].class) {
+			output.writeChars((char[]) object);
+		} else if (type == long[].class) {
+			output.writeLongs((long[]) object);
+		} else {
 			if (type.getComponentType().isArray()) {
 				for (Object obj : (Object[]) object) {
-					writeArray(obj, type.getComponentType(), ostream, referenceMap);
+					writeArray(obj, type.getComponentType(), output, referenceMap);
 				}
 			}
 
-			if ( //type.getComponentType() == Object.class ||
-					type.getComponentType().isInterface()) {
+			if (type.getComponentType().isInterface()) {
 				Object[] array = ((Object[]) object);
-
 				// HACKY:
-				// use the type of the first non null element in the array as the type of the array.
+				// use the type of the first non null element in the array as
+				// the type of the array.
 				// if all is null, type is Object.
 				Class<?> elementClass = null;
 				for (int i = 0; i < array.length; ++i) {
@@ -312,33 +281,22 @@ public class BinarySerializer {
 						continue;
 					}
 				}
-
-				writeClassName(ostream, elementClass, referenceMap);
+				writeClassName(output, elementClass, referenceMap);
 			}
 
 			Class<?> elementType = type.getComponentType();
-
 			for (Object obj : (Object[]) object) {
-				//if (obj != null) {
-					//System.out.println(ostream.size() + "\twriting object from array: " + type.getComponentType() +":"+ obj.getClass());
-				//}
-				elementType = writeObject(obj, elementType, ostream, referenceMap);
+				elementType = writeObject(obj, elementType, output, referenceMap);
 			}
 		}
-
-		//System.out.println(ostream.size() + "\tfinished writing array: " + type);
 	}
 
-	private static Class<?> readClassName(ByteBuffer byteBuffer, ArrayList<Object> referenceList) {
-		int typeLengthOrRef = byteBuffer.getInt();
+	private static Class<?> readClassName(Input input, ArrayList<Object> referenceList) {
+		int header = input.readInt();
 
 		Class<?> componentType = null;
-		if (typeLengthOrRef >= 0) {
-			char[] chars = new char[typeLengthOrRef];
-			for (int i = 0; i < typeLengthOrRef; ++i) {
-				chars[i] = byteBuffer.getChar();
-			}
-			String typeStr = new String(chars);
+		if (header == -1) {
+			String typeStr = input.readString();
 
 			try {
 				componentType = Class.forName(typeStr);
@@ -347,13 +305,13 @@ public class BinarySerializer {
 			}
 			referenceList.add(componentType);
 		} else {
-			componentType = (Class<?>) referenceList.get(-typeLengthOrRef);
+			componentType = (Class<?>) referenceList.get(header);
 		}
 
 		return componentType;
 	}
 
-	private static void writeClassName(DataOutputStream ostream, Class<?> clazz, ObjectIntMap<Object> referenceMap) throws IOException {
+	private static void writeClassName(Output output, Class<?> clazz, ObjectIntMap<Object> referenceMap) throws IOException {
 		String type = null;
 
 		if (clazz != null) {
@@ -363,29 +321,15 @@ public class BinarySerializer {
 		}
 
 		int refIdx = referenceMap.get(type, -1);
-		if (refIdx != -1) {
-			ostream.writeInt(-refIdx);
-		} else {
+		output.writeInt(refIdx);
+		if (refIdx == -1) {
 			referenceMap.put(type, referenceMap.size);
-			ostream.writeInt(type.length());
-			ostream.writeChars(type);
+			output.writeString(type);
 		}
 	}
 
-
-
-	/**
-	 * Sets the values of the given object equal to the stored object in the
-	 * file.
-	 *
-	 * The classes of the generic types used in the object need to be supplied, e.g:
-	 * Saver.readObject(file, new HashMap<String, Integer>(), String.class, Integer.class);
-	 *
-	 * @return
-	 * 		the given object.
-	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T readIStream(InputStream istream, int numBytes, T object, Class<?>... genericTypeArgs) {
+	public static <T> T readFromStream(InputStream istream, int numBytes, T object, Class<?>... genericTypeArgs) {
 		try {
 			Class<?> clazz = object.getClass();
 
@@ -396,17 +340,13 @@ public class BinarySerializer {
 				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
 			}
 
-			DataInputStream distream = new DataInputStream(istream);
-			byte[] bytes = new byte[numBytes];
-
-			distream.readFully(bytes);
-			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+			Input input = new Input(istream, numBytes);
 			ArrayList<Object> referenceList = new ArrayList<Object>();
 
 			if (object.getClass().isArray()) {
-				object = (T) readArray(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
+				object = (T) readArray(object.getClass(), input, genericTypeClassMap, referenceList);
 			} else {
-				object = (T) readObject(object.getClass(), byteBuffer, genericTypeClassMap, referenceList);
+				object = (T) readObject(object.getClass(), input, genericTypeClassMap, referenceList);
 			}
 
 			istream.close();
@@ -424,34 +364,32 @@ public class BinarySerializer {
 		return object;
 	}
 
-	private static Object readObject(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
-		int objectStatus = byteBuffer.get();
+	private static Object readObject(Class<?> type, Input input, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+		byte objectStatus = input.readByte();
 
 		if (objectStatus == NULL) {
 			return null;
 		}
 
 		if (objectStatus == REFERENCE) {
-			int refIdx = byteBuffer.getInt();
-
+			int refIdx = input.readInt();
 			return referenceList.get(refIdx);
 		}
 
 		if (objectStatus == NEWTYPE || type.isInterface()) {
-			type = readClassName(byteBuffer, referenceList);
-			//System.out.println("reading class: " + type);
+			type = readClassName(input, referenceList);
 		}
 
 		Object obj = createNewInstance(type);
 		referenceList.add(obj);
-		if (obj !=  null) {
-			readFields(obj, byteBuffer, genericTypeClassMap, referenceList);
+		if (obj != null) {
+			readFields(obj, input, genericTypeClassMap, referenceList);
 		}
 
 		return obj;
 	}
 
-	private static void readFields(Object object, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+	private static void readFields(Object object, Input input, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		Class<?> c = object.getClass();
 
 		while (c != Object.class) {
@@ -465,9 +403,6 @@ public class BinarySerializer {
 						type = genericType;
 					}
 				}
-
-				//if (type.getTypeParameters().length > 0)
-				//	//System.out.println("type parameters: " + Arrays.toString(type.getTypeParameters()));
 
 				int modifiers = field.getModifiers();
 				if (!ignoreTransient && Modifier.isTransient(modifiers))
@@ -489,25 +424,20 @@ public class BinarySerializer {
 									updatedTypes = true;
 								}
 								genericTypeClassMap.put(typeVars[i].getName(), ((Class<?>) typeArgs[i]));
-								////System.out.println(byteBuffer.position() + "\ttypeVars: " + field.getGenericType() +" : " + typeVars[i].getName() +" : "+ ((Class<?>) typeArgs[i]).getName());
 							}
 						}
 					}
 				}
 
 				if (type.isPrimitive()) {
-					//System.out.println(byteBuffer.position() + "\treading primitive: " + field.getName() +":"+ type +":"+ field.getGenericType());
-					readPrimitive(object, field, byteBuffer);
+					readPrimitive(object, field, input);
 				} else if (type.isArray()) {
-					//System.out.println(byteBuffer.position() + "\treading array: " + field.getName() +":"+ type +":"+ field.getGenericType());
 					field.setAccessible(true);
-					Object array = readArray(field.getType(), byteBuffer, genericTypeClassMap, referenceList);
+					Object array = readArray(field.getType(), input, genericTypeClassMap, referenceList);
 					field.set(object, array);
-				//is object
+					// is object
 				} else {
-					//System.out.println(byteBuffer.position() + "\treading object: " + field.getName() +":"+ type +":"+ field.getGenericType());
-
-					Object obj = readObject(type, byteBuffer, genericTypeClassMap, referenceList);
+					Object obj = readObject(type, input, genericTypeClassMap, referenceList);
 					if (obj != null) {
 						field.setAccessible(true);
 						field.set(object, obj);
@@ -516,64 +446,28 @@ public class BinarySerializer {
 			}
 			c = c.getSuperclass();
 		}
-
-		//System.out.println(byteBuffer.position() + "\tfinished reading: " + object.getClass());
 	}
 
-	private static Object readArray(Class<?> type, ByteBuffer byteBuffer, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
-		int length = byteBuffer.getInt();
+	private static Object readArray(Class<?> type, Input input, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
+		int length = input.readInt();
 
 		if (type == int[].class) {
-			byte[] data = new byte[length * 4];
-			byteBuffer.get(data, 0, length * 4);
-			IntBuffer buf = ByteBuffer.wrap(data).asIntBuffer();
-			int[] array = new int[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readInts(length);
 		} else if (type == float[].class) {
-			byte[] data = new byte[length * 4];
-			byteBuffer.get(data, 0, length * 4);
-			FloatBuffer buf = ByteBuffer.wrap(data).asFloatBuffer();
-			float[] array = new float[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readFloats(length);
 		} else if (type == boolean[].class) {
-			byte[] data = new byte[length / 8 + 1];
-			byteBuffer.get(data, 0, length / 8 + 1);
-			boolean[] array = BitUtils.getBooleans(data, length);
-			return array;
+			byte[] data = input.readBytes(length / 8 + 1);
+			return BitUtils.getBooleans(data, length);
 		} else if (type == double[].class) {
-			byte[] data = new byte[length * 8];
-			byteBuffer.get(data, 0, length * 8);
-			DoubleBuffer buf = ByteBuffer.wrap(data).asDoubleBuffer();
-			double[] array = new double[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readDoubles(length);
 		} else if (type == short[].class) {
-			byte[] data = new byte[length * 2];
-			byteBuffer.get(data, 0, length * 2);
-			ShortBuffer buf = ByteBuffer.wrap(data).asShortBuffer();
-			short[] array = new short[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readShorts(length);
 		} else if (type == byte[].class) {
-			byte[] data = new byte[length];
-			byteBuffer.get(data, 0, length);
-			return data;
+			return input.readBytes(length);
 		} else if (type == char[].class) {
-			byte[] data = new byte[length * 2];
-			byteBuffer.get(data, 0, length * 2);
-			CharBuffer buf = ByteBuffer.wrap(data).asCharBuffer();
-			char[] array = new char[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readChars(length);
 		} else if (type == long[].class) {
-			byte[] data = new byte[length * 8];
-			byteBuffer.get(data, 0, length * 8);
-			LongBuffer buf = ByteBuffer.wrap(data).asLongBuffer();
-			long[] array = new long[buf.remaining()];
-			buf.get(array);
-			return array;
+			return input.readLongs(length);
 		} else {
 			Class<?> componentType = type.getComponentType();
 
@@ -581,9 +475,9 @@ public class BinarySerializer {
 
 			if (componentType.isArray()) {
 				for (int i = 0; i < length; i++) {
-					Object element = readArray(componentType, byteBuffer, genericTypeClassMap, referenceList);
+					Object element = readArray(componentType, input, genericTypeClassMap, referenceList);
 
-					if(element != null) {
+					if (element != null) {
 						array[i] = element;
 					}
 				}
@@ -591,15 +485,13 @@ public class BinarySerializer {
 			}
 
 			if (componentType.isInterface()) {
-				componentType = readClassName(byteBuffer, referenceList);
+				componentType = readClassName(input, referenceList);
 			}
 
 			for (int i = 0; i < length; i++) {
-				//System.out.println(byteBuffer.position() + "\treading object from array: " + type.getComponentType());
+				Object element = readObject(componentType, input, genericTypeClassMap, referenceList);
 
-				Object element = readObject(componentType, byteBuffer, genericTypeClassMap, referenceList);
-
-				if(element != null) {
+				if (element != null) {
 					componentType = element.getClass();
 					array[i] = element;
 				}
@@ -608,28 +500,27 @@ public class BinarySerializer {
 		}
 	}
 
-	private static void readPrimitive(Object object, Field field, ByteBuffer byteBuffer) throws IllegalArgumentException, IllegalAccessException {
+	private static void readPrimitive(Object object, Field field, Input input) throws IllegalArgumentException, IllegalAccessException {
 		Class<?> type = field.getType();
 		field.setAccessible(true);
 		if (type == float.class) {
-			field.set(object, byteBuffer.getFloat());
+			field.set(object, input.readFloat());
 		} else if (type == int.class) {
-			field.set(object, byteBuffer.getInt());
+			field.set(object, input.readInt());
 		} else if (type == boolean.class) {
-			field.set(object, byteBuffer.get() == 1);
+			field.set(object, input.readByte() == 1);
 		} else if (type == double.class) {
-			field.set(object, byteBuffer.getDouble());
+			field.set(object, input.readDouble());
 		} else if (type == short.class) {
-			field.set(object, byteBuffer.getShort());
+			field.set(object, input.readShort());
 		} else if (type == byte.class) {
-			field.set(object, byteBuffer.get());
+			field.set(object, input.readByte());
 		} else if (type == char.class) {
-			field.set(object, byteBuffer.getChar());
+			field.set(object, input.readChar());
 		} else if (type == long.class) {
-			field.set(object, byteBuffer.getLong());
+			field.set(object, input.readLong());
 		}
 	}
-
 
 	/**
 	 * Creates a new instance of the given class type by using the best
@@ -639,7 +530,7 @@ public class BinarySerializer {
 	@SuppressWarnings("unchecked")
 	private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		// if its an interface or abstract class
-		if(type.getDeclaredConstructors().length == 0)
+		if (type.getDeclaredConstructors().length == 0)
 			return null;
 
 		for (Constructor<?> c : type.getDeclaredConstructors()) {
