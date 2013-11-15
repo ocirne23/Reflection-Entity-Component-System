@@ -75,7 +75,7 @@ Creating Entities using the 2nd method, will greatly improve performance through
 arranges memory for classes. The components will be kept close together in memory which improves cache hits.
 
 The 2nd method also allows you use normal inheritance programming, and adding methods specific to an entity class.
-Through this breaks the Entity-Component paragdim, it is completely possible. Supports multiple layers of inheritance.
+Though this breaks the Entity-Component paragdim, it is completely possible. Supports multiple layers of inheritance.
 <br><br>
 	
 A system is a class which extends EntitySystem, systems can be added/removed runtime just like entities/components.
