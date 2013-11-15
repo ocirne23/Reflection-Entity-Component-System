@@ -27,6 +27,8 @@ import recs.utils.BinarySerializer;
 
 import com.badlogic.gdx.utils.IntArray;
 
+//TODO: separate tests into different classes
+
 public class UnitTest {
 
 	private Player_Test player;
@@ -154,7 +156,8 @@ public class UnitTest {
 		assertTrue(position != null);
 	}
 
-	// TODO get this working? @Test
+	// TODO: get this working? @Test
+	// Works fine, just fails if the machine executing it doesnt give time to the threads.
 	public void testThreadedSystem() {
 		addEntities();
 		ms.setEnabled(false);

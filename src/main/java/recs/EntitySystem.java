@@ -52,6 +52,10 @@ public abstract class EntitySystem {
 		iterator = new IntSetIterator(entityIds);
 	}
 
+	/**
+	 * Calls processSystem. Interval/task systems override this so they can cleanly
+	 * do this part with a runnable and/or delay the process.
+	 */
 	void process(float deltaInSec) {
 		processSystem(deltaInSec);
 	}

@@ -18,6 +18,7 @@ public final class EventManager {
 		listeners = new ObjectMap<Class<? extends Event>, LinkedList<EventListener<? extends Event>>>();
 	}
 
+	/** Send an event object to all listeners for its class */
 	void sendEvent(Event message) {
 		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(message.getClass());
 		if (listenerList != null) {
@@ -27,6 +28,7 @@ public final class EventManager {
 		}
 	}
 
+	/** Register a listener so it will receive the events that are sent with the matching class */
 	void registerListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
 		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
@@ -40,6 +42,7 @@ public final class EventManager {
 		}
 	}
 
+	/** Unregister a listener so it will no longer receive events */
 	void unregisterListener(EventListener<? extends Event> listener, Class<? extends Event> eventClass) {
 		LinkedList<EventListener<? extends Event>> listenerList = listeners.get(eventClass);
 		if (listenerList != null) {
@@ -47,6 +50,7 @@ public final class EventManager {
 		}
 	}
 
+	/** Wipe all the data */
 	void clear() {
 		listeners.clear();
 	}

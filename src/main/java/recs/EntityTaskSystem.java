@@ -8,15 +8,22 @@ package recs;
  */
 public abstract class EntityTaskSystem extends EntitySystem implements Runnable {
 	private float delta = 0;
-
 	private boolean useInterval = false;
 	private float timePassed = 0;
 	private float intervalInSec = 0;
 
+	/**
+	 * Create a task system that runs the processSystem/Entity async every time
+	 * the world processes.
+	 */
 	public EntityTaskSystem(Class<? extends Component>... components) {
 		super(components);
 	}
 
+	/**
+	 * Create a task system that runs the processSystem/Entity once every interval,
+	 * still requires world.process though.
+	 */
 	public EntityTaskSystem(float intervalInSec, Class<? extends Component>... components) {
 		super(components);
 		this.intervalInSec = intervalInSec;

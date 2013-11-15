@@ -6,6 +6,8 @@ import com.badlogic.gdx.utils.IntMap.Values;
 
 /**
  * Used to easily retrieve components from entities.
+ * Just declare this in a system (a field), the field will be instantiated by the world as soon
+ * as the System is added to the world.
  *
  * @author Enrico van Oosten
  * @param <T>

@@ -1,9 +1,9 @@
 package recs;
 
-import recs.utils.RECSBits;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import recs.utils.RECSBits;
 
 /**
  * Base class for all entities, either extend this class and add Components as fields to the parent,
@@ -15,13 +15,10 @@ import java.util.List;
  */
 public class Entity {
 	int id;
-	EntityData data = null;
+	EntityFamily family = null;
 
 	/**
-	 * Add an component to this entity runtime.
-	 *
-	 * @param component
-	 *            The component.
+	 * Add an component to this entity.
 	 */
 	public void addComponent(Component... components) {
 		EntityWorld.addComponent(this, components);
@@ -36,7 +33,7 @@ public class Entity {
 	}
 
 	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
-		if (data == null) {
+		if (family == null) {	// not yet added to a world
 			for (Component component : getComponents()) {
 				if (componentClass.equals(component.getClass())) {
 					return true;
@@ -44,14 +41,14 @@ public class Entity {
 			}
 			return false;
 		}
-		return data.componentBits.get(data.world.getComponentId(componentClass));
+		return family.componentBits.get(family.world.getComponentId(componentClass));
 	}
 
 	/**
 	 * Get the component with the given class, returns null if not found.
 	 */
 	public <T extends Component> T getComponent(Class<T> componentClass) {
-		if (data == null) {
+		if (family == null) { // not yet added to a world
 			for (Component component : getComponents()) {
 				if (componentClass.equals(component.getClass())) {
 					return componentClass.cast(component);
@@ -59,13 +56,13 @@ public class Entity {
 			}
 			return null;
 		}
-		return data.world.getComponent(id, componentClass);
+		return family.world.getComponent(id, componentClass);
 	}
 
 	public Component getComponent(int componentId) {
-		if (data == null)
+		if (family == null)
 			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
-		return data.world.getComponent(id, componentId);
+		return family.world.getComponent(id, componentId);
 	}
 
 	/**
@@ -73,10 +70,10 @@ public class Entity {
 	 * @return
 	 */
 	public int[] getComponentIds() {
-		if (data == null)
+		if (family == null)
 			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
-		RECSBits componentBits = data.componentBits;
-		int[] components = new int[data.componentBits.cardinality()];
+		RECSBits componentBits = family.componentBits;
+		int[] components = new int[family.componentBits.cardinality()];
 
 		int idx = 0;
 		for (int i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
@@ -91,7 +88,7 @@ public class Entity {
 	 * components. (Not including class fields).
 	 */
 	public Component[] getComponents() {
-		if(data == null) {
+		if(family == null) { // not yet added to a world, use the scheduled add/remove data.
 			List<Component> results = new ArrayList<Component>(EntityWorld.getScheduledAdds(this));
 			results.removeAll(EntityWorld.getScheduledRemoves(this));
 			return results.toArray(new Component[results.size()]);
@@ -101,7 +98,7 @@ public class Entity {
 		Component[] components = new Component[componentIds.length];
 
 		for (int i = 0; i < componentIds.length; i++) {
-			components[i] = data.world.getComponent(id, componentIds[i]);
+			components[i] = family.world.getComponent(id, componentIds[i]);
 		}
 
 		return components;

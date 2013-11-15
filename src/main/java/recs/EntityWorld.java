@@ -92,8 +92,8 @@ public final class EntityWorld {
 		Class<? extends Entity> entityClass = entity.getClass();
 		// Read reflection data and use it to add all the components that were
 		// declared as fields.
-		EntityReflection reflection = entitydataManager.getReflection(entityClass);
-		entity.data = reflection.data;
+		EntityReflectionCache reflection = entitydataManager.getReflection(entityClass);
+		entity.family = reflection.family;
 
 		if (entity.getClass() != Entity.class) {
 			Keys k = reflection.componentFields.keys();
@@ -124,7 +124,7 @@ public final class EntityWorld {
 		}
 
 		//Add the entity to the systems.
-		systemManager.addEntityToSystems(entity, entity.data.systemBits);
+		systemManager.addEntityToSystems(entity, entity.family.systemBits);
 
 		return id;
 	}
@@ -135,7 +135,7 @@ public final class EntityWorld {
 		if (e == null)
 			throw new RuntimeException("Entity was not added to this world: " + entityId);
 		//remove the entity from all its systems.
-		systemManager.removeEntityFromSystems(e, e.data.systemBits);
+		systemManager.removeEntityFromSystems(e, e.family.systemBits);
 		//Remove all the entities components from the componentmappers.
 		componentManager.removeEntityFromMappers(e);
 
@@ -169,8 +169,8 @@ public final class EntityWorld {
 		//for every entity in the world
 		for (Entity e : addedEntities.values()) {
 			//Get the updated system bits which include the bits for the new systems
-			RECSBits newSystemBits = systemManager.getSystemBits(e.data.componentBits);
-			RECSBits oldSystemBits = e.data.systemBits;
+			RECSBits newSystemBits = systemManager.getSystemBits(e.family.componentBits);
+			RECSBits oldSystemBits = e.family.systemBits;
 
 			//Compare the new systembits with the old systembits and add the entity to all
 			//the systems that were added for the entity.
@@ -178,7 +178,7 @@ public final class EntityWorld {
 			systemManager.addEntityToSystems(e, addedSystemBits);
 
 			//Set the old systembits to the new one.
-			e.data.systemBits.copy(newSystemBits);
+			e.family.systemBits.copy(newSystemBits);
 		}
 	}
 
@@ -261,6 +261,7 @@ public final class EntityWorld {
 		System.gc();
 	}
 
+	/** Return a list of components that were added to an entity before it was added to a world */
 	static List<Component> getScheduledAdds(Entity e) {
 		List<Component> scheduledAdds = EntityWorld.scheduledAdds.get(e);
 		if (scheduledAdds == null) {
@@ -270,6 +271,7 @@ public final class EntityWorld {
 		}
 	}
 
+	/** Return a list of components that were removed from an entity before it was added to a world */
 	static List<Component> getScheduledRemoves(Entity e) {
 		List<Component> scheduledRemoves = EntityWorld.scheduledRemoves.get(e);
 		if (scheduledRemoves == null) {
@@ -280,10 +282,10 @@ public final class EntityWorld {
 	}
 
 	/**
-	 * Add components to an entity, updating its EntityData and adding it to the new systems.
+	 * Add components to an entity, updating its Family and adding it to the new systems.
 	 */
 	static void addComponent(Entity e, Component... components) {
-		EntityData oldData = e.data;
+		EntityFamily oldData = e.family;
 
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
@@ -302,7 +304,7 @@ public final class EntityWorld {
 			RECSBits oldSystemBits = oldData.systemBits;
 			world.componentManager.addComponent(e, components);
 			//addComponent updates the entities EntityData
-			EntityData newData = e.data;
+			EntityFamily newData = e.family;
 			RECSBits newSystemBits = newData.systemBits;
 			RECSBits addedSystemBits = oldSystemBits.getAddedBits(newSystemBits);
 
@@ -314,7 +316,7 @@ public final class EntityWorld {
 	 * Remove components to an entity, updating its EntityData and removing it from the old systems.
 	 */
 	static void removeComponent(Entity e, Component... components) {
-		EntityData oldData = e.data;
+		EntityFamily oldData = e.family;
 
 		//If an entity is not yet added to a world, its EntityData is null
 		if (oldData == null) {
@@ -333,7 +335,7 @@ public final class EntityWorld {
 			RECSBits oldSystemBits = oldData.systemBits;
 			world.componentManager.removeComponent(e, components);
 			//removeComponent updates the entities EntityData
-			EntityData newData = e.data;
+			EntityFamily newData = e.family;
 			RECSBits newSystemBits = newData.systemBits;
 			RECSBits removedSystemBits = oldSystemBits.getRemovedBits(newSystemBits);
 
@@ -406,9 +408,9 @@ public final class EntityWorld {
 	}
 
 	/**
-	 *  Returns {@link EntityDataManager#getEntityData(RECSBits) EntityDataManager.getEntityData(RECSBits componentBits)}
+	 *  See {@link EntityDataManager#getEntityFamily(RECSBits) EntityDataManager.getEntityFamily(RECSBits componentBits)}
 	 */
-	EntityData getEntityData(RECSBits componentBits) {
-		return entitydataManager.getEntityData(componentBits);
+	EntityFamily getEntityFamily(RECSBits componentBits) {
+		return entitydataManager.getEntityFamily(componentBits);
 	}
 }

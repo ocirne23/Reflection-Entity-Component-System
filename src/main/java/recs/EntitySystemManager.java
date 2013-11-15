@@ -59,7 +59,6 @@ public final class EntitySystemManager {
 	/**
 	 * Add a system to the world.
 	 */
-	@SuppressWarnings("unchecked")
 	void addSystem(EntitySystem system) {
 		if (systems.contains(system))
 			throw new RuntimeException("System already added");
@@ -67,48 +66,47 @@ public final class EntitySystemManager {
 		system.componentBits = world.getComponentBits(system.components);
 		system.world = world;
 
-		Class<? extends EntitySystem> class1 = system.getClass();
-		do {
-			for (Field field : class1.getDeclaredFields()) {
-				// Check for ComponentManager declarations.
-				if (field.getType() == ComponentMapper.class) {
-					field.setAccessible(true);
-					// Read the type in the <> of componentmanager
-					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-					try {
-						// Set the component manager declaration with the right
-						// component manager.
-						field.set(system, world.getComponentMapper((Class<? extends Component>) type));
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				}
-				// check for EventListener declarations.
-				if (field.getType() == EventListener.class) {
-					field.setAccessible(true);
-					// Read the type in the <> of eventListener.
-					Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-					@SuppressWarnings("rawtypes")
-					EventListener<? extends Event> eventListener = new EventListener();
-					world.registerEventListener(eventListener, (Class<? extends Event>) type);
+		initializeFields(system);
 
-					try {
-						// Set the event listener declaration with the right
-						// field listener.
-						field.set(system, eventListener);
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			class1 = (Class<? extends EntitySystem>) class1.getSuperclass();
-		} while (class1 != EntitySystem.class);
 		systems.add(system);
 		systemMap.put(system.id, system);
+	}
+
+	/**
+	 * Initialize the declared ComponentMapper and EventListener fields of a system.
+	 */
+	@SuppressWarnings("unchecked")
+	private void initializeFields(EntitySystem system) {
+		try {
+			Class<? extends EntitySystem> class1 = system.getClass();
+			do {
+				for (Field field : class1.getDeclaredFields()) {
+					// Check for ComponentMapper declarations.
+					if (field.getType() == ComponentMapper.class) {
+						field.setAccessible(true);
+						// Read the type in the <> of the ComponentMapper
+						Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+						// Set the field with the right ComponentMapper.
+						field.set(system, world.getComponentMapper((Class<? extends Component>) type));
+					}
+					// Check for EventListener declarations.
+					if (field.getType() == EventListener.class) {
+						field.setAccessible(true);
+						// Read the type in the <> of the EventListener.
+						Type type = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+						EventListener<? extends Event> eventListener = new EventListener<Event>();
+						world.registerEventListener(eventListener, (Class<? extends Event>) type);
+						// sSet the field with the the right EventListener.
+						field.set(system, eventListener);
+					}
+				}
+				class1 = (Class<? extends EntitySystem>) class1.getSuperclass();
+			} while (class1 != EntitySystem.class);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -135,6 +133,7 @@ public final class EntitySystemManager {
 		return systemBits;
 	}
 
+	/** Retrieve an unused system id, reusing id's of removed systems */
 	int getNewSystemId() {
 		int i = 0;
 		for (; i < freeSystemBits.numBits(); i++) {
@@ -147,12 +146,14 @@ public final class EntitySystemManager {
 		return i + 1;
 	}
 
+	/** Wipe all the data */
 	void clear() {
 		systems.clear();
 		systemMap.clear();
 		freeSystemBits.clear();
 	}
 
+	/** Remove a system, clearing all its data */
 	public void removeSystem(EntitySystem system) {
 		freeSystemBits.clear(system.id);
 		systems.remove(system);

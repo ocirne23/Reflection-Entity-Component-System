@@ -9,12 +9,12 @@ import recs.utils.RECSBits;
  *
  * @author Enrico
  */
-public final class EntityData {
+public final class EntityFamily {
 	final EntityWorld world;
 	final RECSBits componentBits;
 	final RECSBits systemBits;
 
-	EntityData(EntityWorld world, RECSBits componentBits, RECSBits systemBits) {
+	EntityFamily(EntityWorld world, RECSBits componentBits, RECSBits systemBits) {
 		this.world = world;
 		this.componentBits = componentBits;
 		this.systemBits = systemBits;

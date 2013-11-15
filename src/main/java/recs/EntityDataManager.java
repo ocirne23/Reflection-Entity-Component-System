@@ -7,50 +7,51 @@ import recs.utils.RECSBits;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
-
+/**
+ * Manages reflection data and families of the entities so they can be more efficiently retrieved.
+ * @author Enrico van Oosten
+ */
 public final class EntityDataManager {
 	private EntityWorld world;
-	private ObjectMap<Class<? extends Entity>, EntityReflection> reflectionMap = new ObjectMap<Class<? extends Entity>, EntityReflection>();
-	private ObjectMap<RECSBits, EntityData> entityDataMap = new ObjectMap<RECSBits, EntityData>();
+	/** Maps class to reflection data of that class */
+	private ObjectMap<Class<? extends Entity>, EntityReflectionCache> reflectionMap = new ObjectMap<Class<? extends Entity>, EntityReflectionCache>();
+	/** Maps component bits to family */
+	private ObjectMap<RECSBits, EntityFamily> entityFamilyMap = new ObjectMap<RECSBits, EntityFamily>();
 
 	EntityDataManager(EntityWorld world) {
 		this.world = world;
 	}
 
-	EntityReflection getReflection(Class<? extends Entity> class1) {
-		EntityReflection reflectionData = reflectionMap.get(class1);
+	/** Get the reflection data from the given class. */
+	EntityReflectionCache getReflection(Class<? extends Entity> class1) {
+		EntityReflectionCache reflectionData = reflectionMap.get(class1);
 		if (reflectionData == null)
 			reflectionData = createNewEntityReflection(class1);
 
 		return reflectionData;
 	}
 
-	void putReflection(Class<? extends Entity> class1, EntityReflection reflection) {
-		reflectionMap.put(class1, reflection);
-	}
-
-	/**
-	 * Retrieve an EntityData object matching the set of components. Creating a new instance
-	 * if none is found.
-	 */
-	EntityData getEntityData(RECSBits componentBits) {
-		EntityData data = entityDataMap.get(componentBits);
+	/** Retrieve an EntityFamily object matching the set of components. */
+	EntityFamily getEntityFamily(RECSBits componentBits) {
+		EntityFamily data = entityFamilyMap.get(componentBits);
 		if (data == null) {
 			RECSBits systemBits = world.getSystemBits(componentBits);
-			data = new EntityData(world, componentBits, systemBits);
-			entityDataMap.put(componentBits, data);
+			data = new EntityFamily(world, componentBits, systemBits);
+			entityFamilyMap.put(componentBits, data);
 		}
 		return data;
 	}
 
+	/** Is called on removeSystem to remove the matching system bit from all entities */
 	void removeSystem(int id) {
-		for(EntityData data: entityDataMap.values()) {
+		for(EntityFamily data: entityFamilyMap.values()) {
 			data.systemBits.clear(id);
 		}
 	}
 
+	/** Wipes all the data */
 	void clear() {
-		entityDataMap.clear();
+		entityFamilyMap.clear();
 		reflectionMap.clear();
 	}
 
@@ -59,7 +60,7 @@ public final class EntityDataManager {
 	 * by scanning its fields.
 	 */
 	@SuppressWarnings("unchecked")
-	private EntityReflection createNewEntityReflection(Class<? extends Entity> class1) {
+	private EntityReflectionCache createNewEntityReflection(Class<? extends Entity> class1) {
 		Class<? extends Entity> mainClass = class1;
 		IntMap<Field> fieldMap = new IntMap<Field>();
 		RECSBits componentBits = new RECSBits();
@@ -79,9 +80,9 @@ public final class EntityDataManager {
 			class1 = (Class<? extends Entity>) class1.getSuperclass();
 		}
 
-		EntityData data = getEntityData(componentBits);
+		EntityFamily data = getEntityFamily(componentBits);
 
-		EntityReflection reflection = new EntityReflection(fieldMap, data);
+		EntityReflectionCache reflection = new EntityReflectionCache(fieldMap, data);
 		reflectionMap.put(mainClass, reflection);
 
 		return reflection;
