@@ -78,7 +78,7 @@ The 2nd method also allows you use normal inheritance programming, and adding me
 Through this breaks the Entity-Component paragdim, it is completely possible. Supports multiple layers of inheritance.
 <br><br>
 	
-A system is a class which extends EntitySystem:
+A system is a class which extends EntitySystem, systems can be added/removed runtime just like entities/components.
 
 	public class MovementSystem extends EntitySystem {
 		//Declare component mappers so you can retrieve components easily.
@@ -149,3 +149,22 @@ Event are received with EventListeners and can be polled at any time.
 			}
 		}
 	}
+
+Some convenience classes:
+
+DestructionListeners get notified whenever a component is removed from the world either through
+removal of its entity or through .removeComponent()
+
+	new ComponentDestructionListener<SomeComponentWithNativeData>(world) {
+		@Override
+		public void destroyed(SomeComponentWithNativeData component) {
+			component.dispose();
+		}
+	};
+	
+(Random) BinarySerializer can very efficiently and fast, write any Java object to and from a file or byte[].
+Could use more intensive testing, but didnt fail to parse a single thing so far. Good lightweight option for networking.
+
+	byte[] data = BinarySerializer.saveToByteArr(someBigObjectWithLotsOfStuff);
+	SomeBigObject loadedObject = BinarySerializer.readFromByteArr(data, new SomeBigObject()); //just need an instance
+	assert someBigObjectWithlotsOfStuff.equals(loadedObject)
