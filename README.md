@@ -167,4 +167,4 @@ Could use more intensive testing, but didnt fail to parse a single thing so far.
 
 	byte[] data = BinarySerializer.saveToByteArr(someBigObjectWithLotsOfStuff);
 	SomeBigObject loadedObject = BinarySerializer.readFromByteArr(data, new SomeBigObject()); //just need an instance
-	assert someBigObjectWithlotsOfStuff.equals(loadedObject)
+	assert someBigObjectWithLotsOfStuff.equals(loadedObject)
