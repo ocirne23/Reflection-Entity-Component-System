@@ -81,7 +81,8 @@ Though this breaks the Entity-Component paragdim, it is completely possible. Sup
 A system is a class which extends EntitySystem, systems can be added/removed runtime just like entities/components.
 
 	public class MovementSystem extends EntitySystem {
-		//Declare component mappers so you can retrieve components easily.
+		//Declare component mappers so you can retrieve components easily. Gets initialized
+		//when the system is added to a world.
 		private ComponentMapper<Position> positionMapper;
 		private ComponentMapper<Velocity> velocityMapper;
 		
