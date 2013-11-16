@@ -1,8 +1,8 @@
 Reflection-Entity-Component-System
 ==================================
 
-An high performance Entity-Component-System with focus on ease of use and minimal programmer overhead.
-
+An high performance Entity-Component-System with focus on ease of use and minimal programmer overhead. <br>
+Jar at: http://ci.onarandombox.com/job/Reflection-Entity-Component-System/
 <br>
 
 	public class UsageExample {
