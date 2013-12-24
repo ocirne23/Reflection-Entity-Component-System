@@ -48,44 +48,44 @@ public class Entity {
 	 * Get the component with the given class, returns null if not found.
 	 */
 	public <T extends Component> T getComponent(Class<T> componentClass) {
-		if (family == null) { // not yet added to a world
-			for (Component component : getComponents()) {
-				if (componentClass.equals(component.getClass())) {
-					return componentClass.cast(component);
-				}
-			}
-			return null;
-		}
-		return family.world.getComponent(id, componentClass);
+		if (family != null)
+			return family.world.getComponent(id, componentClass);
+
+		//null family,
+		for (Component component : getComponents())
+			if (componentClass.equals(component.getClass()))
+				return componentClass.cast(component);
+
+		return null;
 	}
 
 	public Component getComponent(int componentId) {
 		if (family == null)
-			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
+			throw new IllegalStateException(
+					"Components of entity will not have IDs until the entity is added to a world");
 		return family.world.getComponent(id, componentId);
 	}
 
 	/**
 	 * Get an array of componentId's this entity has.
-	 * @return
 	 */
 	public int[] getComponentIds() {
 		if (family == null)
-			throw new IllegalStateException("Components of entity will not have IDs until entity added to world.");
-		RECSBits componentBits = family.componentBits;
-		int[] components = new int[family.componentBits.cardinality()];
+			throw new IllegalStateException(
+					"Components of entity will not have IDs until the entity is added to a world");
 
-		int idx = 0;
-		for (int i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
+		RECSBits componentBits = family.componentBits;
+		int[] components = new int[componentBits.cardinality()];
+
+		for (int i = componentBits.nextSetBit(0), idx = 0; i >= 0; i = componentBits.nextSetBit(i + 1))
 			components[idx++] = i;
-		}
 
 		return components;
 	}
 
 	/**
 	 * Get all the components this entity has, if its not added to a world yet, it returns the scheduled
-	 * components. (Not including class fields).
+	 * components.
 	 */
 	public Component[] getComponents() {
 		if(family == null) { // not yet added to a world, use the scheduled add/remove data.
@@ -97,9 +97,8 @@ public class Entity {
 		int[] componentIds = getComponentIds();
 		Component[] components = new Component[componentIds.length];
 
-		for (int i = 0; i < componentIds.length; i++) {
+		for (int i = 0; i < componentIds.length; i++)
 			components[i] = family.world.getComponent(id, componentIds[i]);
-		}
 
 		return components;
 	}

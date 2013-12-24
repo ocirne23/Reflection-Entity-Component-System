@@ -119,9 +119,16 @@ public class RECSBits {
 	 * @return if it contains all the true bits of this Bits.
 	 */
 	public boolean contains(RECSBits other) {
-		for (int i = 0; i < bits.length; i++)
-			if ((bits[i] & other.bits[i]) != bits[i])
+		for (int i = 0; i < bits.length; i++) {
+			int word = bits[i];
+
+			//if any bits are set, and the other does not even have that word, return false.
+			if (word != 0 && other.bits.length - 1 < i)
 				return false;
+
+			if ((word & other.bits[i]) != word)
+				return false;
+		}
 		return true;
 	}
 

@@ -521,7 +521,16 @@ public class BinarySerializer {
 			field.set(object, input.readLong());
 		}
 	}
+/*
+	private static class ConstructorComparable implements Comparator<Constructor<?>> {
+		@Override
+		public int compare(Constructor<?> c1, Constructor<?> c2) {
+			return c1.getParameterTypes().length - c2.getParameterTypes().length;
+		}
+	}
 
+	private static ConstructorComparable constructorComparable = new ConstructorComparable();
+*/
 	/**
 	 * Creates a new instance of the given class type by using the best
 	 * available constructor. Succeeds as long as passing 0/null values into the
@@ -530,17 +539,27 @@ public class BinarySerializer {
 	@SuppressWarnings("unchecked")
 	private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		// if its an interface or abstract class
-		if (type.getDeclaredConstructors().length == 0)
+		Constructor<?>[] constructors = type.getDeclaredConstructors();
+
+		if (constructors.length == 0)
+			return null;
+		// if trying to create a generic
+		if (type == Class.class)
 			return null;
 
-		for (Constructor<?> c : type.getDeclaredConstructors()) {
+		//Arrays.sort(constructors, constructorComparable);
+
+
+		for (Constructor<?> c : constructors) {
+			//System.out.println("constructor: " + c.getName() +":"+ c.getParameterTypes().length);
+
 			if (c.getParameterTypes().length == 0) {
 				c.setAccessible(true);
 				return (T) c.newInstance();
 			}
 		}
 
-		Constructor<?> c = type.getDeclaredConstructors()[0];
+		Constructor<?> c = constructors[0];
 		Class<?>[] parameters = c.getParameterTypes();
 		Object[] params = new Object[parameters.length];
 

@@ -261,24 +261,18 @@ public final class EntityWorld {
 		System.gc();
 	}
 
+	static List<Component> emptyUnmodifiableList = Collections.unmodifiableList(new ArrayList<Component>(0));
+
 	/** Return a list of components that were added to an entity before it was added to a world */
 	static List<Component> getScheduledAdds(Entity e) {
 		List<Component> scheduledAdds = EntityWorld.scheduledAdds.get(e);
-		if (scheduledAdds == null) {
-			return Collections.unmodifiableList(new ArrayList<Component>());
-		} else {
-			return Collections.unmodifiableList(scheduledAdds);
-		}
+		return scheduledAdds == null ? emptyUnmodifiableList : scheduledAdds;
 	}
 
 	/** Return a list of components that were removed from an entity before it was added to a world */
 	static List<Component> getScheduledRemoves(Entity e) {
 		List<Component> scheduledRemoves = EntityWorld.scheduledRemoves.get(e);
-		if (scheduledRemoves == null) {
-			return Collections.unmodifiableList(new ArrayList<Component>());
-		} else {
-			return Collections.unmodifiableList(scheduledRemoves);
-		}
+		return scheduledRemoves == null ? emptyUnmodifiableList : scheduledRemoves;
 	}
 
 	/**

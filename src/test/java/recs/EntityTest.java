@@ -2,8 +2,8 @@ package recs;
 
 import org.junit.Before;
 import org.junit.Test;
-import recs.components.Attack_0;
-import recs.components.Velocity_0;
+import recs.components.Attack0;
+import recs.components.Velocity0;
 
 import static org.junit.Assert.*;
 
@@ -38,53 +38,53 @@ public class EntityTest {
 
 	@Test
 	public void testAddComponentNoWorld() {
-		Attack_0 attack = new Attack_0(5);
+		Attack0 attack = new Attack0(5);
 		entity.addComponent(attack);
-		assertTrue(entity.hasComponent(Attack_0.class));
-		assertEquals(attack, entity.getComponent(Attack_0.class));
+		assertTrue(entity.hasComponent(Attack0.class));
+		assertEquals(attack, entity.getComponent(Attack0.class));
 	}
 
 	@Test
 	public void testRemoveComponentNoWorld() {
-		Attack_0 attack = new Attack_0(5);
+		Attack0 attack = new Attack0(5);
 		entity.addComponent(attack);
 		entity.removeComponent(attack);
-		assertFalse(entity.hasComponent(Attack_0.class));
-		assertNull(entity.getComponent(Attack_0.class));
+		assertFalse(entity.hasComponent(Attack0.class));
+		assertNull(entity.getComponent(Attack0.class));
 	}
 
 	@Test
 	public void testAddMultipleComponentNoWorld() {
-		Attack_0 attack = new Attack_0(5);
-		Velocity_0 velocity = new Velocity_0();
+		Attack0 attack = new Attack0(5);
+		Velocity0 velocity = new Velocity0();
 		entity.addComponent(attack, velocity);
-		assertTrue(entity.hasComponent(Attack_0.class));
-		assertTrue(entity.hasComponent(Velocity_0.class));
-		assertEquals(attack, entity.getComponent(Attack_0.class));
-		assertEquals(velocity, entity.getComponent(Velocity_0.class));
+		assertTrue(entity.hasComponent(Attack0.class));
+		assertTrue(entity.hasComponent(Velocity0.class));
+		assertEquals(attack, entity.getComponent(Attack0.class));
+		assertEquals(velocity, entity.getComponent(Velocity0.class));
 	}
 
 	@Test
 	public void testRemoveMultipleComponentNoWorld() {
-		Attack_0 attack = new Attack_0(5);
-		Velocity_0 velocity = new Velocity_0();
+		Attack0 attack = new Attack0(5);
+		Velocity0 velocity = new Velocity0();
 		entity.addComponent(attack, velocity);
 		entity.removeComponent(attack, velocity);
-		assertFalse(entity.hasComponent(Attack_0.class));
-		assertFalse(entity.hasComponent(Velocity_0.class));
-		assertNull(entity.getComponent(Attack_0.class));
-		assertNull(entity.getComponent(Velocity_0.class));
+		assertFalse(entity.hasComponent(Attack0.class));
+		assertFalse(entity.hasComponent(Velocity0.class));
+		assertNull(entity.getComponent(Attack0.class));
+		assertNull(entity.getComponent(Velocity0.class));
 	}
 
 	@Test
 	public void testRemoveOneOfMultipleComponentNoWorld() {
-		Attack_0 attack = new Attack_0(5);
-		Velocity_0 velocity = new Velocity_0();
+		Attack0 attack = new Attack0(5);
+		Velocity0 velocity = new Velocity0();
 		entity.addComponent(attack, velocity);
 		entity.removeComponent(attack);
-		assertFalse(entity.hasComponent(Attack_0.class));
-		assertTrue(entity.hasComponent(Velocity_0.class));
-		assertNull(entity.getComponent(Attack_0.class));
-		assertNotNull(entity.getComponent(Velocity_0.class));
+		assertFalse(entity.hasComponent(Attack0.class));
+		assertTrue(entity.hasComponent(Velocity0.class));
+		assertNull(entity.getComponent(Attack0.class));
+		assertNotNull(entity.getComponent(Velocity0.class));
 	}
 }
