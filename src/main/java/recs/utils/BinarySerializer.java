@@ -14,7 +14,10 @@
  * limitations under the License.
  ******************************************************************************/
 
-package recs.utils;
+package inet.tech.ein2va.serializerutils;
+
+import inet.tech.ein2va.utils.BitUtils;
+import inet.tech.ein2va.utils.ObjectIntMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,7 +38,6 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.badlogic.gdx.utils.ObjectIntMap;
 
 //TODO: documentation, comments, remove commented println's.
 
@@ -100,10 +102,42 @@ public class BinarySerializer {
 		return o;
 	}
 
-	public static <T> T readFromStream(InputStream inputStream, T object, Class<?>... genericTypeArgs) {
+	@SuppressWarnings("unchecked")
+	public static <T> T readFromStream(InputStream istream, int numBytes, T object, Class<?>... genericTypeArgs) {
+		try {
+			Class<?> clazz = object.getClass();
 
-		return null;
+			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
+			TypeVariable<?>[] parameterTypes = clazz.getTypeParameters();
+
+			for (int i = 0; i < parameterTypes.length; ++i) {
+				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
+			}
+
+			Input input = new Input(istream, numBytes);
+			ArrayList<Object> referenceList = new ArrayList<Object>();
+
+			if (object.getClass().isArray()) {
+				object = (T) readArray(object.getClass(), input, genericTypeClassMap, referenceList);
+			} else {
+				object = (T) readObject(object.getClass(), input, genericTypeClassMap, referenceList);
+			}
+
+			istream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return object;
 	}
+
 
 	public static <T> OutputStream saveToStream(T object, OutputStream outputStream) {
 		Class<?> clazz = object.getClass();
@@ -328,42 +362,6 @@ public class BinarySerializer {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T readFromStream(InputStream istream, int numBytes, T object, Class<?>... genericTypeArgs) {
-		try {
-			Class<?> clazz = object.getClass();
-
-			HashMap<String, Class<?>> genericTypeClassMap = new HashMap<String, Class<?>>();
-			TypeVariable<?>[] parameterTypes = clazz.getTypeParameters();
-
-			for (int i = 0; i < parameterTypes.length; ++i) {
-				genericTypeClassMap.put(parameterTypes[i].getName(), genericTypeArgs[i]);
-			}
-
-			Input input = new Input(istream, numBytes);
-			ArrayList<Object> referenceList = new ArrayList<Object>();
-
-			if (object.getClass().isArray()) {
-				object = (T) readArray(object.getClass(), input, genericTypeClassMap, referenceList);
-			} else {
-				object = (T) readObject(object.getClass(), input, genericTypeClassMap, referenceList);
-			}
-
-			istream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
-		return object;
-	}
-
 	private static Object readObject(Class<?> type, Input input, HashMap<String, Class<?>> genericTypeClassMap, ArrayList<Object> referenceList) throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException {
 		byte objectStatus = input.readByte();
 
@@ -521,16 +519,7 @@ public class BinarySerializer {
 			field.set(object, input.readLong());
 		}
 	}
-/*
-	private static class ConstructorComparable implements Comparator<Constructor<?>> {
-		@Override
-		public int compare(Constructor<?> c1, Constructor<?> c2) {
-			return c1.getParameterTypes().length - c2.getParameterTypes().length;
-		}
-	}
 
-	private static ConstructorComparable constructorComparable = new ConstructorComparable();
-*/
 	/**
 	 * Creates a new instance of the given class type by using the best
 	 * available constructor. Succeeds as long as passing 0/null values into the
@@ -539,27 +528,17 @@ public class BinarySerializer {
 	@SuppressWarnings("unchecked")
 	private static <T> T createNewInstance(Class<T> type) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		// if its an interface or abstract class
-		Constructor<?>[] constructors = type.getDeclaredConstructors();
-
-		if (constructors.length == 0)
-			return null;
-		// if trying to create a generic
-		if (type == Class.class)
+		if (type.getDeclaredConstructors().length == 0)
 			return null;
 
-		//Arrays.sort(constructors, constructorComparable);
-
-
-		for (Constructor<?> c : constructors) {
-			//System.out.println("constructor: " + c.getName() +":"+ c.getParameterTypes().length);
-
+		for (Constructor<?> c : type.getDeclaredConstructors()) {
 			if (c.getParameterTypes().length == 0) {
 				c.setAccessible(true);
 				return (T) c.newInstance();
 			}
 		}
 
-		Constructor<?> c = constructors[0];
+		Constructor<?> c = type.getDeclaredConstructors()[0];
 		Class<?>[] parameters = c.getParameterTypes();
 		Object[] params = new Object[parameters.length];
 
@@ -587,5 +566,4 @@ public class BinarySerializer {
 	private BinarySerializer() {
 
 	}
-
 }
