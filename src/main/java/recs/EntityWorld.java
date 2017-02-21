@@ -194,6 +194,22 @@ public final class EntityWorld {
 	}
 
 	/**
+	 * Remove multiple EntitySystems from the world
+	 */
+	public void removeSystem(EntitySystem... systems) {
+		for (EntitySystem system : systems) {
+			removeSystem(system);
+		}
+	}
+
+	/**
+	 * Returns true if this EntityWorld already contains the given EntitySystem object.
+	 */
+	public boolean hasSystem(EntitySystem system) {
+		return systemManager.hasSystem(system);
+	}
+
+	/**
 	 * Get a component of an entity. Always use a ComponentMapper<T> instead of
 	 * this to retrieve components.
 	 *

@@ -72,6 +72,10 @@ public final class EntitySystemManager {
 		systemMap.put(system.id, system);
 	}
 
+	boolean hasSystem(EntitySystem system) {
+		return systems.contains(system);
+	}
+
 	/**
 	 * Initialize the declared ComponentMapper and EventListener fields of a system.
 	 */
