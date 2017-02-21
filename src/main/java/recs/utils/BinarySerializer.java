@@ -14,10 +14,9 @@
  * limitations under the License.
  ******************************************************************************/
 
-package inet.tech.ein2va.serializerutils;
+package recs.utils;
 
-import inet.tech.ein2va.utils.BitUtils;
-import inet.tech.ein2va.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectIntMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
