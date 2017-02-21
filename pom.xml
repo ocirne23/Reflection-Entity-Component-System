@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx</artifactId>
-            <version>0.9.9-SNAPSHOT</version>
+            <version>1.9.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
